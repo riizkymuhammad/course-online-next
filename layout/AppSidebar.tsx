@@ -30,10 +30,7 @@ const navItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [
-      { name: "Ecommerce", path: "/dashboard", pro: false },
-      { name: "Tryout Management", path: "/dashboard/tryout-management", pro: false },
-    ],
+    subItems: [{ name: "Ecommerce", path: "/dashboard", pro: false }],
   },
   {
     icon: <ListIcon />,
@@ -49,6 +46,11 @@ const navItems: NavItem[] = [
     icon: <PageIcon />,
     name: "Quiz Management",
     path: "/dashboard/quiz-management",
+  },
+  {
+    icon: <BoxCubeIcon />,
+    name: "Tryout Management",
+    path: "/dashboard/tryout-management",
   },
   {
     icon: <CalenderIcon />,

@@ -59,11 +59,8 @@ export default function StatisticsChart() {
     },
 
     fill: {
-      type: "gradient",
-      gradient: {
-        opacityFrom: 0.55,
-        opacityTo: 0,
-      },
+      type: "solid",
+      opacity: 0.12,
     },
     markers: {
       size: 0, // Size of the marker points
