@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import StatusAlert from "@/components/ui/alert/StatusAlert";
+import { createLearningPath } from "./actions";
 
 export const metadata: Metadata = {
   title: "Add Learning Path",
@@ -13,7 +15,12 @@ const statusOptions = [
   { value: "archived", label: "Archived" },
 ] as const;
 
-export default function CreateLearningPathPage() {
+export default async function CreateLearningPathPage({
+  searchParams,
+}: PageProps<"/dashboard/learning-path/create">) {
+  const params = await searchParams;
+  const error = params.error;
+
   return (
     <div className="space-y-6">
       <PageBreadcrumb
@@ -32,7 +39,15 @@ export default function CreateLearningPathPage() {
           </h2>
         </div>
 
-        <form className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
+        <form action={createLearningPath} className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
+          {error ? (
+            <StatusAlert
+              variant="error"
+              title="Gagal Menyimpan Learning Path"
+              message={getErrorMessage(error)}
+            />
+          ) : null}
+
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_0.8fr]">
             <div className="space-y-6">
               <FormField
@@ -143,4 +158,19 @@ function TextAreaField({
       />
     </div>
   );
+}
+
+function getErrorMessage(error: string | string[] | undefined) {
+  const value = Array.isArray(error) ? error[0] : error;
+
+  switch (value) {
+    case "title-required":
+      return "Title wajib diisi.";
+    case "invalid-title":
+      return "Title tidak valid untuk dibuatkan slug.";
+    case "23505":
+      return "Learning path dengan judul atau slug yang sama sudah ada.";
+    default:
+      return "Gagal menyimpan learning path ke database Supabase.";
+  }
 }

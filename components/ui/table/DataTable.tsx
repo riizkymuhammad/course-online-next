@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 export type DataTableColumn = {
@@ -16,6 +17,7 @@ export type DataTableColumn = {
   actions?: Array<{
     label: string;
     tone?: "primary" | "secondary" | "danger";
+    hrefKey?: string;
   }>;
 };
 
@@ -187,13 +189,23 @@ export default function DataTable<T extends object>({
                   : "border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-white/5";
 
             return (
-              <button
-                key={action.label}
-                type="button"
-                className={`inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-medium ${toneClass}`}
-              >
-                {action.label}
-              </button>
+              action.hrefKey && normalizeValue(record[action.hrefKey]) ? (
+                <Link
+                  key={action.label}
+                  href={normalizeValue(record[action.hrefKey])}
+                  className={`inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-medium ${toneClass}`}
+                >
+                  {action.label}
+                </Link>
+              ) : (
+                <button
+                  key={action.label}
+                  type="button"
+                  className={`inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-medium ${toneClass}`}
+                >
+                  {action.label}
+                </button>
+              )
             );
           })}
         </div>

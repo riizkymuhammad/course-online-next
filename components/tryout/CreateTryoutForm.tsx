@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Option = {
@@ -18,6 +19,7 @@ type GeneratedQuestion = {
 };
 
 type GenerateTryoutResponse = {
+  tryoutId?: string;
   tryoutTitle: string;
   learningPath: string;
   status: string;
@@ -30,12 +32,12 @@ export default function CreateTryoutForm({
   learningPathOptions,
   statusOptions,
 }: {
-  learningPathOptions: string[];
+  learningPathOptions: Option[];
   statusOptions: Option[];
 }) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [result, setResult] = useState<GenerateTryoutResponse | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,7 +47,6 @@ export default function CreateTryoutForm({
     try {
       setIsSubmitting(true);
       setErrorMessage(null);
-      setResult(null);
 
       const response = await fetch("/api/tryout/generate", {
         method: "POST",
@@ -62,7 +63,8 @@ export default function CreateTryoutForm({
         throw new Error(message || "Gagal meng-generate soal tryout.");
       }
 
-      setResult(payload as GenerateTryoutResponse);
+      router.push("/dashboard/tryout-management?created=1");
+      router.refresh();
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Terjadi kesalahan saat membuat tryout."
@@ -89,10 +91,7 @@ export default function CreateTryoutForm({
               name="learning_path"
               defaultValue=""
               required
-              options={[
-                { value: "", label: "Pilih learning path" },
-                ...learningPathOptions.map((item) => ({ value: item, label: item })),
-              ]}
+              options={[{ value: "", label: "Pilih learning path" }, ...learningPathOptions]}
             />
 
             <FormField
@@ -153,73 +152,6 @@ export default function CreateTryoutForm({
           </button>
         </div>
       </form>
-
-      {result ? (
-        <section className="rounded-2xl border border-success-200 bg-success-50/60 p-5 dark:border-success-500/20 dark:bg-success-500/10 sm:p-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-                Generated Questions
-              </h3>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
-                {result.tryoutTitle} - {result.learningPath}
-              </p>
-            </div>
-            <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-success-700 shadow-theme-xs dark:bg-white/10 dark:text-success-400">
-              {result.questionCount} Soal
-            </span>
-          </div>
-
-          {result.notes ? (
-            <p className="mt-4 rounded-xl bg-white/80 px-4 py-3 text-sm text-gray-600 dark:bg-white/5 dark:text-gray-300">
-              Catatan soal: {result.notes}
-            </p>
-          ) : null}
-
-          <div className="mt-5 space-y-4">
-            {result.questions.map((question) => (
-              <article
-                key={`${question.number}-${question.question}`}
-                className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03]"
-              >
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
-                    Soal {question.number}
-                  </span>
-                  <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-gray-600 dark:bg-white/5 dark:text-gray-300">
-                    {question.type}
-                  </span>
-                </div>
-
-                <p className="mt-3 text-sm font-medium text-gray-800 dark:text-white/90">
-                  {question.question}
-                </p>
-
-                {question.options.length > 0 ? (
-                  <ul className="mt-3 space-y-2 text-sm text-gray-600 dark:text-gray-300">
-                    {question.options.map((option, index) => (
-                      <li key={`${question.number}-option-${index}`} className="rounded-lg bg-gray-50 px-3 py-2 dark:bg-white/[0.03]">
-                        {String.fromCharCode(65 + index)}. {option}
-                      </li>
-                    ))}
-                  </ul>
-                ) : null}
-
-                <div className="mt-4 grid gap-3 lg:grid-cols-2">
-                  <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm dark:bg-white/[0.03]">
-                    <p className="font-medium text-gray-800 dark:text-white/90">Jawaban</p>
-                    <p className="mt-1 text-gray-600 dark:text-gray-300">{question.answer}</p>
-                  </div>
-                  <div className="rounded-lg bg-gray-50 px-3 py-3 text-sm dark:bg-white/[0.03]">
-                    <p className="font-medium text-gray-800 dark:text-white/90">Penjelasan</p>
-                    <p className="mt-1 text-gray-600 dark:text-gray-300">{question.explanation}</p>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      ) : null}
     </div>
   );
 }

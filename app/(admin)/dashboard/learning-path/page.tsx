@@ -1,58 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
+import { createClient } from "@/lib/supabase/server";
 
 type LearningPath = {
   id: string;
   title: string;
   slug: string;
   description: string;
-  thumbnail: string;
-  material_count: number;
+  material_count: number | string;
   status: "draft" | "published" | "archived";
   created_at: string;
   updated_at: string;
 };
-
-const learningPaths: LearningPath[] = [
-  {
-    id: "8e3d9b68-4d0f-4a7b-bf5f-f1d52ff0b201",
-    title: "SQL Fundamentals for Data Analysis",
-    slug: "sql-fundamentals-for-data-analysis",
-    description:
-      "Belajar query dasar, filtering, join, agregasi, dan analisis data untuk kebutuhan reporting.",
-    thumbnail: "/images/product/product-01.jpg",
-    material_count: 12,
-    status: "published",
-    created_at: "2026-04-10T08:30:00+07:00",
-    updated_at: "2026-04-24T16:45:00+07:00",
-  },
-  {
-    id: "71a10e9e-3362-465f-a1c7-32ed9afcf012",
-    title: "Backend API with PostgreSQL",
-    slug: "backend-api-with-postgresql",
-    description:
-      "Membangun REST API yang terhubung ke PostgreSQL, lengkap dengan validasi dan optimasi query.",
-    thumbnail: "/images/product/product-02.jpg",
-    material_count: 8,
-    status: "draft",
-    created_at: "2026-04-18T10:00:00+07:00",
-    updated_at: "2026-04-25T09:15:00+07:00",
-  },
-  {
-    id: "d2f4b2ea-f614-4d8e-aa8a-c13c4355f913",
-    title: "Database Design for Web Apps",
-    slug: "database-design-for-web-apps",
-    description:
-      "Menyusun relasi tabel, indexing, normalisasi, dan strategi schema untuk aplikasi production.",
-    thumbnail: "/images/product/product-03.jpg",
-    material_count: 10,
-    status: "archived",
-    created_at: "2026-03-22T13:00:00+07:00",
-    updated_at: "2026-04-12T11:20:00+07:00",
-  },
-];
 
 export const metadata: Metadata = {
   title: "Learning Path Dashboard",
@@ -68,7 +30,31 @@ const statusStyles: Record<LearningPath["status"], string> = {
     "bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-300",
 };
 
-export default function LearningPathPage() {
+export default async function LearningPathPage({
+  searchParams,
+}: PageProps<"/dashboard/learning-path">) {
+  const supabase = await createClient();
+  const params = await searchParams;
+
+  const { data } = await supabase
+    .from("learning_paths")
+    .select("id, title, slug, description, status, created_at, updated_at")
+    .order("created_at", { ascending: false });
+
+  const learningPaths: LearningPath[] =
+    data?.map((item) => ({
+      id: item.id,
+      title: item.title,
+      slug: item.slug,
+      description: item.description ?? "",
+      material_count: 0,
+      status: (item.status ?? "draft") as LearningPath["status"],
+      created_at: item.created_at ?? "",
+      updated_at: item.updated_at ?? "",
+    })) ?? [];
+
+  const publishedCount = learningPaths.filter((item) => item.status === "published").length;
+
   return (
     <div className="space-y-6">
       <PageBreadcrumb
@@ -79,10 +65,26 @@ export default function LearningPathPage() {
         title="Learning Path Management"
       />
 
+      {params.created ? (
+        <StatusAlert
+          variant="success"
+          title="Learning Path Berhasil Ditambahkan"
+          message="Data learning path berhasil disimpan ke database Supabase."
+        />
+      ) : null}
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
-        <SummaryCard label="Total Learning Path" value="3" note="Semua status" />
-        <SummaryCard label="Published" value="1" note="Siap tampil ke user" />
-        <SummaryCard label="Draft & Archived" value="2" note="Perlu review internal" />
+        <SummaryCard
+          label="Total Learning Path"
+          value={String(learningPaths.length)}
+          note="Semua status"
+        />
+        <SummaryCard label="Published" value={String(publishedCount)} note="Siap tampil ke user" />
+        <SummaryCard
+          label="Draft & Archived"
+          value={String(learningPaths.length - publishedCount)}
+          note="Perlu review internal"
+        />
       </section>
 
       <section>

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import CreateTryoutForm from "@/components/tryout/CreateTryoutForm";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Add Tryout",
@@ -13,13 +14,16 @@ const statusOptions = [
   { value: "archived", label: "Archived" },
 ] as const;
 
-const learningPathOptions = [
-  "SQL Fundamentals for Data Analysis",
-  "Backend API with PostgreSQL",
-  "Database Design for Web Apps",
-] as const;
+export default async function CreateTryoutPage() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("learning_paths")
+    .select("id, title")
+    .order("title", { ascending: true });
 
-export default function CreateTryoutPage() {
+  const learningPathOptions =
+    data?.map((item) => ({ value: item.id, label: item.title })) ?? [];
+
   return (
     <div className="space-y-6">
       <PageBreadcrumb
@@ -37,7 +41,7 @@ export default function CreateTryoutPage() {
         </div>
 
         <CreateTryoutForm
-          learningPathOptions={[...learningPathOptions]}
+          learningPathOptions={learningPathOptions}
           statusOptions={statusOptions.map((option) => ({
             value: option.value,
             label: option.label,

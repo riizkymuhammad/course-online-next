@@ -1,47 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
+import { createClient } from "@/lib/supabase/server";
 
 type Tryout = {
   id: string;
   title: string;
+  learning_path_id: string | null;
   learning_path_title: string;
-  material_title: string;
-  participant_count: number;
+  material_file_name: string | null;
+  total_questions: number;
   status: "draft" | "published" | "archived";
   updated_at: string;
 };
-
-const tryouts: Tryout[] = [
-  {
-    id: "tryout-001",
-    title: "SQL Analyst Final Tryout",
-    learning_path_title: "SQL Fundamentals for Data Analysis",
-    material_title: "SELECT, WHERE, JOIN, dan Aggregation",
-    participant_count: 124,
-    status: "published",
-    updated_at: "2026-04-24T15:25:00+07:00",
-  },
-  {
-    id: "tryout-002",
-    title: "Backend PostgreSQL Certification Pack",
-    learning_path_title: "Backend API with PostgreSQL",
-    material_title: "CRUD API, Validasi, dan Relasi Data",
-    participant_count: 58,
-    status: "draft",
-    updated_at: "2026-04-25T08:40:00+07:00",
-  },
-  {
-    id: "tryout-003",
-    title: "Database Optimization Challenge",
-    learning_path_title: "Database Design for Web Apps",
-    material_title: "Indexing, Normalisasi, dan Query Tuning",
-    participant_count: 31,
-    status: "archived",
-    updated_at: "2026-04-10T16:05:00+07:00",
-  },
-];
 
 export const metadata: Metadata = {
   title: "Tryout Management Dashboard",
@@ -64,7 +37,59 @@ function formatDate(value: string) {
   }).format(new Date(value));
 }
 
-export default function TryoutManagementPage() {
+function getMaterialLabel(value: string | null) {
+  if (!value) return "Belum ada file";
+  const parts = value.split(/[\\/]/);
+  return parts[parts.length - 1] || value;
+}
+
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+export default async function TryoutManagementPage({
+  searchParams,
+}: PageProps<"/dashboard/tryout-management">) {
+  const supabase = await createClient();
+  const params = await searchParams;
+
+  const [{ data: tryoutRows }, { data: learningPathRows }] = await Promise.all([
+    supabase
+      .from("tryouts")
+      .select(
+        "id, title, learning_path_id, total_questions, material_file_name, status, updated_at"
+      )
+      .order("updated_at", { ascending: false }),
+    supabase.from("learning_paths").select("id, title"),
+  ]);
+
+  const learningPathMap = new Map(
+    (learningPathRows ?? []).map((item) => [item.id, item.title])
+  );
+
+  const tryouts: Tryout[] =
+    tryoutRows?.map((item) => ({
+      id: item.id,
+      title: item.title,
+      learning_path_id: item.learning_path_id,
+      learning_path_title:
+        (item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null) ??
+        "Unassigned",
+      material_file_name: item.material_file_name,
+      total_questions: item.total_questions ?? 0,
+      status: (item.status ?? "draft") as Tryout["status"],
+      updated_at: item.updated_at ?? "",
+    })) ?? [];
+
+  const publishedCount = tryouts.filter((item) => item.status === "published").length;
+  const totalQuestions = tryouts.reduce((sum, item) => sum + (item.total_questions || 0), 0);
+  const materialsCount = tryouts.filter((item) => Boolean(item.material_file_name)).length;
+
   return (
     <div className="space-y-6">
       <PageBreadcrumb
@@ -75,11 +100,35 @@ export default function TryoutManagementPage() {
         title="Tryout Management"
       />
 
+      {params.created ? (
+        <StatusAlert
+          variant="success"
+          title="Tryout Berhasil Disimpan"
+          message="Tryout berhasil di-generate dan disimpan ke database."
+        />
+      ) : null}
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
-        <SummaryCard label="Total Tryout" value="3" note="Semua tryout aktif dan arsip" />
-        <SummaryCard label="Published" value="1" note="Sudah tersedia untuk peserta" />
-        <SummaryCard label="Participants" value="213" note="Total peserta terdaftar" />
-        <SummaryCard label="Materials" value="3" note="Materi utama untuk setiap tryout" />
+        <SummaryCard
+          label="Total Tryout"
+          value={String(tryouts.length)}
+          note="Semua data dari database"
+        />
+        <SummaryCard
+          label="Published"
+          value={String(publishedCount)}
+          note="Sudah tersedia untuk peserta"
+        />
+        <SummaryCard
+          label="Jumlah Soal"
+          value={String(totalQuestions)}
+          note="Akumulasi soal dari seluruh tryout"
+        />
+        <SummaryCard
+          label="Materials"
+          value={String(materialsCount)}
+          note="Tryout yang sudah memiliki file materi"
+        />
       </section>
 
       <section>
@@ -98,8 +147,8 @@ export default function TryoutManagementPage() {
           columns={[
             { key: "title", label: "Judul Tryout", sortable: true },
             { key: "learning_path_title", label: "Learning Path", sortable: true },
-            { key: "material_title", label: "Materi", sortable: true },
-            { key: "participant_count", label: "Peserta", sortable: true },
+            { key: "material_label", label: "Materi", sortable: true },
+            { key: "total_questions", label: "Jumlah Soal", sortable: true },
             {
               key: "status",
               label: "Status",
@@ -113,16 +162,19 @@ export default function TryoutManagementPage() {
               label: "Aksi",
               type: "actions",
               searchable: false,
-              className: "w-[160px]",
+              className: "w-[240px]",
               actions: [
                 { label: "Edit", tone: "secondary" },
                 { label: "Detail", tone: "primary" },
+                { label: "Kerjakan", tone: "primary", hrefKey: "public_url" },
               ],
             },
           ]}
           data={tryouts.map((item) => ({
             ...item,
-            participant_count: `${item.participant_count} Peserta`,
+            material_label: getMaterialLabel(item.material_file_name),
+            total_questions: `${item.total_questions} Soal`,
+            public_url: `/tryout/${item.id}/${slugify(item.title)}`,
             updated_at: formatDate(item.updated_at),
           }))}
         />
