@@ -107,6 +107,13 @@ export default async function TryoutManagementPage({
           message="Tryout berhasil di-generate dan disimpan ke database."
         />
       ) : null}
+      {params.updated ? (
+        <StatusAlert
+          variant="success"
+          title="Tryout Berhasil Diperbarui"
+          message="Perubahan data tryout berhasil disimpan ke database."
+        />
+      ) : null}
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
         <SummaryCard
@@ -164,7 +171,7 @@ export default async function TryoutManagementPage({
               searchable: false,
               className: "w-[240px]",
               actions: [
-                { label: "Edit", tone: "secondary" },
+                { label: "Edit", tone: "secondary", hrefKey: "edit_url" },
                 { label: "Detail", tone: "primary" },
                 { label: "Kerjakan", tone: "primary", hrefKey: "public_url" },
               ],
@@ -174,6 +181,7 @@ export default async function TryoutManagementPage({
             ...item,
             material_label: getMaterialLabel(item.material_file_name),
             total_questions: `${item.total_questions} Soal`,
+            edit_url: `/dashboard/tryout-management/${item.id}/edit`,
             public_url: `/tryout/${item.id}/${slugify(item.title)}`,
             updated_at: formatDate(item.updated_at),
           }))}

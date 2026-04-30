@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 type StatusAlertProps = {
-  variant: "success" | "error";
+  variant: "success" | "error" | "warning";
   title: string;
   message: string;
   durationMs?: number;
@@ -15,6 +15,8 @@ const styles: Record<StatusAlertProps["variant"], string> = {
     "border-success-500 bg-success-500 text-white shadow-lg shadow-success-500/30",
   error:
     "border-error-500 bg-error-500 text-white shadow-lg shadow-error-500/30",
+  warning:
+    "border-warning-500 bg-warning-500 text-white shadow-lg shadow-warning-500/30",
 };
 
 export default function StatusAlert({
@@ -42,7 +44,7 @@ export default function StatusAlert({
       >
         <div className="flex items-start gap-3">
           <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-sm font-bold text-white">
-            {variant === "success" ? "!" : "x"}
+            {variant === "success" ? "!" : variant === "warning" ? "!" : "x"}
           </span>
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-semibold">{title}</h3>

@@ -69,6 +69,15 @@ const materialImages = [
   "/images/product/product-05.jpg",
 ];
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
 function getLearningPathGlyph(slug: string, title: string) {
   const key = `${slug} ${title}`.toLowerCase();
 
@@ -99,11 +108,41 @@ function buildTryoutCards(tryouts: TryoutRow[], learningPathMap: Map<string, str
     return {
       ...item,
       image: materialImages[index % materialImages.length],
+      href: `/tryout/${item.id}/${slugify(item.title)}`,
       learningPath: item.learning_path_id
         ? learningPathMap.get(item.learning_path_id) || "Learning Path"
         : "Tryout Umum",
     };
   });
+}
+
+function groupTryoutCardsByLearningPath(
+  cards: ReturnType<typeof buildTryoutCards>
+) {
+  const grouped = new Map<string, typeof cards>();
+
+  cards.forEach((card) => {
+    const current = grouped.get(card.learningPath) ?? [];
+    current.push(card);
+    grouped.set(card.learningPath, current);
+  });
+
+  return Array.from(grouped.entries()).map(([learningPath, items]) => ({
+    learningPath,
+    items,
+  }));
+}
+
+function getCardTone(index: number) {
+  const tones = [
+    "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400",
+    "bg-blue-light-50 text-blue-light-700 dark:bg-blue-light-500/15 dark:text-blue-light-400",
+    "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-400",
+    "bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-warning-400",
+    "bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
+  ];
+
+  return tones[index % tones.length];
 }
 
 export default async function HomePage() {
@@ -121,7 +160,7 @@ export default async function HomePage() {
         .select("id, title, learning_path_id, material_file_name, total_questions, status")
         .eq("status", "published")
         .order("updated_at", { ascending: false })
-        .limit(5),
+        .limit(12),
       supabase
         .from("courses")
         .select("id, title, learning_path_id, section_count, module_count, thumbnail, status")
@@ -179,6 +218,7 @@ export default async function HomePage() {
 
   const materialCards = buildMaterialCards(learningPaths, courses);
   const tryoutCards = buildTryoutCards(tryouts, learningPathMap);
+  const groupedTryoutCards = groupTryoutCardsByLearningPath(tryoutCards);
   const carouselItems = learningPathItems.map((path) => ({
     id: path.id,
     title: path.title,
@@ -331,33 +371,60 @@ export default async function HomePage() {
 
         {materialCards.length ? (
           <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            {materialCards.map((card) => (
+            {materialCards.map((card, index) => (
               <article
                 key={card.id}
-                className="overflow-hidden rounded-[22px] border border-brand-100 bg-white shadow-theme-sm"
+                className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md dark:border-gray-800 dark:bg-white/[0.03]"
               >
-                <div className="relative h-44">
+                <div className="relative h-44 overflow-hidden border-b border-gray-100 dark:border-gray-800">
                   <Image
                     src={card.image}
                     alt={card.title}
                     fill
-                    className="object-cover"
+                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
                     sizes="(min-width: 1280px) 20vw, (min-width: 640px) 50vw, 100vw"
                   />
+                  <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-3">
+                    <span className="inline-flex rounded-full border border-white/60 bg-white/95 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-700">
+                      Materi
+                    </span>
+                  </div>
                 </div>
-                <div className="p-4">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
-                    {card.learningPath}
-                  </p>
-                  <h3 className="mt-2 line-clamp-2 text-base font-semibold text-gray-900">
+                <div className="p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
+                      {card.learningPath}
+                    </p>
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getCardTone(index)}`}
+                    >
+                      {card.moduleCount} modul
+                    </span>
+                  </div>
+                  <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-6 text-gray-800 transition group-hover:text-brand-600 dark:text-white/90">
                     {card.title}
                   </h3>
-                  <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-medium text-gray-500">
-                    <span className="rounded-full bg-blue-light-50 px-2.5 py-1">
+                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    {card.learningPath}
+                  </p>
+                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                    Materi terstruktur untuk bantu kamu belajar lebih terarah dengan progres yang
+                    terasa rapi.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                    <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
                       {card.sectionCount} section
                     </span>
-                    <span className="rounded-full bg-brand-50 px-2.5 py-1">
+                    <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
                       {card.moduleCount} modul
+                    </span>
+                  </div>
+                  <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                    <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                      Siap dipelajari
+                    </span>
+                    <span className="text-sm font-semibold text-brand-600 transition group-hover:translate-x-0.5">
+                      Lihat materi
                     </span>
                   </div>
                 </div>
@@ -391,35 +458,79 @@ export default async function HomePage() {
           </div>
 
           {tryoutCards.length ? (
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-              {tryoutCards.map((card) => (
-                <article
-                  key={`${card.id}-${card.image}`}
-                  className="overflow-hidden rounded-[22px] border border-brand-100 bg-white shadow-theme-sm"
-                >
-                  <div className="relative h-44">
-                    <Image
-                      src={card.image}
-                      alt={card.title}
-                      fill
-                      className="object-cover"
-                      sizes="(min-width: 1280px) 20vw, (min-width: 640px) 50vw, 100vw"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
-                      {card.learningPath}
-                    </p>
-                    <h3 className="mt-2 line-clamp-2 text-base font-semibold text-gray-900">
-                      {card.title}
-                    </h3>
-                    <div className="mt-3">
-                      <span className="rounded-full bg-brand-50 px-2.5 py-1 text-[11px] font-medium text-gray-500">
-                        {card.total_questions ?? 0} soal
-                      </span>
+            <div className="mt-5 space-y-6">
+              {groupedTryoutCards.map((group) => (
+                <div key={group.learningPath} className="space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{group.learningPath}</h3>
+                      <p className="text-sm text-gray-500">
+                        Menampilkan tryout dari learning path {group.learningPath}.
+                      </p>
                     </div>
+                    <span className="inline-flex rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
+                      {group.items.length} tryout
+                    </span>
                   </div>
-                </article>
+
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    {group.items.map((card, index) => (
+                      <Link
+                        key={`${group.learningPath}-${card.id}-${card.image}`}
+                        href={card.href}
+                        className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
+                      >
+                        <div className="relative h-44 overflow-hidden border-b border-gray-100 dark:border-gray-800">
+                          <Image
+                            src={card.image}
+                            alt={card.title}
+                            fill
+                            className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                            sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
+                          />
+                          <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
+                            <span className="inline-flex rounded-full border border-white/60 bg-white/95 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-700">
+                              Tryout
+                            </span>
+                            <span
+                              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getCardTone(index)}`}
+                            >
+                              {card.total_questions ?? 0} soal
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-5">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
+                            {group.learningPath}
+                          </p>
+                          <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-6 text-gray-800 transition group-hover:text-brand-600 dark:text-white/90">
+                            {card.title}
+                          </h3>
+                          <p className="mt-3 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+                            Uji pemahamanmu dengan simulasi yang lebih cepat diakses dan lebih nyaman
+                            dikerjakan.
+                          </p>
+                          <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-medium text-gray-600 dark:text-gray-300">
+                            <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
+                              {card.total_questions ?? 0} soal
+                            </span>
+                            <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
+                              Siap dikerjakan
+                            </span>
+                          </div>
+                          <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                            <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                              Evaluasi terbaru
+                            </span>
+                            <span className="text-sm font-semibold text-brand-600 transition group-hover:translate-x-0.5">
+                              Kerjakan
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           ) : (

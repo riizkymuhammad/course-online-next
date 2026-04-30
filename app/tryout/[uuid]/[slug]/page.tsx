@@ -116,12 +116,12 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
               >
                 Kembali
               </Link>
-              <button
-                type="button"
+              <Link
+                href={`/tryout/exam/${tryoutRow.id}/${expectedSlug}`}
                 className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-6 text-sm font-semibold text-white hover:bg-brand-600"
               >
                 Mulai
-              </button>
+              </Link>
             </div>
           </div>
         </section>

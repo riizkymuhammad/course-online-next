@@ -1,0 +1,157 @@
+"use client";
+
+import Link from "next/link";
+import { startTransition, useDeferredValue, useState } from "react";
+
+type TryoutItem = {
+  id: string;
+  title: string;
+  learningPath: string;
+  totalQuestions: number;
+  href: string;
+  image: string;
+};
+
+function normalizeText(value: string) {
+  return value.toLowerCase().trim();
+}
+
+export default function TryoutListClient({
+  tryouts,
+  learningPathOptions,
+}: {
+  tryouts: TryoutItem[];
+  learningPathOptions: string[];
+}) {
+  const [query, setQuery] = useState("");
+  const [selectedLearningPath, setSelectedLearningPath] = useState("all");
+  const deferredQuery = useDeferredValue(query);
+
+  const filteredTryouts = tryouts.filter((item) => {
+    const normalizedQuery = normalizeText(deferredQuery);
+    const matchesLearningPath =
+      selectedLearningPath === "all" || item.learningPath === selectedLearningPath;
+    const matchesQuery =
+      !normalizedQuery ||
+      normalizeText(item.title).includes(normalizedQuery) ||
+      normalizeText(item.learningPath).includes(normalizedQuery);
+
+    return matchesLearningPath && matchesQuery;
+  });
+
+  return (
+    <div className="space-y-6">
+      <section className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
+              Halaman Tryout
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white/90 sm:text-3xl">
+              Koleksi Tryout
+            </h1>
+          </div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            {filteredTryouts.length} tryout
+          </p>
+        </div>
+
+        <div className="grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] lg:grid-cols-[1.4fr_0.8fr]">
+          <div>
+            <label
+              htmlFor="tryout-search"
+              className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
+              Pencarian
+            </label>
+            <input
+              id="tryout-search"
+              value={query}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                startTransition(() => {
+                  setQuery(nextValue);
+                });
+              }}
+              placeholder="Cari judul tryout atau nama learning path..."
+              className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="learning-path-filter"
+              className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200"
+            >
+              Filter Learning Path
+            </label>
+            <select
+              id="learning-path-filter"
+              value={selectedLearningPath}
+              onChange={(event) => {
+                const nextValue = event.target.value;
+                startTransition(() => {
+                  setSelectedLearningPath(nextValue);
+                });
+              }}
+              className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
+            >
+              <option value="all">Semua Learning Path</option>
+              {learningPathOptions.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {filteredTryouts.length ? (
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          {filteredTryouts.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
+            >
+              <div className="relative h-40 overflow-hidden border-b border-brand-200 bg-brand-500 p-5 dark:border-brand-500/20 dark:bg-brand-600">
+                <div className="absolute inset-0 bg-linear-to-br from-brand-400/25 via-brand-500/15 to-brand-700/35" />
+                <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-white/10 blur-2xl" />
+                <div className="absolute -bottom-10 -left-8 h-24 w-24 rounded-full bg-white/10 blur-xl" />
+                <div className="relative flex h-full flex-col justify-between">
+                  <span className="inline-flex w-fit rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-[0.01em] text-white/90 backdrop-blur">
+                    {item.learningPath}
+                  </span>
+                  <h3 className="max-w-[90%] text-lg font-semibold leading-7 text-white">
+                    {item.title}
+                  </h3>
+                </div>
+              </div>
+
+              <div className="p-4">
+                <div className="flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
+                  <span className="inline-flex rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-600 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300">
+                    {item.totalQuestions} soal
+                  </span>
+                  <span className="inline-flex h-10 items-center justify-center rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white transition group-hover:bg-brand-600">
+                    Kerjakan
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </section>
+      ) : (
+        <section className="rounded-3xl border border-dashed border-brand-200 bg-white px-6 py-10 text-center shadow-theme-sm dark:border-brand-500/20 dark:bg-white/[0.03]">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white/90">
+            Tryout tidak ditemukan
+          </h2>
+          <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Coba ganti kata kunci pencarian atau pilih learning path lain.
+          </p>
+        </section>
+      )}
+    </div>
+  );
+}

@@ -53,6 +53,11 @@ const navItems: NavItem[] = [
     path: "/dashboard/tryout-management",
   },
   {
+    icon: <ListIcon />,
+    name: "Riwayat Tryout",
+    path: "/dashboard/riwayat-tryout",
+  },
+  {
     icon: <CalenderIcon />,
     name: "Calendar",
     path: "/calendar",
