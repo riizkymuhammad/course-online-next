@@ -34,30 +34,27 @@ type TryoutRow = {
 const heroSlides = [
   {
     id: 1,
-    image: "/images/product/product-01.jpg",
-    badge: "Event Live Class",
-    title: "Bedah soal intensif untuk bantu kamu naik skor lebih terarah",
-    description:
-      "Ikuti sesi live bersama mentor, dapatkan pembahasan soal, strategi pengerjaan, dan rangkuman belajar mingguan.",
-    meta: "Event berikutnya: 29 April 2026",
+    image: "/images/hero/hero1.jpg",
+    badge: "Course Online",
+    title: "Belajar lebih rapi dalam satu alur",
+    description: "",
+    meta: "Materi terstruktur",
   },
   {
     id: 2,
-    image: "/images/product/product-02.jpg",
-    badge: "Promo Paket",
-    title: "Paket materi dan tryout dalam beberapa slide promosi yang berganti otomatis",
-    description:
-      "Akses materi inti, evaluasi rutin, dan promo member baru dengan tampilan hero slider yang lebih hidup.",
-    meta: "Promo berlaku hingga 30 April 2026",
+    image: "/images/hero/hero2.jpg",
+    badge: "Learning Path",
+    title: "Pilih jalur belajar yang sesuai targetmu",
+    description: "",
+    meta: "Belajar lebih fokus",
   },
   {
     id: 3,
-    image: "/images/product/product-05.jpg",
-    badge: "Tryout Mingguan",
-    title: "Simulasi berkala untuk memonitor progres dan kelemahan belajarmu",
-    description:
-      "Kerjakan tryout dari berbagai learning path lalu pelajari rekomendasi topik prioritas dari hasil pengerjaanmu.",
-    meta: "Update soal baru setiap minggu",
+    image: "/images/hero/hero3.jpg",
+    badge: "Tryout",
+    title: "Latihan untuk ukur progres belajarmu",
+    description: "",
+    meta: "Siap untuk evaluasi",
   },
 ];
 
@@ -165,15 +162,17 @@ export default async function HomePage() {
         .from("courses")
         .select("id, title, learning_path_id, section_count, module_count, thumbnail, status")
         .eq("status", "published")
-        .order("created_at", { ascending: false })
-        .limit(5),
+        .order("created_at", { ascending: false }),
     ]);
 
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const tryouts = (tryoutRows as TryoutRow[] | null) ?? [];
   const courses = (courseRows as CourseRow[] | null) ?? [];
+  const featuredCourses = courses.slice(0, 5);
   const learningPathMap = new Map(learningPaths.map((item) => [item.id, item.title]));
   const materialCountMap = new Map<string, number>();
+  const totalModuleCount = courses.reduce((total, item) => total + (item.module_count ?? 0), 0);
+  const totalSectionCount = courses.reduce((total, item) => total + (item.section_count ?? 0), 0);
 
   courses.forEach((item) => {
     if (!item.learning_path_id) return;
@@ -216,7 +215,7 @@ export default async function HomePage() {
         },
       ]) as LearningPathRow[];
 
-  const materialCards = buildMaterialCards(learningPaths, courses);
+  const materialCards = buildMaterialCards(learningPaths, featuredCourses);
   const tryoutCards = buildTryoutCards(tryouts, learningPathMap);
   const groupedTryoutCards = groupTryoutCardsByLearningPath(tryoutCards);
   const carouselItems = learningPathItems.map((path) => ({
@@ -283,14 +282,13 @@ export default async function HomePage() {
         <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
           <div>
             <span className="inline-flex rounded-full border border-brand-100 bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-600 shadow-theme-xs">
-              Event, promo, dan tryout
+              Course online
             </span>
             <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl lg:text-[44px] lg:leading-[1.1]">
-              Homepage belajar yang lebih clean, ringkas, dan tetap informatif.
+              Belajar online yang rapi, fokus, dan mudah diikuti.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-gray-600">
-              Temukan promo berjalan, jalur belajar, materi pilihan, dan tryout terbaru dengan
-              tampilan putih-biru yang lebih padat.
+              Pilih learning path, pelajari materi, lalu lanjut ke tryout dalam satu tempat.
             </p>
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -308,22 +306,6 @@ export default async function HomePage() {
               </a>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-brand-100 bg-white p-4 shadow-theme-xs">
-                <p className="text-xs uppercase tracking-[0.14em] text-gray-500">Slide Promo</p>
-                <p className="mt-2 text-2xl font-semibold text-gray-900">{heroSlides.length}</p>
-              </div>
-              <div className="rounded-2xl border border-brand-100 bg-white p-4 shadow-theme-xs">
-                <p className="text-xs uppercase tracking-[0.14em] text-gray-500">Learning Path</p>
-                <p className="mt-2 text-2xl font-semibold text-gray-900">
-                  {learningPathItems.length}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-brand-100 bg-white p-4 shadow-theme-xs">
-                <p className="text-xs uppercase tracking-[0.14em] text-gray-500">Tryout Aktif</p>
-                <p className="mt-2 text-2xl font-semibold text-gray-900">{tryouts.length}</p>
-              </div>
-            </div>
           </div>
 
           <HeroSlider slides={heroSlides} />
@@ -337,14 +319,14 @@ export default async function HomePage() {
               Learning Path
             </span>
             <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-              Semua learning path dalam carousel yang lebih ringkas
+              Pilih jalur belajar
             </h2>
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              Gunakan tombol panah untuk menggeser kartu dan melihat jumlah materi di setiap jalur.
+              Setiap path berisi materi yang sudah disusun lebih terarah.
             </p>
           </div>
           <p className="text-sm font-semibold text-brand-600">
-            Total {learningPathItems.length} learning path
+            {learningPathItems.length} learning path - {courses.length} materi
           </p>
         </div>
 
@@ -358,8 +340,11 @@ export default async function HomePage() {
               Koleksi Materi
             </span>
             <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-              Materi pilihan dengan section dan modul
+              Materi untuk mulai belajar
             </h2>
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              {courses.length} materi, {totalSectionCount} section, dan {totalModuleCount} modul siap dipelajari.
+            </p>
           </div>
           <Link
             href="/courses"
@@ -408,8 +393,8 @@ export default async function HomePage() {
                     {card.learningPath}
                   </p>
                   <p className="mt-3 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    Materi terstruktur untuk bantu kamu belajar lebih terarah dengan progres yang
-                    terasa rapi.
+                    Materi ini sudah disusun biar kamu bisa belajar pelan-pelan, paham alurnya,
+                    dan tidak bingung lanjut ke bagian berikutnya.
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-medium text-gray-600 dark:text-gray-300">
                     <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
@@ -446,8 +431,11 @@ export default async function HomePage() {
                 Koleksi Tryout
               </span>
               <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-                Tryout terbaru dengan tampilan lebih padat
+                Tryout untuk evaluasi
               </h2>
+              <p className="mt-2 text-sm leading-6 text-gray-600">
+                Lanjut latihan setelah belajar materi.
+              </p>
             </div>
             <Link
               href="/tryouts"
@@ -465,7 +453,7 @@ export default async function HomePage() {
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">{group.learningPath}</h3>
                       <p className="text-sm text-gray-500">
-                        Menampilkan tryout dari learning path {group.learningPath}.
+                        Kumpulan tryout yang terkait dengan learning path {group.learningPath}.
                       </p>
                     </div>
                     <span className="inline-flex rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
@@ -507,8 +495,8 @@ export default async function HomePage() {
                             {card.title}
                           </h3>
                           <p className="mt-3 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                            Uji pemahamanmu dengan simulasi yang lebih cepat diakses dan lebih nyaman
-                            dikerjakan.
+                            Cocok dipakai buat latihan setelah selesai belajar materi supaya kamu
+                            tahu bagian mana yang sudah aman dan mana yang masih perlu diulang.
                           </p>
                           <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-medium text-gray-600 dark:text-gray-300">
                             <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
@@ -548,11 +536,10 @@ export default async function HomePage() {
               Mulai Sekarang
             </p>
             <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-              Susun ritme belajar yang lebih konsisten
+              Mulai belajar dari sekarang
             </h2>
             <p className="mt-2 text-sm leading-6 text-gray-600">
-              Akses materi, ikuti tryout, dan pantau perkembanganmu dari dashboard dalam satu
-              alur yang lebih sederhana.
+              Learning path, materi, dan tryout sudah disusun dalam satu alur.
             </p>
           </div>
 
@@ -578,8 +565,7 @@ export default async function HomePage() {
           <div>
             <p className="text-lg font-semibold text-white">Course Online</p>
             <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
-              Platform pembelajaran dengan materi, learning path, event, dan tryout yang lebih
-              terstruktur.
+              Platform belajar online dengan alur yang lebih rapi dan terarah.
             </p>
           </div>
 
@@ -604,9 +590,9 @@ export default async function HomePage() {
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Program</p>
             <div className="mt-3 space-y-2 text-sm">
-              <p>Event Live Class</p>
-              <p>Materi Premium</p>
-              <p>Tryout Berkala</p>
+              <p>Learning Path Terarah</p>
+              <p>Materi Bertahap</p>
+              <p>Tryout Evaluasi</p>
               <p>Dashboard Belajar</p>
             </div>
           </div>

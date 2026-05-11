@@ -55,9 +55,6 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
                 {slide.badge}
               </span>
               <h2 className="mt-3 max-w-lg text-xl font-semibold sm:text-2xl">{slide.title}</h2>
-              <p className="mt-2 max-w-lg text-sm leading-6 text-white/80">
-                {slide.description}
-              </p>
               <p className="mt-3 text-xs font-medium text-blue-light-200 sm:text-sm">{slide.meta}</p>
             </div>
           </div>
