@@ -1,7 +1,9 @@
 import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
 import { z } from "zod";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { TRYOUT_THUMBNAIL_BUCKET, uploadTryoutThumbnail } from "@/lib/tryout-thumbnail";
 
 export const runtime = "nodejs";
 
@@ -135,13 +137,30 @@ export async function POST(request: Request) {
       }),
     });
 
+    const tryoutId = crypto.randomUUID();
+    const adminSupabase = createAdminClient();
+    const storageSupabase = adminSupabase ?? supabase;
+    const thumbnail = await uploadTryoutThumbnail(
+      storageSupabase,
+      {
+        tryoutId,
+        title,
+      },
+      {
+        ensureBucket: Boolean(adminSupabase),
+      }
+    );
+
     const { data: tryoutInsert, error: tryoutError } = await supabase
       .from("tryouts")
       .insert({
+        id: tryoutId,
         learning_path_id: learningPathRow.id,
         title,
         total_questions: questionCount,
         question_notes: questionNotes || null,
+        thumbnail_url: thumbnail.publicUrl,
+        thumbnail_path: thumbnail.path,
         status,
         material_file_url: null,
         material_file_name: materialFile.name || null,
@@ -154,11 +173,15 @@ export async function POST(request: Request) {
       .single();
 
     if (tryoutError || !tryoutInsert) {
+      await storageSupabase.storage.from(TRYOUT_THUMBNAIL_BUCKET).remove([thumbnail.path]);
+
       return Response.json(
         { error: tryoutError?.message || "Gagal menyimpan tryout ke database." },
         { status: 500 }
       );
     }
+
+    let savedQuestionCount = 0;
 
     for (const [index, question] of result.output.questions.entries()) {
       const { data: questionInsert, error: questionError } = await supabase
@@ -222,6 +245,8 @@ export async function POST(request: Request) {
           }
         }
       }
+
+      savedQuestionCount += 1;
     }
 
     return Response.json({
@@ -231,6 +256,7 @@ export async function POST(request: Request) {
       learningPath: learningPathRow.title,
       status,
       questionCount,
+      savedQuestionCount,
       notes: questionNotes || undefined,
     });
   } catch (error) {

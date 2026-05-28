@@ -29,6 +29,10 @@ function normalizeValue(value: CellValue) {
   return String(value);
 }
 
+function isSvgImage(value: string) {
+  return value.toLowerCase().includes(".svg");
+}
+
 function SortIndicator({
   active,
   direction,
@@ -152,6 +156,7 @@ export default function DataTable<T extends object>({
               alt={value}
               width={80}
               height={56}
+              unoptimized={isSvgImage(imageSrc)}
               className="h-14 w-20 rounded-lg object-cover"
             />
           ) : null}

@@ -11,6 +11,7 @@ type Tryout = {
   learning_path_id: string | null;
   learning_path_title: string;
   material_file_name: string | null;
+  thumbnail_url: string | null;
   total_questions: number;
   status: "draft" | "published" | "archived";
   updated_at: string;
@@ -43,6 +44,11 @@ function getMaterialLabel(value: string | null) {
   return parts[parts.length - 1] || value;
 }
 
+function getSearchParamValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -57,12 +63,13 @@ export default async function TryoutManagementPage({
 }: PageProps<"/dashboard/tryout-management">) {
   const supabase = await createClient();
   const params = await searchParams;
+  const createdQuestionCount = getSearchParamValue(params.questions);
 
   const [{ data: tryoutRows }, { data: learningPathRows }] = await Promise.all([
     supabase
       .from("tryouts")
       .select(
-        "id, title, learning_path_id, total_questions, material_file_name, status, updated_at"
+        "id, title, learning_path_id, total_questions, material_file_name, thumbnail_url, status, updated_at"
       )
       .order("updated_at", { ascending: false }),
     supabase.from("learning_paths").select("id, title"),
@@ -81,6 +88,7 @@ export default async function TryoutManagementPage({
         (item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null) ??
         "Unassigned",
       material_file_name: item.material_file_name,
+      thumbnail_url: item.thumbnail_url ?? null,
       total_questions: item.total_questions ?? 0,
       status: (item.status ?? "draft") as Tryout["status"],
       updated_at: item.updated_at ?? "",
@@ -104,7 +112,11 @@ export default async function TryoutManagementPage({
         <StatusAlert
           variant="success"
           title="Tryout Berhasil Disimpan"
-          message="Tryout berhasil di-generate dan disimpan ke database."
+          message={
+            createdQuestionCount
+              ? `Tryout berhasil di-generate. ${createdQuestionCount} soal berhasil disimpan ke database.`
+              : "Tryout berhasil di-generate dan disimpan ke database."
+          }
         />
       ) : null}
       {params.updated ? (
@@ -152,7 +164,14 @@ export default async function TryoutManagementPage({
             </Link>
           }
           columns={[
-            { key: "title", label: "Judul Tryout", sortable: true },
+            {
+              key: "title",
+              label: "Judul Tryout",
+              sortable: true,
+              type: "imageText",
+              imageKey: "thumbnail_url",
+              subtitleKey: "learning_path_title",
+            },
             { key: "learning_path_title", label: "Learning Path", sortable: true },
             { key: "material_label", label: "Materi", sortable: true },
             { key: "total_questions", label: "Jumlah Soal", sortable: true },

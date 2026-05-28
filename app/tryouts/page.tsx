@@ -10,6 +10,7 @@ type TryoutRow = {
   title: string;
   learning_path_id: string | null;
   total_questions: number | null;
+  thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
 };
 
@@ -37,7 +38,7 @@ export default async function TryoutsPage() {
   const [{ data: tryoutRows }, { data: learningPathRows }] = await Promise.all([
     supabase
       .from("tryouts")
-      .select("id, title, learning_path_id, total_questions, status")
+      .select("id, title, learning_path_id, total_questions, thumbnail_url, status")
       .eq("status", "published")
       .order("updated_at", { ascending: false }),
     supabase.from("learning_paths").select("id, title").eq("status", "published"),
@@ -55,7 +56,7 @@ export default async function TryoutsPage() {
       : "Tryout Umum",
     totalQuestions: item.total_questions ?? 0,
     href: `/tryout/${item.id}/${slugify(item.title)}`,
-    image: fallbackImages[index % fallbackImages.length],
+    image: item.thumbnail_url || fallbackImages[index % fallbackImages.length],
   }));
 
   const learningPathOptions = Array.from(new Set(tryouts.map((item) => item.learningPath))).sort();

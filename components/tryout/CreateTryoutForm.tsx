@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Option = {
   value: string;
@@ -24,9 +24,12 @@ type GenerateTryoutResponse = {
   learningPath: string;
   status: string;
   questionCount: number;
+  savedQuestionCount?: number;
   notes?: string;
   questions: GeneratedQuestion[];
 };
+
+type GenerationPhase = "idle" | "validating" | "generating" | "saving" | "success" | "error";
 
 export default function CreateTryoutForm({
   learningPathOptions,
@@ -38,6 +41,25 @@ export default function CreateTryoutForm({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [generationPhase, setGenerationPhase] = useState<GenerationPhase>("idle");
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [successSummary, setSuccessSummary] = useState<{
+    title: string;
+    questionCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!startedAt || generationPhase === "idle" || generationPhase === "success" || generationPhase === "error") {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setElapsedSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [generationPhase, startedAt]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,6 +69,14 @@ export default function CreateTryoutForm({
     try {
       setIsSubmitting(true);
       setErrorMessage(null);
+      setSuccessSummary(null);
+      setElapsedSeconds(0);
+      setStartedAt(Date.now());
+      setGenerationPhase("validating");
+
+      window.setTimeout(() => {
+        setGenerationPhase((current) => (current === "validating" ? "generating" : current));
+      }, 600);
 
       const response = await fetch("/api/tryout/generate", {
         method: "POST",
@@ -63,12 +93,34 @@ export default function CreateTryoutForm({
         throw new Error(message || "Gagal meng-generate soal tryout.");
       }
 
-      router.push("/dashboard/tryout-management?created=1");
+      const resultPayload = payload as GenerateTryoutResponse;
+
+      setGenerationPhase("saving");
+
+      const savedQuestionCount =
+        typeof resultPayload.savedQuestionCount === "number"
+          ? resultPayload.savedQuestionCount
+          : resultPayload.questions.length
+            ? resultPayload.questions.length
+            : resultPayload.questionCount;
+
+      setSuccessSummary({
+        title: resultPayload.tryoutTitle,
+        questionCount: savedQuestionCount,
+      });
+      setGenerationPhase("success");
+
+      await new Promise((resolve) => window.setTimeout(resolve, 1200));
+
+      router.push(
+        `/dashboard/tryout-management?created=1&questions=${savedQuestionCount}`
+      );
       router.refresh();
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : "Terjadi kesalahan saat membuat tryout."
-      );
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan saat membuat tryout.";
+      setErrorMessage(message);
+      setGenerationPhase("error");
     } finally {
       setIsSubmitting(false);
     }
@@ -136,6 +188,15 @@ export default function CreateTryoutForm({
           </div>
         ) : null}
 
+        {generationPhase !== "idle" ? (
+          <GenerationStatusPanel
+            phase={generationPhase}
+            elapsedSeconds={elapsedSeconds}
+            successSummary={successSummary}
+            errorMessage={errorMessage}
+          />
+        ) : null}
+
         <div className="flex flex-col gap-3 border-t border-gray-100 pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-end">
           <Link
             href="/dashboard/tryout-management"
@@ -148,10 +209,157 @@ export default function CreateTryoutForm({
             disabled={isSubmitting}
             className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-medium text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
           >
-            {isSubmitting ? "Generating Questions..." : "Save Tryout"}
+            {isSubmitting ? getSubmitLabel(generationPhase) : "Save Tryout"}
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function getSubmitLabel(phase: GenerationPhase) {
+  if (phase === "validating") return "Memvalidasi...";
+  if (phase === "generating") return "Generate soal...";
+  if (phase === "saving") return "Menyimpan...";
+  if (phase === "success") return "Berhasil";
+  return "Memproses...";
+}
+
+function getStepStatus(step: GenerationPhase, current: GenerationPhase) {
+  const order: GenerationPhase[] = ["validating", "generating", "saving", "success"];
+  const stepIndex = order.indexOf(step);
+  const currentIndex = order.indexOf(current);
+
+  if (current === "error") return "error";
+  if (currentIndex > stepIndex) return "done";
+  if (current === step) return "active";
+  return "pending";
+}
+
+function GenerationStatusPanel({
+  phase,
+  elapsedSeconds,
+  successSummary,
+  errorMessage,
+}: {
+  phase: GenerationPhase;
+  elapsedSeconds: number;
+  successSummary: { title: string; questionCount: number } | null;
+  errorMessage: string | null;
+}) {
+  const steps = [
+    {
+      phase: "validating" as const,
+      title: "Validasi input dan file PDF",
+      description: "Mengecek judul, learning path, jumlah soal, status, dan file materi.",
+    },
+    {
+      phase: "generating" as const,
+      title: "Generate soal dengan AI",
+      description: "AI membaca materi PDF dan menyusun soal sesuai jumlah yang diminta.",
+    },
+    {
+      phase: "saving" as const,
+      title: "Simpan tryout dan thumbnail",
+      description: "Menyimpan data tryout, soal, opsi jawaban, dan thumbnail ke Supabase.",
+    },
+    {
+      phase: "success" as const,
+      title: "Selesai",
+      description: "Tryout sudah siap dicek di halaman Tryout Management.",
+    },
+  ];
+
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.03]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
+            Status generate tryout
+          </p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {phase === "success"
+              ? `${successSummary?.questionCount ?? 0} soal "${successSummary?.title ?? "tryout"}" berhasil disimpan. Anda akan diarahkan ke daftar tryout.`
+              : phase === "error"
+                ? errorMessage || "Generate tryout gagal. Silakan cek pesan error."
+                : `Proses berjalan ${elapsedSeconds} detik. Jangan tutup halaman ini.`}
+          </p>
+        </div>
+        <StatusPill phase={phase} />
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-4">
+        {steps.map((step) => (
+          <ProcessStep
+            key={step.phase}
+            title={step.title}
+            description={step.description}
+            status={getStepStatus(step.phase, phase)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ phase }: { phase: GenerationPhase }) {
+  const label =
+    phase === "success" ? "Berhasil" : phase === "error" ? "Gagal" : "Sedang proses";
+  const tone =
+    phase === "success"
+      ? "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-400"
+      : phase === "error"
+        ? "bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-400"
+        : "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400";
+
+  return (
+    <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
+      {label}
+    </span>
+  );
+}
+
+function ProcessStep({
+  title,
+  description,
+  status,
+}: {
+  title: string;
+  description: string;
+  status: "pending" | "active" | "done" | "error";
+}) {
+  const markerClass =
+    status === "done"
+      ? "bg-success-500 text-white"
+      : status === "active"
+        ? "bg-brand-500 text-white"
+        : status === "error"
+          ? "bg-error-500 text-white"
+          : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400";
+  const cardClass =
+    status === "active"
+      ? "border-brand-200 bg-white dark:border-brand-500/30 dark:bg-brand-500/10"
+      : status === "done"
+        ? "border-success-200 bg-white dark:border-success-500/30 dark:bg-success-500/10"
+        : status === "error"
+          ? "border-error-200 bg-white dark:border-error-500/30 dark:bg-error-500/10"
+          : "border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]";
+
+  return (
+    <div className={`rounded-xl border p-3 ${cardClass}`}>
+      <div className="flex items-start gap-3">
+        <span
+          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${markerClass}`}
+        >
+          {status === "done" ? "OK" : status === "error" ? "!" : status === "active" ? "..." : ""}
+        </span>
+        <div>
+          <p className="text-sm font-semibold text-gray-800 dark:text-white/90">{title}</p>
+          <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
+            {description}
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

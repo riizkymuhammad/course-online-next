@@ -29,6 +29,7 @@ type TryoutRow = {
   learning_path_id: string | null;
   material_file_name: string | null;
   total_questions: number | null;
+  thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
 };
 
@@ -95,13 +96,17 @@ function buildTryoutCards(tryouts: TryoutRow[], learningPathMap: Map<string, str
   return tryouts.map((item, index) => {
     return {
       ...item,
-      image: materialImages[index % materialImages.length],
+      image: item.thumbnail_url || materialImages[index % materialImages.length],
       href: `/tryout/${item.id}/${slugify(item.title)}`,
       learningPath: item.learning_path_id
         ? learningPathMap.get(item.learning_path_id) || "Learning Path"
         : "Tryout Umum",
     };
   });
+}
+
+function isSvgImage(value: string) {
+  return value.toLowerCase().includes(".svg");
 }
 
 function groupTryoutCardsByLearningPath(
@@ -153,7 +158,7 @@ export default async function HomePage() {
         .order("created_at", { ascending: false }),
       supabase
         .from("tryouts")
-        .select("id, title, learning_path_id, material_file_name, total_questions, status")
+        .select("id, title, learning_path_id, material_file_name, total_questions, thumbnail_url, status")
         .eq("status", "published")
         .order("updated_at", { ascending: false })
         .limit(12),
@@ -485,6 +490,7 @@ export default async function HomePage() {
                             src={card.image}
                             alt={card.title}
                             fill
+                            unoptimized={isSvgImage(card.image)}
                             className="object-cover transition duration-500 group-hover:scale-[1.03]"
                             sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
                           />

@@ -28,6 +28,10 @@ function slugify(value: string) {
     .replace(/-+/g, "-");
 }
 
+function isSvgImage(value: string) {
+  return value.toLowerCase().includes(".svg");
+}
+
 export async function generateMetadata(
   props: PageProps<"/tryout/[uuid]/[slug]">
 ): Promise<Metadata> {
@@ -47,7 +51,7 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
 
   const { data: tryoutRow } = await supabase
     .from("tryouts")
-    .select("id, title, total_questions, learning_path_id")
+    .select("id, title, total_questions, learning_path_id, thumbnail_url")
     .eq("id", params.uuid)
     .single();
 
@@ -83,6 +87,10 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
 
   const attempts = (attemptRows as AttemptScoreRow[] | null) ?? [];
   const detailHref = `/tryout/${tryoutRow.id}/${expectedSlug}`;
+  const thumbnailUrl =
+    typeof tryoutRow.thumbnail_url === "string" && tryoutRow.thumbnail_url
+      ? tryoutRow.thumbnail_url
+      : null;
   const startHref = user
     ? `/tryout/exam/${tryoutRow.id}/${expectedSlug}`
     : `/login?redirectedFrom=${encodeURIComponent(detailHref)}`;
@@ -155,20 +163,42 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
           </h1>
         </div>
 
-        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900 sm:p-6">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <InfoCard label="Learning Path" value={learningPathTitle} />
-            <InfoCard label="Nama Tryout" value={tryoutRow.title} />
-            <InfoCard label="Jumlah Soal" value={`${tryoutRow.total_questions ?? 0} soal`} />
+        <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm dark:border-gray-800 dark:bg-gray-900">
+          <div className="relative h-56 bg-[#0466c8]">
+            {thumbnailUrl ? (
+              <Image
+                src={thumbnailUrl}
+                alt={tryoutRow.title}
+                fill
+                priority
+                unoptimized={isSvgImage(thumbnailUrl)}
+                className="object-cover"
+                sizes="(min-width: 1024px) 896px, 100vw"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center px-6 text-center">
+                <h2 className="text-3xl font-semibold text-white sm:text-4xl">
+                  {tryoutRow.title}
+                </h2>
+              </div>
+            )}
           </div>
 
-          <div className="mt-5 flex justify-end border-t border-gray-100 pt-5 dark:border-gray-800">
-            <Link
-              href={startHref}
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-6 text-sm font-semibold text-white hover:bg-brand-600"
-            >
-              {user ? "Mulai" : "Masuk terlebih dahulu"}
-            </Link>
+          <div className="p-5 sm:p-6">
+            <div className="grid gap-4 sm:grid-cols-3">
+              <InfoCard label="Learning Path" value={learningPathTitle} />
+              <InfoCard label="Nama Tryout" value={tryoutRow.title} />
+              <InfoCard label="Jumlah Soal" value={`${tryoutRow.total_questions ?? 0} soal`} />
+            </div>
+
+            <div className="mt-5 flex justify-end border-t border-gray-100 pt-5 dark:border-gray-800">
+              <Link
+                href={startHref}
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-6 text-sm font-semibold text-white hover:bg-brand-600"
+              >
+                {user ? "Mulai" : "Masuk terlebih dahulu"}
+              </Link>
+            </div>
           </div>
         </section>
 
