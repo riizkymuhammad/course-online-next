@@ -10,12 +10,11 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <AuthShell
-      eyebrow="Login"
-      title="Masuk ke Dashboard"
-      description="Gunakan akun admin Anda untuk mengakses dashboard learning path, course management, quiz, dan tryout."
-      footerText="Belum punya akun?"
+      title="Sign In"
+      description="Enter your email and password to sign in!"
+      footerText="Don't have an account?"
       footerLink="/register"
-      footerLinkLabel="Register"
+      footerLinkLabel="Sign Up"
     >
       <LoginForm />
     </AuthShell>

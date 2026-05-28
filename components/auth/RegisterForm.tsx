@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterForm() {
@@ -53,8 +54,26 @@ export default function RegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="space-y-4">
+        <GoogleAuthButton
+          label="Daftar dengan Google"
+          loadingLabel="Mengarahkan ke Google..."
+          onStart={() => {
+            setErrorMessage(null);
+            setSuccessMessage(null);
+          }}
+          onError={setErrorMessage}
+        />
+
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+          <span className="text-xs font-medium text-gray-400">atau daftar dengan email</span>
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+        </div>
+      </div>
+
+      <div className="grid gap-4">
         <Field label="Nama" name="name" placeholder="John Doe" required />
         <Field label="Email" name="email" type="email" placeholder="admin@courseonline.com" required />
         <Field label="Password" name="password" type="password" placeholder="Buat password" required />
@@ -82,7 +101,7 @@ export default function RegisterForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex h-11 w-full items-center justify-center rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
       >
         {isSubmitting ? "Creating account..." : "Register"}
       </button>
@@ -115,7 +134,7 @@ function Field({
         type={type}
         placeholder={placeholder}
         required={required}
-        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
+        className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
       />
     </div>
   );

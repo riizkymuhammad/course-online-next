@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import GoogleAuthButton, { getAuthRedirectPath } from "@/components/auth/GoogleAuthButton";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
@@ -31,24 +32,39 @@ export default function LoginForm() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push(getAuthRedirectPath());
     router.refresh();
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid gap-5">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-3">
+        <GoogleAuthButton
+          label="Sign in with Google"
+          loadingLabel="Redirecting to Google..."
+          onStart={() => setErrorMessage(null)}
+          onError={setErrorMessage}
+        />
+
+        <div className="flex items-center gap-3">
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+          <span className="text-xs font-medium text-gray-400">Or</span>
+          <span className="h-px flex-1 bg-gray-200 dark:bg-gray-800" />
+        </div>
+      </div>
+
+      <div className="grid gap-4">
         <Field label="Email" name="email" type="email" placeholder="admin@courseonline.com" required />
-        <Field label="Password" name="password" type="password" placeholder="Masukkan password" required />
+        <Field label="Password" name="password" type="password" placeholder="Enter your password" required />
       </div>
 
       <div className="flex items-center justify-between gap-3 text-sm">
         <label className="inline-flex items-center gap-3 text-gray-600 dark:text-gray-300">
           <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500" />
-          Remember me
+          Keep me logged in
         </label>
         <Link href="/register" className="font-medium text-brand-600 hover:text-brand-700">
-          Lupa password?
+          Forgot password?
         </Link>
       </div>
 
@@ -61,9 +77,9 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex h-12 w-full items-center justify-center rounded-xl bg-brand-500 px-5 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
+        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
       >
-        {isSubmitting ? "Signing in..." : "Login"}
+        {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
     </form>
   );
@@ -94,7 +110,7 @@ function Field({
         type={type}
         placeholder={placeholder}
         required={required}
-        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
+        className="h-11 w-full rounded-lg border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
       />
     </div>
   );

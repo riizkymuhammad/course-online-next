@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import UserDropdown from "@/components/header/UserDropdown";
 import { createClient } from "@/lib/supabase/server";
+import { getUserProfile } from "@/lib/user-profile";
 
 type TryoutPageParams = {
   uuid: string;
   slug: string;
+};
+
+type AttemptScoreRow = {
+  id: string;
+  score: number | null;
+  max_score: number | null;
+  submitted_at: string | null;
+  status: string | null;
 };
 
 function slugify(value: string) {
@@ -30,12 +41,13 @@ export async function generateMetadata(
 export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/[slug]">) {
   const params = (await props.params) as TryoutPageParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: tryoutRow } = await supabase
     .from("tryouts")
-    .select(
-      "id, title, total_questions, question_notes, status, material_file_name, updated_at, learning_path_id"
-    )
+    .select("id, title, total_questions, learning_path_id")
     .eq("id", params.uuid)
     .single();
 
@@ -59,80 +71,173 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
     learningPathTitle = learningPathRow?.title ?? "Unassigned";
   }
 
-  const updatedAt = tryoutRow.updated_at
-    ? new Intl.DateTimeFormat("id-ID", {
-        dateStyle: "medium",
-        timeStyle: "short",
-      }).format(new Date(tryoutRow.updated_at))
-    : "-";
+  const { data: attemptRows } = user
+    ? await supabase
+        .from("tryout_attempts")
+        .select("id, score, max_score, submitted_at, status")
+        .eq("tryout_id", tryoutRow.id)
+        .eq("user_id", user.id)
+        .in("status", ["submitted", "graded"])
+        .order("submitted_at", { ascending: false })
+    : { data: [] as AttemptScoreRow[] };
+
+  const attempts = (attemptRows as AttemptScoreRow[] | null) ?? [];
+  const detailHref = `/tryout/${tryoutRow.id}/${expectedSlug}`;
+  const startHref = user
+    ? `/tryout/exam/${tryoutRow.id}/${expectedSlug}`
+    : `/login?redirectedFrom=${encodeURIComponent(detailHref)}`;
+  const userProfile = user ? getUserProfile(user) : null;
 
   return (
-    <main className="min-h-screen bg-gray-50 px-4 py-10 dark:bg-gray-950 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl space-y-8">
-        <div className="space-y-3 text-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 shadow-theme-sm">
+              <Image
+                src="/images/logo/logo-icon.svg"
+                alt="Logo platform belajar"
+                width={20}
+                height={20}
+              />
+            </div>
+            <div>
+              <p className="text-base font-semibold text-gray-900 dark:text-white/90">
+                Course Online
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Detail tryout</p>
+            </div>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            {userProfile ? (
+              <>
+                <Link
+                  href="/app"
+                  className="hidden rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 dark:border-brand-500/20 dark:text-brand-400 dark:hover:bg-brand-500/10 sm:inline-flex"
+                >
+                  App
+                </Link>
+                <UserDropdown
+                  avatarUrl={userProfile.avatarUrl}
+                  displayName={userProfile.displayName}
+                  email={userProfile.email}
+                />
+              </>
+            ) : (
+              <>
+                <Link
+                  href={`/login?redirectedFrom=${encodeURIComponent(detailHref)}`}
+                  className="inline-flex rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 dark:border-brand-500/20 dark:text-brand-400 dark:hover:bg-brand-500/10"
+                >
+                  Masuk
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600"
+                >
+                  Daftar
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      <main className="px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl space-y-5">
+        <div className="text-center">
           <p className="text-sm font-medium uppercase tracking-[0.24em] text-brand-500">
             Tryout Detail
           </p>
-          <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
             {tryoutRow.title}
           </h1>
-          <p className="mx-auto max-w-2xl text-sm leading-6 text-gray-500 dark:text-gray-400">
-            Pelajari informasi tryout terlebih dahulu sebelum memulai pengerjaan soal.
-          </p>
         </div>
 
-        <section className="rounded-3xl border border-gray-200 bg-white p-6 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900 sm:p-8">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
-                {tryoutRow.status}
-              </span>
-              <span className="inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600 dark:bg-white/5 dark:text-gray-300">
-                {tryoutRow.total_questions} Soal
-              </span>
-            </div>
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+          <div className="grid gap-4 sm:grid-cols-3">
+            <InfoCard label="Learning Path" value={learningPathTitle} />
+            <InfoCard label="Nama Tryout" value={tryoutRow.title} />
+            <InfoCard label="Jumlah Soal" value={`${tryoutRow.total_questions ?? 0} soal`} />
+          </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <InfoCard label="Learning Path" value={learningPathTitle} />
-              <InfoCard label="File Materi" value={tryoutRow.material_file_name ?? "Belum ada file"} />
-              <InfoCard label="Status" value={tryoutRow.status} />
-              <InfoCard label="Updated" value={updatedAt} />
-            </div>
-
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-5 dark:border-gray-800 dark:bg-white/[0.03]">
-              <h2 className="text-sm font-semibold text-gray-800 dark:text-white/90">
-                Catatan Soal
-              </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
-                {tryoutRow.question_notes ||
-                  "Tidak ada catatan tambahan. Tryout akan mengikuti format standar yang telah dibuat sistem."}
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 border-t border-gray-100 pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
-              <Link
-                href="/dashboard/tryout-management"
-                className="inline-flex h-11 items-center justify-center rounded-xl border border-gray-200 px-5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-white/[0.03]"
-              >
-                Kembali
-              </Link>
-              <Link
-                href={`/tryout/exam/${tryoutRow.id}/${expectedSlug}`}
-                className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-6 text-sm font-semibold text-white hover:bg-brand-600"
-              >
-                Mulai
-              </Link>
-            </div>
+          <div className="mt-5 flex justify-end border-t border-gray-100 pt-5 dark:border-gray-800">
+            <Link
+              href={startHref}
+              className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-6 text-sm font-semibold text-white hover:bg-brand-600"
+            >
+              {user ? "Mulai" : "Masuk terlebih dahulu"}
+            </Link>
           </div>
         </section>
+
+        <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900 sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-500">
+                Nilai Tryout
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-gray-900 dark:text-white">
+                Riwayat pengerjaan
+              </h2>
+            </div>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {attempts.length} nilai
+            </p>
+          </div>
+
+          {attempts.length ? (
+            <div className="mt-4 divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 dark:divide-gray-800 dark:border-gray-800">
+              {attempts.map((attempt) => (
+                <div
+                  key={attempt.id}
+                  className="flex flex-col gap-3 bg-white p-4 dark:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white/90">
+                      Score {Number(attempt.score ?? 0).toFixed(2)}
+                      <span className="text-gray-400"> / {Number(attempt.max_score ?? 100)}</span>
+                    </p>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {formatDateTime(attempt.submitted_at)}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/tryout/result/${tryoutRow.id}/${expectedSlug}/${attempt.id}`}
+                    className="inline-flex h-10 items-center justify-center rounded-lg border border-brand-200 px-4 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 dark:border-brand-500/20 dark:text-brand-400 dark:hover:bg-brand-500/10"
+                  >
+                    Lihat pengerjaan
+                  </Link>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mt-4 rounded-xl border border-dashed border-gray-200 bg-gray-50 px-4 py-5 text-sm text-gray-500 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-400">
+              {user
+                ? "Belum ada nilai untuk tryout ini."
+                : "Masuk terlebih dahulu untuk melihat nilai tryout yang pernah dikerjakan."}
+            </div>
+          )}
+        </section>
       </div>
-    </main>
+      </main>
+    </div>
   );
+}
+
+function formatDateTime(value: string | null) {
+  if (!value) return "-";
+
+  return new Intl.DateTimeFormat("id-ID", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
 }
 
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03]">
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.03]">
       <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">{label}</p>
       <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-white/90">{value}</p>
     </div>

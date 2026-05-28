@@ -1,4 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
+import { ChevronLeftIcon } from "@/icons";
 
 export default function AuthShell({
   eyebrow,
@@ -9,7 +11,7 @@ export default function AuthShell({
   footerLink,
   footerLinkLabel,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
   description: string;
   children: React.ReactNode;
@@ -18,76 +20,66 @@ export default function AuthShell({
   footerLinkLabel: string;
 }) {
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10 dark:bg-gray-950 sm:px-6 lg:px-8">
-      <div className="mx-auto grid min-h-[calc(100vh-5rem)] max-w-6xl overflow-hidden rounded-[28px] border border-gray-200 bg-white shadow-2xl shadow-brand-500/10 xl:grid-cols-[1.05fr_0.95fr] dark:border-gray-800 dark:bg-gray-900">
-        <section className="hidden flex-col justify-between bg-brand-500 p-10 text-white xl:flex">
-          <div>
-            <Link href="/" className="inline-flex items-center gap-3 text-lg font-semibold">
-              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15 text-xl font-bold">
-                CO
-              </span>
-              Course Online
+    <main className="h-dvh overflow-hidden bg-white dark:bg-gray-950">
+      <div className="grid h-full w-full lg:grid-cols-[0.92fr_1.08fr]">
+        <section className="flex h-full min-h-0 flex-col px-5 py-4 sm:px-8 lg:px-10">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="inline-flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-600 shadow-theme-xs transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:border-brand-500/30 dark:hover:bg-brand-500/10 dark:hover:text-brand-400"
+            >
+              <ChevronLeftIcon className="size-4" />
+              Kembali ke halaman beranda
             </Link>
           </div>
 
-          <div className="space-y-6">
-            <span className="inline-flex rounded-full border border-white/20 px-3 py-1 text-xs font-medium uppercase tracking-[0.24em] text-white/80">
-              Admin Portal
-            </span>
-            <div className="space-y-4">
-              <h2 className="max-w-md text-4xl font-semibold leading-tight">
-                Kelola learning path, materi, quiz, dan tryout dalam satu dashboard.
-              </h2>
-              <p className="max-w-lg text-sm leading-7 text-white/80">
-                Halaman autentikasi ini disiapkan untuk akses admin dan tim internal sebelum
-                masuk ke sistem manajemen course.
+          <div className="flex min-h-0 flex-1 items-center justify-center py-4">
+            <div className="w-full max-w-[380px] space-y-4">
+              <div className="space-y-2">
+                {eyebrow ? (
+                  <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                    {eyebrow}
+                  </span>
+                ) : null}
+                <div className="space-y-1.5">
+                  <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    {title}
+                  </h1>
+                  <p className="text-sm leading-5 text-gray-500 dark:text-gray-400">
+                    {description}
+                  </p>
+                </div>
+              </div>
+
+              {children}
+
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {footerText}{" "}
+                <Link href={footerLink} className="font-semibold text-brand-600 hover:text-brand-700">
+                  {footerLinkLabel}
+                </Link>
               </p>
             </div>
           </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <StatCard value="120+" label="Materi Aktif" />
-            <StatCard value="35+" label="Quiz Tersedia" />
-            <StatCard value="12" label="Tryout AI" />
-          </div>
         </section>
 
-        <section className="flex items-center justify-center px-5 py-10 sm:px-8 lg:px-12">
-          <div className="w-full max-w-xl space-y-8">
-            <div className="space-y-3">
-              <span className="inline-flex rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
-                {eyebrow}
-              </span>
-              <div className="space-y-2">
-                <h1 className="text-3xl font-semibold text-gray-900 dark:text-white">
-                  {title}
-                </h1>
-                <p className="max-w-lg text-sm leading-6 text-gray-500 dark:text-gray-400">
-                  {description}
-                </p>
-              </div>
-            </div>
-
-            {children}
-
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {footerText}{" "}
-              <Link href={footerLink} className="font-semibold text-brand-600 hover:text-brand-700">
-                {footerLinkLabel}
-              </Link>
+        <section className="relative hidden h-full overflow-hidden bg-brand-600 text-white lg:flex lg:items-center lg:justify-center">
+          <div className="absolute inset-0 bg-linear-to-br from-brand-500 via-brand-600 to-brand-800" />
+          <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:56px_56px]" />
+          <div className="relative z-10 flex max-w-md flex-col items-center px-8 text-center">
+            <Image
+              src="/images/logo/auth-logo.svg"
+              alt="Course Online"
+              width={210}
+              height={44}
+              priority
+            />
+            <p className="mt-6 text-sm leading-6 text-gray-300">
+              Free and focused learning dashboard for materi, learning path, quiz, and tryout.
             </p>
           </div>
         </section>
       </div>
     </main>
-  );
-}
-
-function StatCard({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="rounded-2xl border border-white/15 bg-white/10 p-4">
-      <p className="text-2xl font-semibold">{value}</p>
-      <p className="mt-1 text-xs uppercase tracking-[0.2em] text-white/75">{label}</p>
-    </div>
   );
 }
