@@ -40,8 +40,9 @@ export async function proxy(request: NextRequest) {
     pathname === "/signin" ||
     pathname === "/signup";
   const isDashboardPage = pathname.startsWith("/dashboard");
+  const isAppPage = pathname === "/app";
 
-  if (!user && isDashboardPage) {
+  if (!user && (isDashboardPage || isAppPage)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirectedFrom", pathname);
@@ -58,5 +59,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register", "/signin", "/signup"],
+  matcher: ["/app", "/dashboard/:path*", "/login", "/register", "/signin", "/signup"],
 };

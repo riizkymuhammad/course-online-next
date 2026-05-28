@@ -1,14 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
+import UserDropdown from "@/components/header/UserDropdown";
 import HeroSlider from "@/components/home/HeroSlider";
 import LearningPathCarousel from "@/components/home/LearningPathCarousel";
 import { createClient } from "@/lib/supabase/server";
+import { getUserProfile } from "@/lib/user-profile";
 
 type LearningPathRow = {
   id: string;
   title: string;
   slug: string;
-  description: string | null;
   status: "draft" | "published" | "archived" | null;
 };
 
@@ -75,16 +76,6 @@ function slugify(value: string) {
     .replace(/-+/g, "-");
 }
 
-function getLearningPathGlyph(slug: string, title: string) {
-  const key = `${slug} ${title}`.toLowerCase();
-
-  if (key.includes("math") || key.includes("matematika") || key.includes("hitung")) return "M";
-  if (key.includes("literasi") || key.includes("bahasa") || key.includes("reading")) return "Aa";
-  if (key.includes("logic") || key.includes("logika") || key.includes("penalaran")) return "L";
-  if (key.includes("science") || key.includes("sains") || key.includes("bio")) return "S";
-  return title.slice(0, 1).toUpperCase();
-}
-
 function buildMaterialCards(paths: LearningPathRow[], courses: CourseRow[]) {
   return courses.map((course, index) => {
     const path = paths.find((item) => item.id === course.learning_path_id);
@@ -145,11 +136,19 @@ function getCardTone(index: number) {
 export default async function HomePage() {
   const supabase = await createClient();
 
-  const [{ data: learningPathRows }, { data: tryoutRows }, { data: courseRows }] =
+  const [
+    {
+      data: { user },
+    },
+    { data: learningPathRows },
+    { data: tryoutRows },
+    { data: courseRows },
+  ] =
     await Promise.all([
+      supabase.auth.getUser(),
       supabase
         .from("learning_paths")
-        .select("id, title, slug, description, status")
+        .select("id, title, slug, status")
         .eq("status", "published")
         .order("created_at", { ascending: false }),
       supabase
@@ -165,6 +164,8 @@ export default async function HomePage() {
         .order("created_at", { ascending: false }),
     ]);
 
+  const isLoggedIn = Boolean(user);
+  const userProfile = getUserProfile(user);
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const tryouts = (tryoutRows as TryoutRow[] | null) ?? [];
   const courses = (courseRows as CourseRow[] | null) ?? [];
@@ -189,28 +190,24 @@ export default async function HomePage() {
           id: "fallback-1",
           title: "Dasar UTBK",
           slug: "dasar-utbk",
-          description: "Fondasi belajar konsep inti dan latihan awal.",
           status: "published" as const,
         },
         {
           id: "fallback-2",
           title: "Literasi & Membaca",
           slug: "literasi-membaca",
-          description: "Fokus memahami bacaan dan strategi menjawab cepat.",
           status: "published" as const,
         },
         {
           id: "fallback-3",
           title: "Penalaran Intensif",
           slug: "penalaran-intensif",
-          description: "Latihan logika, pola, dan analisis soal bertahap.",
           status: "published" as const,
         },
         {
           id: "fallback-4",
           title: "Simulasi Tryout",
           slug: "simulasi-tryout",
-          description: "Persiapan evaluasi berkala dengan simulasi ujian.",
           status: "published" as const,
         },
       ]) as LearningPathRow[];
@@ -221,10 +218,7 @@ export default async function HomePage() {
   const carouselItems = learningPathItems.map((path) => ({
     id: path.id,
     title: path.title,
-    slug: path.slug,
-    description: path.description,
     materialCount: materialCountMap.get(path.id) ?? 0,
-    glyph: getLearningPathGlyph(path.slug, path.title),
   }));
 
   return (
@@ -262,18 +256,36 @@ export default async function HomePage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/dashboard"
-              className="hidden rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 sm:inline-flex"
-            >
-              Dashboard
-            </Link>
-            <a
-              href="#cta"
-              className="inline-flex rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600"
-            >
-              Mulai
-            </a>
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="hidden rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600 sm:inline-flex"
+                >
+                  Dashboard
+                </Link>
+                <UserDropdown
+                  avatarUrl={userProfile.avatarUrl}
+                  displayName={userProfile.displayName}
+                  email={userProfile.email}
+                />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="inline-flex rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
+                >
+                  Masuk
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600"
+                >
+                  Daftar
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>

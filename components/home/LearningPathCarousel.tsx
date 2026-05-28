@@ -5,10 +5,7 @@ import { useRef } from "react";
 type LearningPathItem = {
   id: string;
   title: string;
-  slug: string;
-  description: string | null;
   materialCount: number;
-  glyph: string;
 };
 
 export default function LearningPathCarousel({
@@ -55,18 +52,11 @@ export default function LearningPathCarousel({
           {items.map((path) => (
             <article
               key={path.id}
-              className="w-[260px] shrink-0 snap-start rounded-[24px] border border-brand-100 bg-white p-5 shadow-theme-sm transition hover:-translate-y-1 hover:shadow-theme-md sm:w-[280px]"
+              className="w-[220px] shrink-0 snap-start rounded-xl border border-brand-100 bg-white p-4 shadow-theme-sm transition hover:-translate-y-1 hover:shadow-theme-md sm:w-[240px]"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-50 text-lg font-semibold text-brand-600">
-                {path.glyph}
-              </div>
-              <h3 className="mt-4 text-xl font-semibold text-gray-900">{path.title}</h3>
-              <p className="mt-2 text-sm font-semibold text-brand-600">
+              <h3 className="text-base font-semibold leading-6 text-gray-900">{path.title}</h3>
+              <p className="mt-1 text-sm font-semibold text-brand-600">
                 {path.materialCount} materi
-              </p>
-              <p className="mt-2 text-sm leading-6 text-gray-600">
-                {path.description ||
-                  "Learning path ini siap dipakai untuk mengelompokkan materi dan tryout."}
               </p>
             </article>
           ))}
