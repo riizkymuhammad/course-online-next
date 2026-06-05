@@ -15,6 +15,9 @@ function slugify(value: string) {
 
 export async function createLearningPath(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
+  const category = String(formData.get("category") ?? "").trim();
+  const subCategory = String(formData.get("sub_category") ?? "").trim();
+  const subSubCategory = String(formData.get("sub_sub_category") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const status = String(formData.get("status") ?? "draft").trim() || "draft";
 
@@ -32,6 +35,9 @@ export async function createLearningPath(formData: FormData) {
   const { error } = await supabase.from("learning_paths").insert({
     title,
     slug,
+    category: category || null,
+    sub_category: subCategory || null,
+    sub_sub_category: subSubCategory || null,
     description: description || null,
     status,
   });

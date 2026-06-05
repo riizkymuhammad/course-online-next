@@ -3,6 +3,7 @@ import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
+import { buildLearningPathOptionLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 
 type Tryout = {
@@ -72,11 +73,11 @@ export default async function TryoutManagementPage({
         "id, title, learning_path_id, total_questions, material_file_name, thumbnail_url, status, updated_at"
       )
       .order("updated_at", { ascending: false }),
-    supabase.from("learning_paths").select("id, title"),
+    supabase.from("learning_paths").select("id, title, category, sub_category, sub_sub_category"),
   ]);
 
   const learningPathMap = new Map(
-    (learningPathRows ?? []).map((item) => [item.id, item.title])
+    (learningPathRows ?? []).map((item) => [item.id, buildLearningPathOptionLabel(item)])
   );
 
   const tryouts: Tryout[] =

@@ -4,7 +4,7 @@ import LoginForm from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
   title: "Login",
-  description: "Halaman login admin.",
+  description: "Halaman login.",
 };
 
 export default function LoginPage() {

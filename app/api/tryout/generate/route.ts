@@ -1,6 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
 import { z } from "zod";
+import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { TRYOUT_THUMBNAIL_BUCKET, uploadTryoutThumbnail } from "@/lib/tryout-thumbnail";
@@ -84,7 +85,7 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: learningPathRow, error: learningPathError } = await supabase
       .from("learning_paths")
-      .select("id, title")
+      .select("id, title, category, sub_category, sub_sub_category")
       .eq("id", learningPathId)
       .single();
 
@@ -95,6 +96,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const learningPathLabel = buildLearningPathLabel(learningPathRow);
     const arrayBuffer = await materialFile.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");
     const fileDataUrl = `data:${materialFile.type || "application/pdf"};base64,${base64Data}`;
@@ -114,7 +116,7 @@ export async function POST(request: Request) {
               text: [
                 "Buat paket soal tryout berdasarkan PDF yang diunggah.",
                 `Judul tryout: ${title}.`,
-                `Learning path: ${learningPathRow.title}.`,
+                `Learning path: ${learningPathLabel}.`,
                 `Status: ${status}.`,
                 `Jumlah soal yang wajib dibuat: ${questionCount}.`,
                 instructionText,
@@ -253,7 +255,7 @@ export async function POST(request: Request) {
       ...result.output,
       tryoutId: tryoutInsert.id,
       tryoutTitle: title,
-      learningPath: learningPathRow.title,
+      learningPath: learningPathLabel,
       status,
       questionCount,
       savedQuestionCount,

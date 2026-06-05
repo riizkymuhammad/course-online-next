@@ -36,6 +36,7 @@ export default function RegisterForm() {
         data: {
           full_name: name,
           name,
+          role: "user",
         },
       },
     });

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AppPromoSlider from "@/components/app/AppPromoSlider";
 import {
@@ -12,6 +13,11 @@ import {
   TableIcon,
 } from "@/icons";
 import AppHeader from "@/layout/AppHeader";
+import {
+  ACTIVE_ROLE_COOKIE,
+  getEffectiveRole,
+  getUserRole,
+} from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfile } from "@/lib/user-profile";
 import { slugify } from "@/lib/tryout";
@@ -81,7 +87,7 @@ const menuItems = [
   {
     title: "Riwayat Tryout",
     description: "Lihat hasil pengerjaan dan progres.",
-    href: "/dashboard/riwayat-tryout",
+    href: "/app/history-tryout",
     icon: CalenderIcon,
     tone: "bg-warning-50 text-warning-600 dark:bg-warning-500/15 dark:text-warning-400",
   },
@@ -160,6 +166,12 @@ export default async function AppPage() {
   }
 
   const userProfile = getUserProfile(user);
+  const cookieStore = await cookies();
+  const accountRole = getUserRole(user);
+  const activeRole = getEffectiveRole({
+    accountRole,
+    activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
+  });
   const [{ data: latestCourseProgress }, { data: latestTryoutAttempt }] = await Promise.all([
     supabase
       .from("course_progress")
@@ -191,7 +203,13 @@ export default async function AppPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-white/90">
-      <AppHeader logoHref="/app" showSidebarToggle={false} userProfile={userProfile} />
+      <AppHeader
+        logoHref="/app"
+        showSidebarToggle={false}
+        userProfile={userProfile}
+        activeRole={activeRole}
+        canSwitchRole={accountRole === "admin"}
+      />
 
       <main className="mx-auto max-w-6xl px-4 py-5 md:px-6">
         <section>

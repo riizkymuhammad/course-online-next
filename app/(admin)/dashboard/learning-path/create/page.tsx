@@ -57,6 +57,24 @@ export default async function CreateLearningPathPage({
                 required
               />
 
+              <FormField
+                label="Kategori Utama"
+                name="category"
+                placeholder="Contoh: CPNS, Bahasa Inggris, Informatika"
+              />
+
+              <FormField
+                label="Sub Kategori"
+                name="sub_category"
+                placeholder="Contoh: SKD, SKB, Kosa Kata"
+              />
+
+              <FormField
+                label="Sub Sub Kategori"
+                name="sub_sub_category"
+                placeholder="Contoh: Pranata Komputer"
+              />
+
               <TextAreaField
                 label="Description"
                 name="description"

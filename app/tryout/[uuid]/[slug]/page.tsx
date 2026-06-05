@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import UserDropdown from "@/components/header/UserDropdown";
+import {
+  ACTIVE_ROLE_COOKIE,
+  getEffectiveRole,
+  getUserRole,
+} from "@/lib/auth-roles";
+import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfile } from "@/lib/user-profile";
 
@@ -68,11 +75,11 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
   if (tryoutRow.learning_path_id) {
     const { data: learningPathRow } = await supabase
       .from("learning_paths")
-      .select("title")
+      .select("title, category, sub_category, sub_sub_category")
       .eq("id", tryoutRow.learning_path_id)
       .single();
 
-    learningPathTitle = learningPathRow?.title ?? "Unassigned";
+    learningPathTitle = learningPathRow ? buildLearningPathLabel(learningPathRow) : "Unassigned";
   }
 
   const { data: attemptRows } = user
@@ -95,6 +102,12 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
     ? `/tryout/exam/${tryoutRow.id}/${expectedSlug}`
     : `/login?redirectedFrom=${encodeURIComponent(detailHref)}`;
   const userProfile = user ? getUserProfile(user) : null;
+  const cookieStore = await cookies();
+  const accountRole = getUserRole(user);
+  const activeRole = getEffectiveRole({
+    accountRole,
+    activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -130,6 +143,8 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
                   avatarUrl={userProfile.avatarUrl}
                   displayName={userProfile.displayName}
                   email={userProfile.email}
+                  activeRole={activeRole}
+                  canSwitchRole={accountRole === "admin"}
                 />
               </>
             ) : (

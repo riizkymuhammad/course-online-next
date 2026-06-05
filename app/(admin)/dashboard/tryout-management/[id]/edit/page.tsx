@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import EditTryoutForm from "@/components/tryout/EditTryoutForm";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
+import { buildLearningPathOptionLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -43,7 +44,13 @@ export default async function EditTryoutPage({
       )
       .eq("id", id)
       .single(),
-    supabase.from("learning_paths").select("id, title").order("title", { ascending: true }),
+    supabase
+      .from("learning_paths")
+      .select("id, title, category, sub_category, sub_sub_category")
+      .order("category", { ascending: true })
+      .order("sub_category", { ascending: true })
+      .order("sub_sub_category", { ascending: true })
+      .order("title", { ascending: true }),
   ]);
 
   if (!tryoutRow) {
@@ -51,7 +58,10 @@ export default async function EditTryoutPage({
   }
 
   const learningPathOptions =
-    learningPathRows?.map((item) => ({ value: item.id, label: item.title })) ?? [];
+    learningPathRows?.map((item) => ({
+      value: item.id,
+      label: buildLearningPathOptionLabel(item),
+    })) ?? [];
 
   return (
     <div className="space-y-6">

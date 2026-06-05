@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { getUserRole, resolvePostLoginRedirect } from "@/lib/auth-roles";
+import type { User } from "@supabase/supabase-js";
 
 type GoogleAuthButtonProps = {
   label: string;
@@ -10,8 +12,8 @@ type GoogleAuthButtonProps = {
   onStart?: () => void;
 };
 
-export function getAuthRedirectPath() {
-  if (typeof window === "undefined") return "/dashboard";
+export function getRequestedAuthRedirectPath() {
+  if (typeof window === "undefined") return null;
 
   const redirectedFrom = new URLSearchParams(window.location.search).get("redirectedFrom");
 
@@ -19,7 +21,14 @@ export function getAuthRedirectPath() {
     return redirectedFrom;
   }
 
-  return "/dashboard";
+  return null;
+}
+
+export function getAuthRedirectPath(user?: Pick<User, "app_metadata"> | null) {
+  return resolvePostLoginRedirect({
+    requestedPath: getRequestedAuthRedirectPath(),
+    role: getUserRole(user),
+  });
 }
 
 export default function GoogleAuthButton({
@@ -35,7 +44,11 @@ export default function GoogleAuthButton({
     setIsSubmitting(true);
 
     const callbackUrl = new URL("/auth/callback", window.location.origin);
-    callbackUrl.searchParams.set("next", getAuthRedirectPath());
+    const requestedPath = getRequestedAuthRedirectPath();
+
+    if (requestedPath) {
+      callbackUrl.searchParams.set("next", requestedPath);
+    }
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({

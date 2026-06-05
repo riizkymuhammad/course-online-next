@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { AuthRole } from "@/lib/auth-roles";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
@@ -10,16 +11,26 @@ type UserDropdownProps = {
   avatarUrl?: string;
   displayName?: string;
   email?: string;
+  activeRole?: AuthRole;
+  canSwitchRole?: boolean;
 };
+
+function getRoleLabel(role: AuthRole) {
+  return role === "admin" ? "Admin" : "User";
+}
 
 export default function UserDropdown({
   avatarUrl = "/images/user/owner.jpg",
   displayName = "Musharof Chowdhury",
   email = "randomuser@pimjo.com",
+  activeRole = "user",
+  canSwitchRole = false,
 }: UserDropdownProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isSwitchingRole, setIsSwitchingRole] = useState(false);
+  const [roleSwitchError, setRoleSwitchError] = useState<string | null>(null);
 
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
@@ -33,6 +44,10 @@ export default function UserDropdown({
   async function handleSignOut() {
     setIsSigningOut(true);
 
+    await fetch("/api/auth/active-role", {
+      method: "DELETE",
+    }).catch(() => null);
+
     const supabase = createClient();
     const { error } = await supabase.auth.signOut();
 
@@ -42,6 +57,34 @@ export default function UserDropdown({
     }
 
     router.push("/login");
+    router.refresh();
+  }
+
+  async function handleSwitchRole() {
+    const nextRole = activeRole === "admin" ? "user" : "admin";
+
+    setIsSwitchingRole(true);
+    setRoleSwitchError(null);
+
+    const response = await fetch("/api/auth/active-role", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ role: nextRole }),
+    });
+    const payload = (await response.json().catch(() => null)) as
+      | { redirectTo?: string; error?: string }
+      | null;
+
+    if (!response.ok) {
+      setRoleSwitchError(payload?.error ?? "Gagal mengganti role.");
+      setIsSwitchingRole(false);
+      return;
+    }
+
+    closeDropdown();
+    router.push(payload?.redirectTo ?? (nextRole === "admin" ? "/dashboard" : "/app"));
     router.refresh();
   }
 
@@ -96,7 +139,40 @@ export default function UserDropdown({
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {email}
           </span>
+          <span className="mt-2 inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+            Mode {getRoleLabel(activeRole)}
+          </span>
         </div>
+
+        {canSwitchRole ? (
+          <div className="mt-3 rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-white/[0.03]">
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Switch role
+              </span>
+              <span className="text-xs font-semibold text-gray-700 dark:text-gray-200">
+                {getRoleLabel(activeRole)}
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                void handleSwitchRole();
+              }}
+              disabled={isSwitchingRole}
+              className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-500 px-3 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {isSwitchingRole
+                ? "Mengganti..."
+                : activeRole === "admin"
+                  ? "Menjadi User"
+                  : "Menjadi Admin"}
+            </button>
+            {roleSwitchError ? (
+              <p className="mt-2 text-xs text-error-500">{roleSwitchError}</p>
+            ) : null}
+          </div>
+        ) : null}
 
         <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
           <li>

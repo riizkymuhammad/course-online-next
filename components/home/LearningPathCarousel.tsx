@@ -5,6 +5,7 @@ import { useRef } from "react";
 type LearningPathItem = {
   id: string;
   title: string;
+  categoryPath?: string;
   materialCount: number;
 };
 
@@ -54,6 +55,11 @@ export default function LearningPathCarousel({
               key={path.id}
               className="w-[220px] shrink-0 snap-start rounded-xl border border-brand-100 bg-white p-4 shadow-theme-sm transition hover:-translate-y-1 hover:shadow-theme-md sm:w-[240px]"
             >
+              {path.categoryPath ? (
+                <p className="mb-2 line-clamp-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-600">
+                  {path.categoryPath}
+                </p>
+              ) : null}
               <h3 className="text-base font-semibold leading-6 text-gray-900">{path.title}</h3>
               <p className="mt-1 text-sm font-semibold text-brand-600">
                 {path.materialCount} materi

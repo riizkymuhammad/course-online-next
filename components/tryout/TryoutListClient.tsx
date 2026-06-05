@@ -2,12 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { startTransition, useDeferredValue, useState } from "react";
+import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
 type TryoutItem = {
   id: string;
   title: string;
   learningPath: string;
+  learningPathTitle: string;
+  category: string;
+  subCategory: string;
+  subSubCategory: string;
+  categoryPath: string;
   totalQuestions: number;
   href: string;
   image: string;
@@ -21,27 +26,66 @@ function isSvgImage(value: string) {
   return value.toLowerCase().includes(".svg");
 }
 
+function getUniqueOptions(values: string[]) {
+  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b, "id")
+  );
+}
+
 export default function TryoutListClient({
   tryouts,
-  learningPathOptions,
 }: {
   tryouts: TryoutItem[];
-  learningPathOptions: string[];
 }) {
   const [query, setQuery] = useState("");
-  const [selectedLearningPath, setSelectedLearningPath] = useState("all");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("all");
+  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState("all");
   const deferredQuery = useDeferredValue(query);
+
+  const categoryOptions = useMemo(
+    () => getUniqueOptions(tryouts.map((item) => item.category)),
+    [tryouts]
+  );
+
+  const subCategoryOptions = useMemo(() => {
+    if (selectedCategory === "all") return [];
+
+    return getUniqueOptions(
+      tryouts
+        .filter((item) => item.category === selectedCategory)
+        .map((item) => item.subCategory)
+    );
+  }, [selectedCategory, tryouts]);
+
+  const subSubCategoryOptions = useMemo(() => {
+    if (selectedCategory === "all" || selectedSubCategory === "all") return [];
+
+    return getUniqueOptions(
+      tryouts
+        .filter(
+          (item) =>
+            item.category === selectedCategory && item.subCategory === selectedSubCategory
+        )
+        .map((item) => item.subSubCategory)
+    );
+  }, [selectedCategory, selectedSubCategory, tryouts]);
 
   const filteredTryouts = tryouts.filter((item) => {
     const normalizedQuery = normalizeText(deferredQuery);
-    const matchesLearningPath =
-      selectedLearningPath === "all" || item.learningPath === selectedLearningPath;
+    const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
+    const matchesSubCategory =
+      selectedSubCategory === "all" || item.subCategory === selectedSubCategory;
+    const matchesSubSubCategory =
+      selectedSubSubCategory === "all" || item.subSubCategory === selectedSubSubCategory;
     const matchesQuery =
       !normalizedQuery ||
       normalizeText(item.title).includes(normalizedQuery) ||
-      normalizeText(item.learningPath).includes(normalizedQuery);
+      normalizeText(item.learningPath).includes(normalizedQuery) ||
+      normalizeText(item.learningPathTitle).includes(normalizedQuery) ||
+      normalizeText(item.categoryPath).includes(normalizedQuery);
 
-    return matchesLearningPath && matchesQuery;
+    return matchesCategory && matchesSubCategory && matchesSubSubCategory && matchesQuery;
   });
 
   return (
@@ -61,7 +105,7 @@ export default function TryoutListClient({
           </p>
         </div>
 
-        <div className="grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] lg:grid-cols-[1.4fr_0.8fr]">
+        <div className="grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] md:grid-cols-2 xl:grid-cols-4">
           <div>
             <label
               htmlFor="tryout-search"
@@ -78,37 +122,58 @@ export default function TryoutListClient({
                   setQuery(nextValue);
                 });
               }}
-              placeholder="Cari judul tryout atau nama learning path..."
+              placeholder="Cari judul tryout, learning path, atau kategori..."
               className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="learning-path-filter"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200"
-            >
-              Filter Learning Path
-            </label>
-            <select
-              id="learning-path-filter"
-              value={selectedLearningPath}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                startTransition(() => {
-                  setSelectedLearningPath(nextValue);
-                });
-              }}
-              className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
-            >
-              <option value="all">Semua Learning Path</option>
-              {learningPathOptions.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FilterSelect
+            id="category-filter"
+            label="Kategori"
+            value={selectedCategory}
+            allLabel="Semua Kategori"
+            options={categoryOptions}
+            onChange={(nextValue) => {
+              startTransition(() => {
+                setSelectedCategory(nextValue);
+                setSelectedSubCategory("all");
+                setSelectedSubSubCategory("all");
+              });
+            }}
+          />
+
+          <FilterSelect
+            id="sub-category-filter"
+            label="Sub Kategori"
+            value={selectedSubCategory}
+            allLabel="Semua Sub Kategori"
+            options={subCategoryOptions}
+            disabled={selectedCategory === "all" || subCategoryOptions.length === 0}
+            onChange={(nextValue) => {
+              startTransition(() => {
+                setSelectedSubCategory(nextValue);
+                setSelectedSubSubCategory("all");
+              });
+            }}
+          />
+
+          <FilterSelect
+            id="sub-sub-category-filter"
+            label="Sub Sub Kategori"
+            value={selectedSubSubCategory}
+            allLabel="Semua Sub Sub Kategori"
+            options={subSubCategoryOptions}
+            disabled={
+              selectedCategory === "all" ||
+              selectedSubCategory === "all" ||
+              subSubCategoryOptions.length === 0
+            }
+            onChange={(nextValue) => {
+              startTransition(() => {
+                setSelectedSubSubCategory(nextValue);
+              });
+            }}
+          />
         </div>
       </section>
 
@@ -136,8 +201,8 @@ export default function TryoutListClient({
                     <div className="absolute inset-0 bg-linear-to-br from-brand-500/70 via-brand-500/35 to-brand-800/75" />
                   ) : null}
                   <div className="relative flex h-full flex-col justify-between">
-                    <span className="inline-flex w-fit rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-[0.01em] text-white/90 backdrop-blur">
-                      {item.learningPath}
+                    <span className="inline-flex max-w-full rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-[0.01em] text-white/90 backdrop-blur">
+                      <span className="truncate">{item.learningPath}</span>
                     </span>
                     {!isGeneratedThumbnail ? (
                       <h3 className="max-w-[90%] text-lg font-semibold leading-7 text-white">
@@ -167,10 +232,53 @@ export default function TryoutListClient({
             Tryout tidak ditemukan
           </h2>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-            Coba ganti kata kunci pencarian atau pilih learning path lain.
+            Coba ganti kata kunci pencarian atau pilih kategori lain.
           </p>
         </section>
       )}
+    </div>
+  );
+}
+
+function FilterSelect({
+  id,
+  label,
+  value,
+  allLabel,
+  options,
+  disabled = false,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  allLabel: string;
+  options: string[];
+  disabled?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200"
+      >
+        {label}
+      </label>
+      <select
+        id={id}
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90 dark:disabled:bg-white/[0.02] dark:disabled:text-gray-500"
+      >
+        <option value="all">{allLabel}</option>
+        {options.map((item) => (
+          <option key={item} value={item}>
+            {item}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

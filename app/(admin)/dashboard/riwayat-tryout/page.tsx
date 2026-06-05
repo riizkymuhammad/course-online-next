@@ -5,6 +5,7 @@ import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
 
@@ -137,8 +138,12 @@ export default async function RiwayatTryoutPage() {
   }
 
   const { data: rpcAttemptRows, error: rpcError } = await supabase.rpc("get_tryout_attempt_history");
-  const { data: learningPathRows } = await supabase.from("learning_paths").select("id, title");
-  const learningPathMap = new Map((learningPathRows ?? []).map((item) => [item.id, item.title]));
+  const { data: learningPathRows } = await supabase
+    .from("learning_paths")
+    .select("id, title, category, sub_category, sub_sub_category");
+  const learningPathMap = new Map(
+    (learningPathRows ?? []).map((item) => [item.id, buildLearningPathLabel(item)])
+  );
   const adminClient = createAdminClient();
 
   const rpcRows = (rpcAttemptRows as TryoutAttemptRow[] | null) ?? [];

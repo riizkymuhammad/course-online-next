@@ -4,6 +4,7 @@ import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
+import type { AuthRole } from "@/lib/auth-roles";
 import type { UserProfile } from "@/lib/user-profile";
 import Image from "next/image";
 import Link from "next/link";
@@ -13,12 +14,16 @@ type AppHeaderProps = {
   logoHref?: string;
   showSidebarToggle?: boolean;
   userProfile?: UserProfile;
+  activeRole?: AuthRole;
+  canSwitchRole?: boolean;
 };
 
 const AppHeader: React.FC<AppHeaderProps> = ({
   logoHref = "/dashboard",
   showSidebarToggle = true,
   userProfile,
+  activeRole = "user",
+  canSwitchRole = false,
 }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -137,6 +142,8 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             avatarUrl={userProfile?.avatarUrl}
             displayName={userProfile?.displayName}
             email={userProfile?.email}
+            activeRole={activeRole}
+            canSwitchRole={canSwitchRole}
           />
         </div>
       </div>

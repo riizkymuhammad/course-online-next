@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import TryoutListClient from "@/components/tryout/TryoutListClient";
+import {
+  buildLearningPathCategoryPath,
+  buildLearningPathLabel,
+} from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
 
@@ -17,6 +21,9 @@ type TryoutRow = {
 type LearningPathRow = {
   id: string;
   title: string;
+  category: string | null;
+  sub_category: string | null;
+  sub_sub_category: string | null;
 };
 
 const fallbackImages = [
@@ -29,7 +36,7 @@ const fallbackImages = [
 
 export const metadata: Metadata = {
   title: "Semua Tryout",
-  description: "Daftar seluruh tryout dengan pencarian dan filter learning path.",
+  description: "Daftar seluruh tryout dengan pencarian dan filter kategori.",
 };
 
 export default async function TryoutsPage() {
@@ -41,25 +48,34 @@ export default async function TryoutsPage() {
       .select("id, title, learning_path_id, total_questions, thumbnail_url, status")
       .eq("status", "published")
       .order("updated_at", { ascending: false }),
-    supabase.from("learning_paths").select("id, title").eq("status", "published"),
+    supabase
+      .from("learning_paths")
+      .select("id, title, category, sub_category, sub_sub_category")
+      .eq("status", "published"),
   ]);
 
-  const learningPathMap = new Map(
-    ((learningPathRows as LearningPathRow[] | null) ?? []).map((item) => [item.id, item.title])
-  );
+  const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
+  const learningPathMap = new Map(learningPaths.map((item) => [item.id, item]));
 
-  const tryouts = ((tryoutRows as TryoutRow[] | null) ?? []).map((item, index) => ({
-    id: item.id,
-    title: item.title,
-    learningPath: item.learning_path_id
-      ? learningPathMap.get(item.learning_path_id) || "Learning Path"
-      : "Tryout Umum",
-    totalQuestions: item.total_questions ?? 0,
-    href: `/tryout/${item.id}/${slugify(item.title)}`,
-    image: item.thumbnail_url || fallbackImages[index % fallbackImages.length],
-  }));
+  const tryouts = ((tryoutRows as TryoutRow[] | null) ?? []).map((item, index) => {
+    const learningPath = item.learning_path_id
+      ? learningPathMap.get(item.learning_path_id)
+      : null;
 
-  const learningPathOptions = Array.from(new Set(tryouts.map((item) => item.learningPath))).sort();
+    return {
+      id: item.id,
+      title: item.title,
+      learningPath: learningPath ? buildLearningPathLabel(learningPath) : "Tryout Umum",
+      learningPathTitle: learningPath?.title ?? "Tryout Umum",
+      category: learningPath?.category?.trim() ?? "",
+      subCategory: learningPath?.sub_category?.trim() ?? "",
+      subSubCategory: learningPath?.sub_sub_category?.trim() ?? "",
+      categoryPath: learningPath ? buildLearningPathCategoryPath(learningPath) : "",
+      totalQuestions: item.total_questions ?? 0,
+      href: `/tryout/${item.id}/${slugify(item.title)}`,
+      image: item.thumbnail_url || fallbackImages[index % fallbackImages.length],
+    };
+  });
 
   return (
     <main className="min-h-screen bg-linear-to-b from-white via-blue-light-25 to-white text-gray-900">
@@ -98,7 +114,7 @@ export default async function TryoutsPage() {
       </nav>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <TryoutListClient tryouts={tryouts} learningPathOptions={learningPathOptions} />
+        <TryoutListClient tryouts={tryouts} />
       </div>
     </main>
   );

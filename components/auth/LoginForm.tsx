@@ -21,7 +21,7 @@ export default function LoginForm() {
     const password = String(formData.get("password") ?? "");
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -32,7 +32,11 @@ export default function LoginForm() {
       return;
     }
 
-    router.push(getAuthRedirectPath());
+    await fetch("/api/auth/active-role", {
+      method: "DELETE",
+    }).catch(() => null);
+
+    router.push(getAuthRedirectPath(data.user));
     router.refresh();
   }
 

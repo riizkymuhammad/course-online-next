@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import CreateTryoutForm from "@/components/tryout/CreateTryoutForm";
+import { buildLearningPathOptionLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -18,11 +19,14 @@ export default async function CreateTryoutPage() {
   const supabase = await createClient();
   const { data } = await supabase
     .from("learning_paths")
-    .select("id, title")
+    .select("id, title, category, sub_category, sub_sub_category")
+    .order("category", { ascending: true })
+    .order("sub_category", { ascending: true })
+    .order("sub_sub_category", { ascending: true })
     .order("title", { ascending: true });
 
   const learningPathOptions =
-    data?.map((item) => ({ value: item.id, label: item.title })) ?? [];
+    data?.map((item) => ({ value: item.id, label: buildLearningPathOptionLabel(item) })) ?? [];
 
   return (
     <div className="space-y-6">

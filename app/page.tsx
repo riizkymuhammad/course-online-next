@@ -1,8 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import UserDropdown from "@/components/header/UserDropdown";
 import HeroSlider from "@/components/home/HeroSlider";
 import LearningPathCarousel from "@/components/home/LearningPathCarousel";
+import {
+  buildLearningPathCategoryPath,
+  buildLearningPathLabel,
+} from "@/lib/learning-path";
+import {
+  ACTIVE_ROLE_COOKIE,
+  getEffectiveRole,
+  getUserRole,
+} from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfile } from "@/lib/user-profile";
 
@@ -10,6 +20,9 @@ type LearningPathRow = {
   id: string;
   title: string;
   slug: string;
+  category: string | null;
+  sub_category: string | null;
+  sub_sub_category: string | null;
   status: "draft" | "published" | "archived" | null;
 };
 
@@ -27,7 +40,6 @@ type TryoutRow = {
   id: string;
   title: string;
   learning_path_id: string | null;
-  material_file_name: string | null;
   total_questions: number | null;
   thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
@@ -84,7 +96,7 @@ function buildMaterialCards(paths: LearningPathRow[], courses: CourseRow[]) {
     return {
       id: course.id,
       title: course.title,
-      learningPath: path?.title ?? "Learning Path Umum",
+      learningPath: path ? buildLearningPathLabel(path) : "Learning Path Umum",
       image: course.thumbnail || materialImages[index % materialImages.length],
       sectionCount: course.section_count ?? 0,
       moduleCount: course.module_count ?? 0,
@@ -107,23 +119,6 @@ function buildTryoutCards(tryouts: TryoutRow[], learningPathMap: Map<string, str
 
 function isSvgImage(value: string) {
   return value.toLowerCase().includes(".svg");
-}
-
-function groupTryoutCardsByLearningPath(
-  cards: ReturnType<typeof buildTryoutCards>
-) {
-  const grouped = new Map<string, typeof cards>();
-
-  cards.forEach((card) => {
-    const current = grouped.get(card.learningPath) ?? [];
-    current.push(card);
-    grouped.set(card.learningPath, current);
-  });
-
-  return Array.from(grouped.entries()).map(([learningPath, items]) => ({
-    learningPath,
-    items,
-  }));
 }
 
 function getCardTone(index: number) {
@@ -153,12 +148,12 @@ export default async function HomePage() {
       supabase.auth.getUser(),
       supabase
         .from("learning_paths")
-        .select("id, title, slug, status")
+        .select("id, title, slug, category, sub_category, sub_sub_category, status")
         .eq("status", "published")
         .order("created_at", { ascending: false }),
       supabase
         .from("tryouts")
-        .select("id, title, learning_path_id, material_file_name, total_questions, thumbnail_url, status")
+        .select("id, title, learning_path_id, total_questions, thumbnail_url, status")
         .eq("status", "published")
         .order("updated_at", { ascending: false })
         .limit(12),
@@ -171,11 +166,19 @@ export default async function HomePage() {
 
   const isLoggedIn = Boolean(user);
   const userProfile = getUserProfile(user);
+  const cookieStore = await cookies();
+  const accountRole = getUserRole(user);
+  const activeRole = getEffectiveRole({
+    accountRole,
+    activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
+  });
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const tryouts = (tryoutRows as TryoutRow[] | null) ?? [];
   const courses = (courseRows as CourseRow[] | null) ?? [];
   const featuredCourses = courses.slice(0, 5);
-  const learningPathMap = new Map(learningPaths.map((item) => [item.id, item.title]));
+  const learningPathMap = new Map(
+    learningPaths.map((item) => [item.id, buildLearningPathLabel(item)])
+  );
   const materialCountMap = new Map<string, number>();
   const totalModuleCount = courses.reduce((total, item) => total + (item.module_count ?? 0), 0);
   const totalSectionCount = courses.reduce((total, item) => total + (item.section_count ?? 0), 0);
@@ -195,34 +198,46 @@ export default async function HomePage() {
           id: "fallback-1",
           title: "Dasar UTBK",
           slug: "dasar-utbk",
+          category: null,
+          sub_category: null,
+          sub_sub_category: null,
           status: "published" as const,
         },
         {
           id: "fallback-2",
           title: "Literasi & Membaca",
           slug: "literasi-membaca",
+          category: null,
+          sub_category: null,
+          sub_sub_category: null,
           status: "published" as const,
         },
         {
           id: "fallback-3",
           title: "Penalaran Intensif",
           slug: "penalaran-intensif",
+          category: null,
+          sub_category: null,
+          sub_sub_category: null,
           status: "published" as const,
         },
         {
           id: "fallback-4",
           title: "Simulasi Tryout",
           slug: "simulasi-tryout",
+          category: null,
+          sub_category: null,
+          sub_sub_category: null,
           status: "published" as const,
         },
       ]) as LearningPathRow[];
 
   const materialCards = buildMaterialCards(learningPaths, featuredCourses);
   const tryoutCards = buildTryoutCards(tryouts, learningPathMap);
-  const groupedTryoutCards = groupTryoutCardsByLearningPath(tryoutCards);
   const carouselItems = learningPathItems.map((path) => ({
     id: path.id,
     title: path.title,
+    categoryPath: buildLearningPathCategoryPath(path),
     materialCount: materialCountMap.get(path.id) ?? 0,
   }));
 
@@ -273,6 +288,8 @@ export default async function HomePage() {
                   avatarUrl={userProfile.avatarUrl}
                   displayName={userProfile.displayName}
                   email={userProfile.email}
+                  activeRole={activeRole}
+                  canSwitchRole={accountRole === "admin"}
                 />
               </>
             ) : (
@@ -463,81 +480,53 @@ export default async function HomePage() {
           </div>
 
           {tryoutCards.length ? (
-            <div className="mt-5 space-y-6">
-              {groupedTryoutCards.map((group) => (
-                <div key={group.learningPath} className="space-y-3">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{group.learningPath}</h3>
-                      <p className="text-sm text-gray-500">
-                        Kumpulan tryout yang terkait dengan learning path {group.learningPath}.
-                      </p>
-                    </div>
-                    <span className="inline-flex rounded-full border border-brand-100 bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700">
-                      {group.items.length} tryout
-                    </span>
-                  </div>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {tryoutCards.map((card) => {
+                const isGeneratedThumbnail = isSvgImage(card.image);
 
-                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    {group.items.map((card, index) => (
-                      <Link
-                        key={`${group.learningPath}-${card.id}-${card.image}`}
-                        href={card.href}
-                        className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
-                      >
-                        <div className="relative h-44 overflow-hidden border-b border-gray-100 dark:border-gray-800">
-                          <Image
-                            src={card.image}
-                            alt={card.title}
-                            fill
-                            unoptimized={isSvgImage(card.image)}
-                            className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                            sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
-                          />
-                          <div className="absolute inset-x-4 top-4 flex items-start justify-between gap-3">
-                            <span className="inline-flex rounded-full border border-white/60 bg-white/95 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-700">
-                              Tryout
-                            </span>
-                            <span
-                              className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getCardTone(index)}`}
-                            >
-                              {card.total_questions ?? 0} soal
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-5">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
-                            {group.learningPath}
-                          </p>
-                          <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-6 text-gray-800 transition group-hover:text-brand-600 dark:text-white/90">
+                return (
+                  <Link
+                    key={card.id}
+                    href={card.href}
+                    className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
+                  >
+                    <div className="relative h-40 overflow-hidden border-b border-brand-200 bg-brand-500 p-5 dark:border-brand-500/20 dark:bg-brand-600">
+                      <Image
+                        src={card.image}
+                        alt={card.title}
+                        fill
+                        unoptimized={isGeneratedThumbnail}
+                        className="object-cover transition duration-500 group-hover:scale-[1.03]"
+                        sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
+                      />
+                      {!isGeneratedThumbnail ? (
+                        <div className="absolute inset-0 bg-linear-to-br from-brand-500/70 via-brand-500/35 to-brand-800/75" />
+                      ) : null}
+                      <div className="relative flex h-full flex-col justify-between">
+                        <span className="inline-flex w-fit max-w-full rounded-full border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white/95 backdrop-blur">
+                          {card.learningPath}
+                        </span>
+                        {!isGeneratedThumbnail ? (
+                          <h3 className="line-clamp-2 max-w-[92%] text-lg font-semibold leading-7 text-white">
                             {card.title}
                           </h3>
-                          <p className="mt-3 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                            Cocok dipakai buat latihan setelah selesai belajar materi supaya kamu
-                            tahu bagian mana yang sudah aman dan mana yang masih perlu diulang.
-                          </p>
-                          <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-medium text-gray-600 dark:text-gray-300">
-                            <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
-                              {card.total_questions ?? 0} soal
-                            </span>
-                            <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
-                              Siap dikerjakan
-                            </span>
-                          </div>
-                          <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
-                            <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
-                              Evaluasi terbaru
-                            </span>
-                            <span className="text-sm font-semibold text-brand-600 transition group-hover:translate-x-0.5">
-                              Kerjakan
-                            </span>
-                          </div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                        ) : null}
+                      </div>
+                    </div>
+
+                    <div className="p-4">
+                      <div className="flex items-center justify-between gap-3 border-t border-gray-100 pt-4 dark:border-gray-800">
+                        <span className="inline-flex rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-600 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300">
+                          {card.total_questions ?? 0} soal
+                        </span>
+                        <span className="inline-flex h-10 items-center justify-center rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white transition group-hover:bg-brand-600">
+                          Kerjakan
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           ) : (
             <div className="mt-5 rounded-2xl border border-dashed border-brand-200 bg-white px-5 py-4 text-sm text-gray-500">
