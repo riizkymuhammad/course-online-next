@@ -11,6 +11,8 @@ type Tryout = {
   title: string;
   learning_path_id: string | null;
   learning_path_title: string;
+  category: string | null;
+  sub_category: string | null;
   material_file_name: string | null;
   thumbnail_url: string | null;
   total_questions: number;
@@ -50,6 +52,15 @@ function getSearchParamValue(value: string | string[] | undefined) {
   return value;
 }
 
+function buildTryoutCategoryLabel(category: string | null, subCategory: string | null) {
+  const categoryPath = [category, subCategory]
+    .map((item) => item?.trim() ?? "")
+    .filter(Boolean)
+    .join(" > ");
+
+  return categoryPath || null;
+}
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -70,7 +81,7 @@ export default async function TryoutManagementPage({
     supabase
       .from("tryouts")
       .select(
-        "id, title, learning_path_id, total_questions, material_file_name, thumbnail_url, status, updated_at"
+        "id, title, learning_path_id, category, sub_category, total_questions, material_file_name, thumbnail_url, status, updated_at"
       )
       .order("updated_at", { ascending: false }),
     supabase.from("learning_paths").select("id, title, category, sub_category, sub_sub_category"),
@@ -81,19 +92,26 @@ export default async function TryoutManagementPage({
   );
 
   const tryouts: Tryout[] =
-    tryoutRows?.map((item) => ({
-      id: item.id,
-      title: item.title,
-      learning_path_id: item.learning_path_id,
-      learning_path_title:
-        (item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null) ??
-        "Unassigned",
-      material_file_name: item.material_file_name,
-      thumbnail_url: item.thumbnail_url ?? null,
-      total_questions: item.total_questions ?? 0,
-      status: (item.status ?? "draft") as Tryout["status"],
-      updated_at: item.updated_at ?? "",
-    })) ?? [];
+    tryoutRows?.map((item) => {
+      const categoryLabel = buildTryoutCategoryLabel(item.category, item.sub_category);
+
+      return {
+        id: item.id,
+        title: item.title,
+        learning_path_id: item.learning_path_id,
+        learning_path_title:
+          (item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null) ??
+          categoryLabel ??
+          "Unassigned",
+        category: item.category ?? null,
+        sub_category: item.sub_category ?? null,
+        material_file_name: item.material_file_name,
+        thumbnail_url: item.thumbnail_url ?? null,
+        total_questions: item.total_questions ?? 0,
+        status: (item.status ?? "draft") as Tryout["status"],
+        updated_at: item.updated_at ?? "",
+      };
+    }) ?? [];
 
   const publishedCount = tryouts.filter((item) => item.status === "published").length;
   const totalQuestions = tryouts.reduce((sum, item) => sum + (item.total_questions || 0), 0);
@@ -173,7 +191,7 @@ export default async function TryoutManagementPage({
               imageKey: "thumbnail_url",
               subtitleKey: "learning_path_title",
             },
-            { key: "learning_path_title", label: "Learning Path", sortable: true },
+            { key: "learning_path_title", label: "Learning Path/Kategori", sortable: true },
             { key: "material_label", label: "Materi", sortable: true },
             { key: "total_questions", label: "Jumlah Soal", sortable: true },
             {

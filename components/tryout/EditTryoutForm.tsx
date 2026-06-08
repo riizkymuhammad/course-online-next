@@ -10,6 +10,8 @@ type EditTryoutValues = {
   id: string;
   title: string;
   learningPathId: string;
+  category: string;
+  subCategory: string;
   questionCount: number;
   questionNotes: string;
   status: string;
@@ -44,8 +46,21 @@ export default function EditTryoutForm({
               label="Learning Path"
               name="learning_path"
               defaultValue={values.learningPathId}
-              required
-              options={learningPathOptions}
+              options={[{ value: "", label: "Opsional - pilih learning path" }, ...learningPathOptions]}
+            />
+
+            <FormField
+              label="Kategori"
+              name="category"
+              placeholder="Contoh: CPNS, Bahasa Inggris, Informatika"
+              defaultValue={values.category}
+            />
+
+            <FormField
+              label="Sub Kategori"
+              name="sub_category"
+              placeholder="Contoh: SKD, SKB, Kosa Kata"
+              defaultValue={values.subCategory}
             />
 
             <FormField

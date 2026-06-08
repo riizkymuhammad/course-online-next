@@ -13,6 +13,8 @@ type TryoutRow = {
   id: string;
   title: string;
   learning_path_id: string | null;
+  category: string | null;
+  sub_category: string | null;
   total_questions: number | null;
   thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
@@ -34,6 +36,10 @@ const fallbackImages = [
   "/images/product/product-05.jpg",
 ];
 
+function buildCategoryPath(category: string | null, subCategory: string | null) {
+  return [category?.trim() ?? "", subCategory?.trim() ?? ""].filter(Boolean).join(" > ");
+}
+
 export const metadata: Metadata = {
   title: "Semua Tryout",
   description: "Daftar seluruh tryout dengan pencarian dan filter kategori.",
@@ -45,7 +51,7 @@ export default async function TryoutsPage() {
   const [{ data: tryoutRows }, { data: learningPathRows }] = await Promise.all([
     supabase
       .from("tryouts")
-      .select("id, title, learning_path_id, total_questions, thumbnail_url, status")
+      .select("id, title, learning_path_id, category, sub_category, total_questions, thumbnail_url, status")
       .eq("status", "published")
       .order("updated_at", { ascending: false }),
     supabase
@@ -61,16 +67,23 @@ export default async function TryoutsPage() {
     const learningPath = item.learning_path_id
       ? learningPathMap.get(item.learning_path_id)
       : null;
+    const category = learningPath?.category?.trim() ?? item.category?.trim() ?? "";
+    const subCategory = learningPath?.sub_category?.trim() ?? item.sub_category?.trim() ?? "";
+    const subSubCategory = learningPath?.sub_sub_category?.trim() ?? "";
+    const categoryPath = learningPath
+      ? buildLearningPathCategoryPath(learningPath)
+      : buildCategoryPath(item.category, item.sub_category);
+    const label = learningPath ? buildLearningPathLabel(learningPath) : categoryPath || "Tryout Umum";
 
     return {
       id: item.id,
       title: item.title,
-      learningPath: learningPath ? buildLearningPathLabel(learningPath) : "Tryout Umum",
-      learningPathTitle: learningPath?.title ?? "Tryout Umum",
-      category: learningPath?.category?.trim() ?? "",
-      subCategory: learningPath?.sub_category?.trim() ?? "",
-      subSubCategory: learningPath?.sub_sub_category?.trim() ?? "",
-      categoryPath: learningPath ? buildLearningPathCategoryPath(learningPath) : "",
+      learningPath: label,
+      learningPathTitle: learningPath?.title ?? label,
+      category,
+      subCategory,
+      subSubCategory,
+      categoryPath,
       totalQuestions: item.total_questions ?? 0,
       href: `/tryout/${item.id}/${slugify(item.title)}`,
       image: item.thumbnail_url || fallbackImages[index % fallbackImages.length],

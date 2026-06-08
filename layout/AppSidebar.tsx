@@ -33,6 +33,14 @@ const navItems: NavItem[] = [
     subItems: [{ name: "Ecommerce", path: "/dashboard", pro: false }],
   },
   {
+    icon: <TableIcon />,
+    name: "Master Data",
+    subItems: [
+      { name: "Kategori", path: "/dashboard/master-data/kategori" },
+      { name: "Sub Kategori", path: "/dashboard/master-data/sub-kategori" },
+    ],
+  },
+  {
     icon: <ListIcon />,
     name: "Learning Path",
     path: "/dashboard/learning-path",
@@ -119,6 +127,14 @@ const othersItems: NavItem[] = [
   },
 ];
 
+function isRouteActive(pathname: string, path: string) {
+  if (path === "/dashboard") {
+    return pathname === path;
+  }
+
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
+
 function findMatchedSubmenu(pathname: string) {
   const menuGroups = [
     { type: "main" as const, items: navItems },
@@ -127,7 +143,9 @@ function findMatchedSubmenu(pathname: string) {
 
   for (const group of menuGroups) {
     for (const [index, nav] of group.items.entries()) {
-      const hasMatch = nav.subItems?.some((subItem) => subItem.path === pathname);
+      const hasMatch = nav.subItems?.some((subItem) =>
+        isRouteActive(pathname, subItem.path)
+      );
       if (hasMatch) {
         return { type: group.type, index };
       }
@@ -279,7 +297,10 @@ const AppSidebar: React.FC = () => {
   );
   const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const isActive = useCallback((path: string) => path === pathname, [pathname]);
+  const isActive = useCallback(
+    (path: string) => isRouteActive(pathname, path),
+    [pathname]
+  );
   const matchedSubmenu = useMemo(() => findMatchedSubmenu(pathname), [pathname]);
   const activeOpenSubmenu = openSubmenu ?? matchedSubmenu;
   const activeOpenSubmenuKey =

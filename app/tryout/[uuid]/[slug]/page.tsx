@@ -39,6 +39,10 @@ function isSvgImage(value: string) {
   return value.toLowerCase().includes(".svg");
 }
 
+function buildCategoryPath(category: string | null, subCategory: string | null) {
+  return [category?.trim() ?? "", subCategory?.trim() ?? ""].filter(Boolean).join(" > ");
+}
+
 export async function generateMetadata(
   props: PageProps<"/tryout/[uuid]/[slug]">
 ): Promise<Metadata> {
@@ -58,7 +62,7 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
 
   const { data: tryoutRow } = await supabase
     .from("tryouts")
-    .select("id, title, total_questions, learning_path_id, thumbnail_url")
+    .select("id, title, total_questions, learning_path_id, category, sub_category, thumbnail_url")
     .eq("id", params.uuid)
     .single();
 
@@ -71,7 +75,7 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
     redirect(`/tryout/${tryoutRow.id}/${expectedSlug}`);
   }
 
-  let learningPathTitle = "Unassigned";
+  let learningPathTitle = buildCategoryPath(tryoutRow.category, tryoutRow.sub_category) || "Unassigned";
   if (tryoutRow.learning_path_id) {
     const { data: learningPathRow } = await supabase
       .from("learning_paths")
@@ -201,7 +205,7 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
 
           <div className="p-5 sm:p-6">
             <div className="grid gap-4 sm:grid-cols-3">
-              <InfoCard label="Learning Path" value={learningPathTitle} />
+              <InfoCard label="Learning Path/Kategori" value={learningPathTitle} />
               <InfoCard label="Nama Tryout" value={tryoutRow.title} />
               <InfoCard label="Jumlah Soal" value={`${tryoutRow.total_questions ?? 0} soal`} />
             </div>

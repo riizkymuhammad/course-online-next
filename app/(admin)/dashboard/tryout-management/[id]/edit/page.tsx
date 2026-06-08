@@ -20,7 +20,7 @@ const statusOptions = [
 function getErrorMessage(error: string) {
   switch (error) {
     case "required-fields":
-      return "Field wajib belum lengkap. Pastikan judul, learning path, jumlah soal, dan status terisi.";
+      return "Field wajib belum lengkap. Pastikan judul, jumlah soal, dan status terisi.";
     case "PGRST116":
       return "Data tryout tidak ditemukan.";
     default:
@@ -40,7 +40,7 @@ export default async function EditTryoutPage({
     supabase
       .from("tryouts")
       .select(
-        "id, title, learning_path_id, total_questions, question_notes, status, material_file_name"
+        "id, title, learning_path_id, category, sub_category, total_questions, question_notes, status, material_file_name"
       )
       .eq("id", id)
       .single(),
@@ -95,6 +95,8 @@ export default async function EditTryoutPage({
             id: tryoutRow.id,
             title: tryoutRow.title ?? "",
             learningPathId: tryoutRow.learning_path_id ?? "",
+            category: tryoutRow.category ?? "",
+            subCategory: tryoutRow.sub_category ?? "",
             questionCount: tryoutRow.total_questions ?? 0,
             questionNotes: tryoutRow.question_notes ?? "",
             status: tryoutRow.status ?? "draft",

@@ -58,6 +58,10 @@ function resolveCorrectOptionIndex(answer: string, options: string[]) {
   return containsIndex !== -1 ? containsIndex : null;
 }
 
+function buildCategoryPath(category: string, subCategory: string) {
+  return [category, subCategory].filter(Boolean).join(" > ");
+}
+
 export async function POST(request: Request) {
   try {
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
@@ -70,33 +74,101 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const title = String(formData.get("title") ?? "").trim();
     const learningPathId = String(formData.get("learning_path") ?? "").trim();
+    const categoryId = String(formData.get("category_id") ?? "").trim();
+    const subCategoryId = String(formData.get("sub_category_id") ?? "").trim();
     const questionCount = Number(formData.get("question_count") ?? 0);
     const status = String(formData.get("status") ?? "draft").trim();
     const questionNotes = String(formData.get("question_notes") ?? "").trim();
     const materialFile = formData.get("material_file");
 
-    if (!title || !learningPathId || !status || !questionCount || !(materialFile instanceof File)) {
+    if (!title || !status || !questionCount || !(materialFile instanceof File)) {
       return Response.json(
-        { error: "Field wajib belum lengkap. Pastikan judul, learning path, jumlah soal, status, dan file materi sudah terisi." },
+        { error: "Field wajib belum lengkap. Pastikan judul, jumlah soal, status, dan file materi sudah terisi." },
         { status: 400 }
       );
     }
 
     const supabase = await createClient();
-    const { data: learningPathRow, error: learningPathError } = await supabase
-      .from("learning_paths")
-      .select("id, title, category, sub_category, sub_sub_category")
-      .eq("id", learningPathId)
-      .single();
+    let category = "";
+    let subCategory = "";
+    let learningPathRow: {
+      id: string;
+      title: string | null;
+      category: string | null;
+      sub_category: string | null;
+      sub_sub_category: string | null;
+    } | null = null;
 
-    if (learningPathError || !learningPathRow) {
+    if (learningPathId) {
+      const { data, error: learningPathError } = await supabase
+        .from("learning_paths")
+        .select("id, title, category, sub_category, sub_sub_category")
+        .eq("id", learningPathId)
+        .single();
+
+      if (learningPathError || !data) {
+        return Response.json(
+          { error: "Learning path tidak ditemukan di database." },
+          { status: 400 }
+        );
+      }
+
+      learningPathRow = data;
+    }
+
+    if (!categoryId && subCategoryId) {
       return Response.json(
-        { error: "Learning path tidak ditemukan di database." },
+        { error: "Pilih kategori terlebih dahulu sebelum memilih sub kategori." },
         { status: 400 }
       );
     }
 
-    const learningPathLabel = buildLearningPathLabel(learningPathRow);
+    if (categoryId) {
+      const { data: categoryRow, error: categoryError } = await supabase
+        .from("categories")
+        .select("id, name")
+        .eq("id", categoryId)
+        .single();
+
+      if (categoryError || !categoryRow) {
+        return Response.json(
+          { error: "Kategori tidak ditemukan di database." },
+          { status: 400 }
+        );
+      }
+
+      category = String(categoryRow.name ?? "").trim();
+
+      if (subCategoryId) {
+        const { data: subCategoryRow, error: subCategoryError } = await supabase
+          .from("sub_categories")
+          .select("id, category_id, name")
+          .eq("id", subCategoryId)
+          .eq("category_id", categoryId)
+          .single();
+
+        if (subCategoryError || !subCategoryRow) {
+          return Response.json(
+            { error: "Sub kategori tidak ditemukan untuk kategori yang dipilih." },
+            { status: 400 }
+          );
+        }
+
+        subCategory = String(subCategoryRow.name ?? "").trim();
+      }
+    }
+
+    const categoryPath = buildCategoryPath(category, subCategory);
+    const learningPathLabel = learningPathRow
+      ? buildLearningPathLabel(learningPathRow)
+      : categoryPath || "Tryout Umum";
+    const contextText = [
+      learningPathRow ? `Learning path: ${learningPathLabel}.` : "",
+      categoryPath ? `Kategori tryout: ${categoryPath}.` : "",
+      !learningPathRow && !categoryPath ? "Kategori tryout: Tryout Umum." : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
     const arrayBuffer = await materialFile.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");
     const fileDataUrl = `data:${materialFile.type || "application/pdf"};base64,${base64Data}`;
@@ -116,7 +188,7 @@ export async function POST(request: Request) {
               text: [
                 "Buat paket soal tryout berdasarkan PDF yang diunggah.",
                 `Judul tryout: ${title}.`,
-                `Learning path: ${learningPathLabel}.`,
+                contextText,
                 `Status: ${status}.`,
                 `Jumlah soal yang wajib dibuat: ${questionCount}.`,
                 instructionText,
@@ -157,7 +229,9 @@ export async function POST(request: Request) {
       .from("tryouts")
       .insert({
         id: tryoutId,
-        learning_path_id: learningPathRow.id,
+        learning_path_id: learningPathRow?.id ?? null,
+        category: category || null,
+        sub_category: subCategory || null,
         title,
         total_questions: questionCount,
         question_notes: questionNotes || null,

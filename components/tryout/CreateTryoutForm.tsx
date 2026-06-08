@@ -2,11 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Option = {
   value: string;
   label: string;
+};
+
+type CategoryOption = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryOption = {
+  id: string;
+  categoryId: string;
+  name: string;
 };
 
 type GeneratedQuestion = {
@@ -33,12 +44,18 @@ type GenerationPhase = "idle" | "validating" | "generating" | "saving" | "succes
 
 export default function CreateTryoutForm({
   learningPathOptions,
+  categoryOptions,
+  subCategoryOptions,
   statusOptions,
 }: {
   learningPathOptions: Option[];
+  categoryOptions: CategoryOption[];
+  subCategoryOptions: SubCategoryOption[];
   statusOptions: Option[];
 }) {
   const router = useRouter();
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [generationPhase, setGenerationPhase] = useState<GenerationPhase>("idle");
@@ -48,6 +65,15 @@ export default function CreateTryoutForm({
     title: string;
     questionCount: number;
   } | null>(null);
+  const filteredSubCategoryOptions = useMemo(() => {
+    if (!selectedCategoryId) return [];
+
+    return subCategoryOptions.filter(
+      (option) => option.categoryId === selectedCategoryId
+    );
+  }, [selectedCategoryId, subCategoryOptions]);
+  const hasCategories = categoryOptions.length > 0;
+  const hasSubCategoryOptions = filteredSubCategoryOptions.length > 0;
 
   useEffect(() => {
     if (!startedAt || generationPhase === "idle" || generationPhase === "success" || generationPhase === "error") {
@@ -142,8 +168,54 @@ export default function CreateTryoutForm({
               label="Learning Path"
               name="learning_path"
               defaultValue=""
-              required
-              options={[{ value: "", label: "Pilih learning path" }, ...learningPathOptions]}
+              options={[{ value: "", label: "Opsional - pilih learning path" }, ...learningPathOptions]}
+            />
+
+            <SelectField
+              label="Kategori"
+              name="category_id"
+              value={selectedCategoryId}
+              defaultValue=""
+              disabled={!hasCategories}
+              options={[
+                {
+                  value: "",
+                  label: hasCategories
+                    ? "Opsional - pilih kategori"
+                    : "Belum ada kategori",
+                },
+                ...categoryOptions.map((option) => ({
+                  value: option.id,
+                  label: option.name,
+                })),
+              ]}
+              onChange={(value) => {
+                setSelectedCategoryId(value);
+                setSelectedSubCategoryId("");
+              }}
+            />
+
+            <SelectField
+              label="Sub Kategori"
+              name="sub_category_id"
+              value={selectedSubCategoryId}
+              defaultValue=""
+              disabled={!selectedCategoryId || !hasSubCategoryOptions}
+              options={[
+                {
+                  value: "",
+                  label: !selectedCategoryId
+                    ? "Pilih kategori terlebih dahulu"
+                    : hasSubCategoryOptions
+                      ? "Opsional - pilih sub kategori"
+                      : "Belum ada sub kategori",
+                },
+                ...filteredSubCategoryOptions.map((option) => ({
+                  value: option.id,
+                  label: option.name,
+                })),
+              ]}
+              onChange={setSelectedSubCategoryId}
             />
 
             <FormField
@@ -153,13 +225,6 @@ export default function CreateTryoutForm({
               required
               type="number"
               min={1}
-            />
-
-            <TextAreaField
-              label="Catatan Soal"
-              name="question_notes"
-              placeholder="Opsional. Contoh: buat 10 soal pilihan ganda level menengah dengan fokus pada join dan aggregation."
-              hint="Catatan soal ini opsional. Jika kosong, sistem akan membuat soal pilihan ganda standar tanpa syarat tambahan."
             />
           </div>
 
@@ -178,6 +243,13 @@ export default function CreateTryoutForm({
               required
               accept="application/pdf"
               hint="Upload file PDF materi tryout. File ini akan dipakai AI untuk membuat soal."
+            />
+
+            <TextAreaField
+              label="Catatan Soal"
+              name="question_notes"
+              placeholder="Opsional. Contoh: buat 10 soal pilihan ganda level menengah dengan fokus pada join dan aggregation."
+              hint="Catatan soal ini opsional. Jika kosong, sistem akan membuat soal pilihan ganda standar tanpa syarat tambahan."
             />
           </div>
         </div>
@@ -251,7 +323,7 @@ function GenerationStatusPanel({
     {
       phase: "validating" as const,
       title: "Validasi input dan file PDF",
-      description: "Mengecek judul, learning path, jumlah soal, status, dan file materi.",
+      description: "Mengecek judul, learning path/kategori, jumlah soal, status, dan file materi.",
     },
     {
       phase: "generating" as const,
@@ -456,12 +528,18 @@ function SelectField({
   defaultValue,
   required = false,
   options,
+  disabled = false,
+  value,
+  onChange,
 }: {
   label: string;
   name: string;
   defaultValue: string;
   required?: boolean;
   options: Array<{ value: string; label: string }>;
+  disabled?: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -469,9 +547,12 @@ function SelectField({
       <select
         id={name}
         name={name}
-        defaultValue={defaultValue}
+        value={value}
+        defaultValue={value === undefined ? defaultValue : undefined}
         required={required}
-        className="h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
+        disabled={disabled}
+        onChange={onChange ? (event) => onChange(event.target.value) : undefined}
+        className="h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90 dark:disabled:bg-white/[0.02] dark:disabled:text-gray-500"
       >
         {options.map((option) => (
           <option key={option.value || option.label} value={option.value}>

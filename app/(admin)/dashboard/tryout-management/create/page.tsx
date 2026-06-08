@@ -15,18 +15,47 @@ const statusOptions = [
   { value: "archived", label: "Archived" },
 ] as const;
 
+type CategoryRow = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryRow = {
+  id: string;
+  category_id: string;
+  name: string;
+};
+
 export default async function CreateTryoutPage() {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("learning_paths")
-    .select("id, title, category, sub_category, sub_sub_category")
-    .order("category", { ascending: true })
-    .order("sub_category", { ascending: true })
-    .order("sub_sub_category", { ascending: true })
-    .order("title", { ascending: true });
+  const [{ data }, { data: categoryRows }, { data: subCategoryRows }] = await Promise.all([
+    supabase
+      .from("learning_paths")
+      .select("id, title, category, sub_category, sub_sub_category")
+      .order("category", { ascending: true })
+      .order("sub_category", { ascending: true })
+      .order("sub_sub_category", { ascending: true })
+      .order("title", { ascending: true }),
+    supabase.from("categories").select("id, name").order("name", { ascending: true }),
+    supabase
+      .from("sub_categories")
+      .select("id, category_id, name")
+      .order("name", { ascending: true }),
+  ]);
 
   const learningPathOptions =
     data?.map((item) => ({ value: item.id, label: buildLearningPathOptionLabel(item) })) ?? [];
+  const categoryOptions =
+    ((categoryRows ?? []) as CategoryRow[]).map((item) => ({
+      id: item.id,
+      name: item.name,
+    })) ?? [];
+  const subCategoryOptions =
+    ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => ({
+      id: item.id,
+      categoryId: item.category_id,
+      name: item.name,
+    })) ?? [];
 
   return (
     <div className="space-y-6">
@@ -46,6 +75,8 @@ export default async function CreateTryoutPage() {
 
         <CreateTryoutForm
           learningPathOptions={learningPathOptions}
+          categoryOptions={categoryOptions}
+          subCategoryOptions={subCategoryOptions}
           statusOptions={statusOptions.map((option) => ({
             value: option.value,
             label: option.label,
