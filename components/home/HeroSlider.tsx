@@ -30,7 +30,7 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   }
 
   return (
-    <div className="relative overflow-hidden rounded-[28px] border border-brand-100/80 bg-white shadow-theme-md">
+    <div className="relative overflow-hidden rounded-lg border border-brand-100/80 bg-white shadow-theme-md">
       <div className="relative min-h-[360px] lg:min-h-[390px]">
         {slides.map((slide, index) => (
           <div

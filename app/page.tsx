@@ -393,7 +393,7 @@ export default async function HomePage() {
             {materialCards.map((card, index) => (
               <article
                 key={card.id}
-                className="group overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md dark:border-gray-800 dark:bg-white/[0.03]"
+                className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md dark:border-gray-800 dark:bg-white/[0.03]"
               >
                 <div className="relative h-44 overflow-hidden border-b border-gray-100 dark:border-gray-800">
                   <Image
@@ -451,7 +451,7 @@ export default async function HomePage() {
             ))}
           </div>
         ) : (
-          <div className="mt-5 rounded-2xl border border-dashed border-brand-200 bg-white px-5 py-4 text-sm text-gray-500">
+          <div className="mt-5 rounded-lg border border-dashed border-brand-200 bg-white px-5 py-4 text-sm text-gray-500">
             Materi belum tersedia.
           </div>
         )}
@@ -488,7 +488,7 @@ export default async function HomePage() {
                   <Link
                     key={card.id}
                     href={card.href}
-                    className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
+                    className="group block overflow-hidden rounded-lg border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
                   >
                     <div className="relative h-40 overflow-hidden border-b border-brand-200 bg-brand-500 p-5 dark:border-brand-500/20 dark:bg-brand-600">
                       <Image
@@ -529,7 +529,7 @@ export default async function HomePage() {
               })}
             </div>
           ) : (
-            <div className="mt-5 rounded-2xl border border-dashed border-brand-200 bg-white px-5 py-4 text-sm text-gray-500">
+            <div className="mt-5 rounded-lg border border-dashed border-brand-200 bg-white px-5 py-4 text-sm text-gray-500">
               Tryout belum tersedia.
             </div>
           )}
@@ -537,7 +537,7 @@ export default async function HomePage() {
       </section>
 
       <section id="cta" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        <div className="rounded-[28px] border border-brand-100 bg-white px-5 py-6 shadow-theme-sm sm:px-6 lg:flex lg:items-center lg:justify-between">
+        <div className="rounded-lg border border-brand-100 bg-white px-5 py-6 shadow-theme-sm sm:px-6 lg:flex lg:items-center lg:justify-between">
           <div className="max-w-xl">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">
               Mulai Sekarang
