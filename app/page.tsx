@@ -391,6 +391,7 @@ export default async function HomePage() {
         userProfile={isLoggedIn ? userProfile : null}
         activeRole={activeRole}
         canSwitchRole={accountRole === "admin"}
+        showUserDropdown={false}
       />
 
       <section id="beranda" className="mx-auto max-w-[1080px] px-4 pb-10 pt-8 sm:pb-12 sm:px-6 lg:px-0">

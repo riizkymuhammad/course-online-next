@@ -9,6 +9,7 @@ type PublicNavbarProps = {
   activeRole: AuthRole;
   canSwitchRole: boolean;
   loginHref?: string;
+  showUserDropdown?: boolean;
 };
 
 export default function PublicNavbar({
@@ -16,12 +17,13 @@ export default function PublicNavbar({
   activeRole,
   canSwitchRole,
   loginHref = "/login",
+  showUserDropdown = true,
 }: PublicNavbarProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1080px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-0">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 shadow-theme-sm">
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 shadow-theme-sm">
             <Image
               src="/images/logo/logo-icon.svg"
               alt=""
@@ -62,21 +64,30 @@ export default function PublicNavbar({
 
         <div className="flex shrink-0 items-center gap-2">
           {userProfile ? (
-            <>
+            showUserDropdown ? (
+              <>
+                <Link
+                  href="/app"
+                  className="hidden h-9 items-center justify-center rounded-md border border-brand-200 px-4 text-xs font-bold text-brand-600 transition hover:bg-brand-50 sm:inline-flex"
+                >
+                  Dashboard
+                </Link>
+                <UserDropdown
+                  avatarUrl={userProfile.avatarUrl}
+                  displayName={userProfile.displayName}
+                  email={userProfile.email}
+                  activeRole={activeRole}
+                  canSwitchRole={canSwitchRole}
+                />
+              </>
+            ) : (
               <Link
                 href="/app"
-                className="hidden h-9 items-center justify-center rounded-md border border-brand-200 px-4 text-xs font-bold text-brand-600 transition hover:bg-brand-50 sm:inline-flex"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-500 px-4 text-xs font-bold text-white shadow-theme-sm transition hover:bg-brand-600"
               >
                 Dashboard
               </Link>
-              <UserDropdown
-                avatarUrl={userProfile.avatarUrl}
-                displayName={userProfile.displayName}
-                email={userProfile.email}
-                activeRole={activeRole}
-                canSwitchRole={canSwitchRole}
-              />
-            </>
+            )
           ) : (
             <>
               <Link
@@ -87,7 +98,7 @@ export default function PublicNavbar({
               </Link>
               <Link
                 href="/register"
-                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-600 px-4 text-xs font-bold text-white shadow-theme-sm transition hover:bg-brand-700"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-500 px-4 text-xs font-bold text-white shadow-theme-sm transition hover:bg-brand-600"
               >
                 Daftar
               </Link>
