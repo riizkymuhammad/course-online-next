@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import UserDropdown from "@/components/header/UserDropdown";
+import PublicNavbar from "@/components/header/PublicNavbar";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -115,61 +115,12 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-900/95">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 shadow-theme-sm">
-              <Image
-                src="/images/logo/logo-icon.svg"
-                alt="Logo platform belajar"
-                width={20}
-                height={20}
-              />
-            </div>
-            <div>
-              <p className="text-base font-semibold text-gray-900 dark:text-white/90">
-                Course Online
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Detail tryout</p>
-            </div>
-          </Link>
-
-          <div className="flex items-center gap-2">
-            {userProfile ? (
-              <>
-                <Link
-                  href="/app"
-                  className="hidden rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 dark:border-brand-500/20 dark:text-brand-400 dark:hover:bg-brand-500/10 sm:inline-flex"
-                >
-                  App
-                </Link>
-                <UserDropdown
-                  avatarUrl={userProfile.avatarUrl}
-                  displayName={userProfile.displayName}
-                  email={userProfile.email}
-                  activeRole={activeRole}
-                  canSwitchRole={accountRole === "admin"}
-                />
-              </>
-            ) : (
-              <>
-                <Link
-                  href={`/login?redirectedFrom=${encodeURIComponent(detailHref)}`}
-                  className="inline-flex rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50 dark:border-brand-500/20 dark:text-brand-400 dark:hover:bg-brand-500/10"
-                >
-                  Masuk
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600"
-                >
-                  Daftar
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      <PublicNavbar
+        userProfile={userProfile}
+        activeRole={activeRole}
+        canSwitchRole={accountRole === "admin"}
+        loginHref={`/login?redirectedFrom=${encodeURIComponent(detailHref)}`}
+      />
 
       <main className="px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl space-y-5">

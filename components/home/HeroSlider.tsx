@@ -29,44 +29,39 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
     return null;
   }
 
+  const visibleSlides =
+    slides.length > 1
+      ? [slides[activeIndex], slides[(activeIndex + 1) % slides.length]]
+      : slides;
+
   return (
-    <div className="relative overflow-hidden rounded-lg border border-brand-100/80 bg-white shadow-theme-md">
-      <div className="relative min-h-[360px] lg:min-h-[390px]">
-        {slides.map((slide, index) => (
-          <div
-            key={slide.id}
-            className={`absolute inset-0 transition-all duration-700 ${
-              index === activeIndex
-                ? "pointer-events-auto opacity-100"
-                : "pointer-events-none opacity-0"
+    <div>
+      <div className="grid gap-5 lg:grid-cols-2">
+        {visibleSlides.map((slide, index) => (
+          <article
+            key={`${activeIndex}-${slide.id}`}
+            className={`relative aspect-[7/4] overflow-hidden rounded-lg border border-gray-200 bg-white shadow-[0_12px_32px_rgba(16,24,40,0.06)] ${
+              index === 1 ? "hidden lg:block" : ""
             }`}
           >
             <Image
               src={slide.image}
               alt={slide.title}
               fill
-              priority={index === 0}
-              className="object-cover"
-              sizes="(min-width: 1024px) 45vw, 100vw"
+              priority={activeIndex === 0 && index === 0}
+              className="object-contain"
+              sizes="(min-width: 1024px) 540px, 100vw"
             />
-            <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-950/55 to-brand-700/10" />
-            <div className="absolute inset-x-0 bottom-0 p-5 text-white sm:p-6">
-              <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
-                {slide.badge}
-              </span>
-              <h2 className="mt-3 max-w-lg text-xl font-semibold sm:text-2xl">{slide.title}</h2>
-              <p className="mt-3 text-xs font-medium text-blue-light-200 sm:text-sm">{slide.meta}</p>
-            </div>
-          </div>
+          </article>
         ))}
       </div>
 
-      <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-white/90 px-3 py-2 shadow-theme-sm backdrop-blur">
+      <div className="mt-5 flex items-center justify-center gap-2">
         {slides.map((slide, index) => (
           <button
             key={slide.id}
             type="button"
-            aria-label={`Tampilkan slide ${index + 1}`}
+            aria-label={`Tampilkan banner ${slide.badge}`}
             onClick={() => setActiveIndex(index)}
             className={`h-2.5 rounded-full transition-all ${
               index === activeIndex ? "w-8 bg-brand-500" : "w-2.5 bg-brand-200"

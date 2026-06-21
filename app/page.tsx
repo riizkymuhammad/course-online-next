@@ -1,13 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import UserDropdown from "@/components/header/UserDropdown";
+import PublicNavbar from "@/components/header/PublicNavbar";
+import CourseList, { type CourseCard } from "@/components/home/CourseList";
 import HeroSlider from "@/components/home/HeroSlider";
-import LearningPathCarousel from "@/components/home/LearningPathCarousel";
-import {
-  buildLearningPathCategoryPath,
-  buildLearningPathLabel,
-} from "@/lib/learning-path";
+import TryoutList, { type TryoutCard } from "@/components/home/TryoutList";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -48,36 +45,202 @@ type TryoutRow = {
 const heroSlides = [
   {
     id: 1,
-    image: "/images/hero/hero1.jpg",
-    badge: "Course Online",
-    title: "Belajar lebih rapi dalam satu alur",
+    badge: "CPNS",
+    title: "Jelajahi Kursus & Tryout CPNS Terbaik",
+    image: "/images/hero/hero-cpns.png",
     description: "",
-    meta: "Materi terstruktur",
+    meta: "Materi SKD, SKB, dan tryout CAT dalam satu jalur belajar",
   },
   {
     id: 2,
-    image: "/images/hero/hero2.jpg",
-    badge: "Learning Path",
-    title: "Pilih jalur belajar yang sesuai targetmu",
+    badge: "Bahasa Inggris",
+    title: "Tingkatkan Skill Bahasa Inggris Anda",
+    image: "/images/hero/hero-english.png",
     description: "",
-    meta: "Belajar lebih fokus",
+    meta: "Kuasai grammar, TOEFL, IELTS, serta speaking dengan percaya diri",
   },
   {
     id: 3,
-    image: "/images/hero/hero3.jpg",
-    badge: "Tryout",
-    title: "Latihan untuk ukur progres belajarmu",
+    badge: "TI & Perangkat Lunak",
+    title: "Bangun Skill Teknologi untuk Masa Depan",
+    image: "/images/hero/hero-it.png",
     description: "",
-    meta: "Siap untuk evaluasi",
+    meta: "Belajar web development, data science, dan tools profesional",
   },
 ];
 
-const materialImages = [
-  "/images/product/product-01.jpg",
-  "/images/product/product-02.jpg",
-  "/images/product/product-03.jpg",
-  "/images/product/product-04.jpg",
-  "/images/product/product-05.jpg",
+const categories = [
+  {
+    title: "CPNS",
+    description: "Materi lengkap SKD & SKB, latihan soal, dan tryout simulasi sesuai standar BKN.",
+    count: "32 kelas",
+    tone: "bg-brand-50 text-brand-600",
+    icon: <BriefcaseIcon />,
+  },
+  {
+    title: "Bahasa Inggris",
+    description: "TOEFL, IELTS, dan percakapan profesional untuk karier dan studi lanjut.",
+    count: "28 kelas",
+    tone: "bg-[#eef0ff] text-[#4f46e5]",
+    icon: <LanguageIcon />,
+  },
+  {
+    title: "TI & Perangkat Lunak",
+    description: "Web development, data science, dan tools profesional dari dasar hingga mahir.",
+    count: "45 kelas",
+    tone: "bg-[#e9fbf8] text-[#0891b2]",
+    icon: <CodeIcon />,
+  },
+];
+
+const fallbackCourses: CourseCard[] = [
+  {
+    id: "fallback-course-1",
+    title: "Persiapan SKD CPNS: TWK, TIU & TKP Lengkap",
+    category: "CPNS",
+    subCategory: "SKD",
+    backgroundColor: "#144272",
+  },
+  {
+    id: "fallback-course-2",
+    title: "TOEFL ITP Mastery: Score 550+ in 30 Days",
+    category: "Bahasa Inggris",
+    subCategory: "TOEFL",
+    backgroundColor: "#205295",
+  },
+  {
+    id: "fallback-course-3",
+    title: "Fullstack Web Development dengan React & Node",
+    category: "TI & Perangkat Lunak",
+    subCategory: "Web Development",
+    backgroundColor: "#2C74B3",
+  },
+  {
+    id: "fallback-course-4",
+    title: "Bedah Kisi-Kisi TIU: Logika & Numerik",
+    category: "CPNS",
+    subCategory: "TIU",
+    backgroundColor: "#144272",
+  },
+  {
+    id: "fallback-course-5",
+    title: "English Conversation for Professionals",
+    category: "Bahasa Inggris",
+    subCategory: "Conversation",
+    backgroundColor: "#205295",
+  },
+  {
+    id: "fallback-course-6",
+    title: "Python untuk Data Science & Analitik",
+    category: "TI & Perangkat Lunak",
+    subCategory: "Data Science",
+    backgroundColor: "#2C74B3",
+  },
+  {
+    id: "fallback-course-7",
+    title: "Strategi Jitu Menjawab TKP Skor Maksimal",
+    category: "CPNS",
+    subCategory: "TKP",
+    backgroundColor: "#144272",
+  },
+  {
+    id: "fallback-course-8",
+    title: "IELTS Academic: Writing & Speaking Booster",
+    category: "Bahasa Inggris",
+    subCategory: "IELTS",
+    backgroundColor: "#205295",
+  },
+];
+
+const fallbackTryouts: TryoutCard[] = [
+  {
+    id: "fallback-tryout-1",
+    title: "Tryout SKD CPNS: TWK, TIU & TKP",
+    category: "CPNS",
+    subCategory: "SKD",
+    backgroundColor: "#144272",
+    href: "/tryouts",
+  },
+  {
+    id: "fallback-tryout-2",
+    title: "Simulasi TOEFL ITP Lengkap",
+    category: "Bahasa Inggris",
+    subCategory: "TOEFL",
+    backgroundColor: "#205295",
+    href: "/tryouts",
+  },
+  {
+    id: "fallback-tryout-3",
+    title: "Tryout Sertifikasi Web Development",
+    category: "TI & Perangkat Lunak",
+    subCategory: "Web Development",
+    backgroundColor: "#2C74B3",
+    href: "/tryouts",
+  },
+  {
+    id: "fallback-tryout-4",
+    title: "Latihan TIU: Logika & Numerik",
+    category: "CPNS",
+    subCategory: "TIU",
+    backgroundColor: "#144272",
+    href: "/tryouts",
+  },
+  {
+    id: "fallback-tryout-5",
+    title: "IELTS Academic Practice Test",
+    category: "Bahasa Inggris",
+    subCategory: "IELTS",
+    backgroundColor: "#205295",
+    href: "/tryouts",
+  },
+  {
+    id: "fallback-tryout-6",
+    title: "Coding Challenge Dasar",
+    category: "TI & Perangkat Lunak",
+    subCategory: "Programming",
+    backgroundColor: "#2C74B3",
+    href: "/tryouts",
+  },
+  {
+    id: "fallback-tryout-7",
+    title: "Strategi Menjawab Soal TKP",
+    category: "CPNS",
+    subCategory: "TKP",
+    backgroundColor: "#144272",
+    href: "/tryouts",
+  },
+  {
+    id: "fallback-tryout-8",
+    title: "English Grammar Assessment",
+    category: "Bahasa Inggris",
+    subCategory: "Grammar",
+    backgroundColor: "#205295",
+    href: "/tryouts",
+  },
+];
+
+const testimonials = [
+  {
+    quote:
+      "Materi TWK dan TIU-nya sangat terstruktur. Tryout-nya benar-benar mirip dengan ujian asli.",
+    name: "Dimas Aryo",
+    role: "Lulus CPNS Kemenkeu 2025",
+    initials: "DA",
+  },
+  {
+    quote:
+      "Mentornya sabar dan metodenya mudah dipahami. Skor TOEFL saya naik drastis hanya dalam sebulan belajar.",
+    name: "Nabila Putri",
+    role: "Score TOEFL 587",
+    initials: "NP",
+  },
+  {
+    quote:
+      "Dari nol sampai bisa bikin aplikasi fullstack. Kelas TI-nya praktis dan langsung bisa dipakai kerja.",
+    name: "Rizky Hidayat",
+    role: "Junior Web Developer",
+    initials: "RH",
+  },
 ];
 
 function slugify(value: string) {
@@ -89,48 +252,86 @@ function slugify(value: string) {
     .replace(/-+/g, "-");
 }
 
-function buildMaterialCards(paths: LearningPathRow[], courses: CourseRow[]) {
-  return courses.map((course, index) => {
-    const path = paths.find((item) => item.id === course.learning_path_id);
+function resolveCourseCategory(title: string, index: number) {
+  const value = title.toLowerCase();
+
+  if (value.includes("cpns") || value.includes("skd") || value.includes("twk")) return "CPNS";
+  if (value.includes("english") || value.includes("inggris") || value.includes("toefl")) {
+    return "Bahasa Inggris";
+  }
+  if (value.includes("web") || value.includes("data") || value.includes("ti")) {
+    return "TI & Perangkat Lunak";
+  }
+
+  return ["CPNS", "Bahasa Inggris", "TI & Perangkat Lunak"][index % 3];
+}
+
+function getCourseCardBackground(category: string) {
+  const normalizedCategory = category.trim().toLowerCase();
+
+  if (normalizedCategory.includes("cpns")) return "#144272";
+  if (normalizedCategory.includes("english") || normalizedCategory.includes("inggris")) {
+    return "#205295";
+  }
+
+  return "#2C74B3";
+}
+
+function buildCourseCards(
+  courses: CourseRow[],
+  learningPathMap: Map<string, LearningPathRow>
+): CourseCard[] {
+  if (!courses.length) return fallbackCourses;
+
+  return courses.slice(0, 8).map((course, index) => {
+    const learningPath = course.learning_path_id
+      ? learningPathMap.get(course.learning_path_id)
+      : undefined;
+
+    const category = learningPath?.category?.trim() || resolveCourseCategory(course.title, index);
 
     return {
       id: course.id,
       title: course.title,
-      learningPath: path ? buildLearningPathLabel(path) : "Learning Path Umum",
-      image: course.thumbnail || materialImages[index % materialImages.length],
-      sectionCount: course.section_count ?? 0,
-      moduleCount: course.module_count ?? 0,
+      category,
+      subCategory:
+        learningPath?.sub_category?.trim() ||
+        learningPath?.sub_sub_category?.trim() ||
+        "Umum",
+      backgroundColor: getCourseCardBackground(category),
     };
   });
 }
 
-function buildTryoutCards(tryouts: TryoutRow[], learningPathMap: Map<string, string>) {
-  return tryouts.map((item, index) => {
+function buildTryoutHref(tryout: TryoutRow | undefined) {
+  if (!tryout) return "/tryouts";
+  return `/tryout/${tryout.id}/${slugify(tryout.title)}`;
+}
+
+function buildTryoutCards(
+  tryouts: TryoutRow[],
+  learningPathMap: Map<string, LearningPathRow>
+): TryoutCard[] {
+  if (!tryouts.length) return fallbackTryouts;
+
+  return tryouts.slice(0, 8).map((tryout, index) => {
+    const learningPath = tryout.learning_path_id
+      ? learningPathMap.get(tryout.learning_path_id)
+      : undefined;
+    const category = learningPath?.category?.trim() || resolveCourseCategory(tryout.title, index);
+
     return {
-      ...item,
-      image: item.thumbnail_url || materialImages[index % materialImages.length],
-      href: `/tryout/${item.id}/${slugify(item.title)}`,
-      learningPath: item.learning_path_id
-        ? learningPathMap.get(item.learning_path_id) || "Learning Path"
-        : "Tryout Umum",
+      id: tryout.id,
+      title: tryout.title,
+      category,
+      subCategory:
+        learningPath?.sub_category?.trim() ||
+        learningPath?.sub_sub_category?.trim() ||
+        "Umum",
+      backgroundColor: getCourseCardBackground(category),
+      href: buildTryoutHref(tryout),
     };
   });
-}
-
-function isSvgImage(value: string) {
-  return value.toLowerCase().includes(".svg");
-}
-
-function getCardTone(index: number) {
-  const tones = [
-    "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400",
-    "bg-blue-light-50 text-blue-light-700 dark:bg-blue-light-500/15 dark:text-blue-light-400",
-    "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-400",
-    "bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-warning-400",
-    "bg-orange-50 text-orange-700 dark:bg-orange-500/15 dark:text-orange-400",
-  ];
-
-  return tones[index % tones.length];
 }
 
 export default async function HomePage() {
@@ -143,26 +344,26 @@ export default async function HomePage() {
     { data: learningPathRows },
     { data: tryoutRows },
     { data: courseRows },
-  ] =
-    await Promise.all([
-      supabase.auth.getUser(),
-      supabase
-        .from("learning_paths")
-        .select("id, title, slug, category, sub_category, sub_sub_category, status")
-        .eq("status", "published")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("tryouts")
-        .select("id, title, learning_path_id, total_questions, thumbnail_url, status")
-        .eq("status", "published")
-        .order("updated_at", { ascending: false })
-        .limit(12),
-      supabase
-        .from("courses")
-        .select("id, title, learning_path_id, section_count, module_count, thumbnail, status")
-        .eq("status", "published")
-        .order("created_at", { ascending: false }),
-    ]);
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("learning_paths")
+      .select("id, title, slug, category, sub_category, sub_sub_category, status")
+      .eq("status", "published")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("tryouts")
+      .select("id, title, learning_path_id, total_questions, thumbnail_url, status")
+      .eq("status", "published")
+      .order("updated_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("courses")
+      .select("id, title, learning_path_id, section_count, module_count, thumbnail, status")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(12),
+  ]);
 
   const isLoggedIn = Boolean(user);
   const userProfile = getUserProfile(user);
@@ -175,456 +376,361 @@ export default async function HomePage() {
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const tryouts = (tryoutRows as TryoutRow[] | null) ?? [];
   const courses = (courseRows as CourseRow[] | null) ?? [];
-  const featuredCourses = courses.slice(0, 5);
   const learningPathMap = new Map(
-    learningPaths.map((item) => [item.id, buildLearningPathLabel(item)])
+    learningPaths.map((item) => [item.id, item])
   );
-  const materialCountMap = new Map<string, number>();
-  const totalModuleCount = courses.reduce((total, item) => total + (item.module_count ?? 0), 0);
-  const totalSectionCount = courses.reduce((total, item) => total + (item.section_count ?? 0), 0);
-
-  courses.forEach((item) => {
-    if (!item.learning_path_id) return;
-    materialCountMap.set(
-      item.learning_path_id,
-      (materialCountMap.get(item.learning_path_id) ?? 0) + 1
-    );
-  });
-
-  const learningPathItems = (learningPaths.length
-    ? learningPaths
-    : [
-        {
-          id: "fallback-1",
-          title: "Dasar UTBK",
-          slug: "dasar-utbk",
-          category: null,
-          sub_category: null,
-          sub_sub_category: null,
-          status: "published" as const,
-        },
-        {
-          id: "fallback-2",
-          title: "Literasi & Membaca",
-          slug: "literasi-membaca",
-          category: null,
-          sub_category: null,
-          sub_sub_category: null,
-          status: "published" as const,
-        },
-        {
-          id: "fallback-3",
-          title: "Penalaran Intensif",
-          slug: "penalaran-intensif",
-          category: null,
-          sub_category: null,
-          sub_sub_category: null,
-          status: "published" as const,
-        },
-        {
-          id: "fallback-4",
-          title: "Simulasi Tryout",
-          slug: "simulasi-tryout",
-          category: null,
-          sub_category: null,
-          sub_sub_category: null,
-          status: "published" as const,
-        },
-      ]) as LearningPathRow[];
-
-  const materialCards = buildMaterialCards(learningPaths, featuredCourses);
+  const courseCards = buildCourseCards(courses, learningPathMap);
   const tryoutCards = buildTryoutCards(tryouts, learningPathMap);
-  const carouselItems = learningPathItems.map((path) => ({
-    id: path.id,
-    title: path.title,
-    categoryPath: buildLearningPathCategoryPath(path),
-    materialCount: materialCountMap.get(path.id) ?? 0,
-  }));
+  const featuredTryout = tryouts[0];
+  const tryoutHref = buildTryoutHref(featuredTryout);
+  const actionHref = isLoggedIn ? "/app" : "/register";
 
   return (
-    <main className="min-h-screen bg-linear-to-b from-white via-blue-light-25 to-white text-gray-900">
-      <nav className="sticky top-0 z-50 border-b border-brand-100/70 bg-white/92 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-500 shadow-theme-sm">
-              <Image
-                src="/images/logo/logo-icon.svg"
-                alt="Logo platform belajar"
-                width={20}
-                height={20}
-              />
-            </div>
+    <main className="min-h-screen bg-white text-gray-900">
+      <PublicNavbar
+        userProfile={isLoggedIn ? userProfile : null}
+        activeRole={activeRole}
+        canSwitchRole={accountRole === "admin"}
+      />
+
+      <section id="beranda" className="mx-auto max-w-[1080px] px-4 pb-10 pt-8 sm:pb-12 sm:px-6 lg:px-0">
+        <HeroSlider slides={heroSlides} />
+      </section>
+
+      <section className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+        <SectionHeading
+          title="Pilih Kategori Belajarmu"
+          description="Tiga jalur pembelajaran utama yang dirancang untuk membantumu mencapai target."
+          centered
+        />
+
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {categories.map((category) => (
+            <article
+              key={category.title}
+              className="rounded-lg border border-gray-200 bg-white p-7 shadow-[0_12px_32px_rgba(16,24,40,0.04)] transition hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_16px_40px_rgba(16,24,40,0.08)]"
+            >
+              <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${category.tone}`}>
+                {category.icon}
+              </div>
+              <h3 className="mt-7 text-base font-bold text-gray-900">{category.title}</h3>
+              <p className="mt-4 min-h-[72px] text-sm leading-6 text-gray-600">
+                {category.description}
+              </p>
+              <a
+                href="#kelas"
+                className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-brand-600 transition hover:text-brand-700"
+              >
+                {category.count}
+                <ArrowRightIcon className="h-3.5 w-3.5" />
+              </a>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="kelas" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+        <SectionHeading
+          title="Kelas Populer Pilihan"
+          description="Materi terkurasi yang paling banyak diikuti oleh siswa kami."
+        />
+        <CourseList courses={courseCards} actionHref={actionHref} />
+      </section>
+
+      <section id="tryout" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+        <SectionHeading
+          title="Tryout Populer Pilihan"
+          description="Latihan dan simulasi tryout untuk mengukur progres belajarmu."
+        />
+        <TryoutList tryouts={tryoutCards} />
+      </section>
+
+      <section id="promo-tryout" className="bg-gray-50">
+        <div className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+          <div className="grid gap-8 rounded-lg border border-gray-200 bg-white p-7 shadow-[0_16px_48px_rgba(16,24,40,0.06)] md:grid-cols-[1fr_0.9fr] md:items-center lg:p-10">
             <div>
-              <p className="text-base font-semibold text-gray-900">Course Online</p>
-              <p className="text-xs text-gray-500">Materi dan tryout terarah</p>
-            </div>
-          </Link>
-
-          <div className="hidden items-center gap-6 text-sm font-medium text-gray-600 md:flex">
-            <a href="#hero" className="transition hover:text-brand-600">
-              Hero
-            </a>
-            <a href="#learning-path" className="transition hover:text-brand-600">
-              Learning Path
-            </a>
-            <a href="#materi" className="transition hover:text-brand-600">
-              Materi
-            </a>
-            <a href="#tryout" className="transition hover:text-brand-600">
-              Tryout
-            </a>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {isLoggedIn ? (
-              <>
-                <Link
-                  href="/dashboard"
-                  className="hidden rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600 sm:inline-flex"
-                >
-                  Dashboard
-                </Link>
-                <UserDropdown
-                  avatarUrl={userProfile.avatarUrl}
-                  displayName={userProfile.displayName}
-                  email={userProfile.email}
-                  activeRole={activeRole}
-                  canSwitchRole={accountRole === "admin"}
-                />
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/login"
-                  className="inline-flex rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
-                >
-                  Masuk
-                </Link>
-                <Link
-                  href="/register"
-                  className="inline-flex rounded-lg bg-brand-500 px-3.5 py-2 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600"
-                >
-                  Daftar
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
-
-      <section id="hero" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-12">
-        <div className="grid items-center gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-          <div>
-            <span className="inline-flex rounded-full border border-brand-100 bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-600 shadow-theme-xs">
-              Course online
-            </span>
-            <h1 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl lg:text-[44px] lg:leading-[1.1]">
-              Belajar online yang rapi, fokus, dan mudah diikuti.
-            </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-gray-600">
-              Pilih learning path, pelajari materi, lalu lanjut ke tryout dalam satu tempat.
-            </p>
-
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#learning-path"
-                className="inline-flex items-center justify-center rounded-xl bg-brand-500 px-5 py-3 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600"
-              >
-                Lihat Learning Path
-              </a>
-              <a
-                href="#materi"
-                className="inline-flex items-center justify-center rounded-xl border border-brand-200 bg-white px-5 py-3 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
-              >
-                Lihat Materi
-              </a>
-            </div>
-
-          </div>
-
-          <HeroSlider slides={heroSlides} />
-        </div>
-      </section>
-
-      <section id="learning-path" className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
-        <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">
-              Learning Path
-            </span>
-            <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-              Pilih jalur belajar
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              Setiap path berisi materi yang sudah disusun lebih terarah.
-            </p>
-          </div>
-          <p className="text-sm font-semibold text-brand-600">
-            {learningPathItems.length} learning path - {courses.length} materi
-          </p>
-        </div>
-
-        <LearningPathCarousel items={carouselItems} />
-      </section>
-
-      <section id="materi" className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
-        <div className="flex items-end justify-between gap-4">
-          <div className="max-w-2xl">
-            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">
-              Koleksi Materi
-            </span>
-            <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-              Materi untuk mulai belajar
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              {courses.length} materi, {totalSectionCount} section, dan {totalModuleCount} modul siap dipelajari.
-            </p>
-          </div>
-          <Link
-            href="/courses"
-            className="inline-flex shrink-0 rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
-          >
-            Tampilkan Semua
-          </Link>
-        </div>
-
-        {materialCards.length ? (
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-            {materialCards.map((card, index) => (
-              <article
-                key={card.id}
-                className="group overflow-hidden rounded-lg border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md dark:border-gray-800 dark:bg-white/[0.03]"
-              >
-                <div className="relative h-44 overflow-hidden border-b border-gray-100 dark:border-gray-800">
-                  <Image
-                    src={card.image}
-                    alt={card.title}
-                    fill
-                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                    sizes="(min-width: 1280px) 20vw, (min-width: 640px) 50vw, 100vw"
-                  />
-                  <div className="absolute inset-x-4 top-4 flex items-center justify-between gap-3">
-                    <span className="inline-flex rounded-full border border-white/60 bg-white/95 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-700">
-                      Materi
-                    </span>
-                  </div>
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-600">
-                      {card.learningPath}
-                    </p>
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium ${getCardTone(index)}`}
-                    >
-                      {card.moduleCount} modul
-                    </span>
-                  </div>
-                  <h3 className="mt-3 line-clamp-2 text-base font-semibold leading-6 text-gray-800 transition group-hover:text-brand-600 dark:text-white/90">
-                    {card.title}
-                  </h3>
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    {card.learningPath}
-                  </p>
-                  <p className="mt-3 line-clamp-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
-                    Materi ini sudah disusun biar kamu bisa belajar pelan-pelan, paham alurnya,
-                    dan tidak bingung lanjut ke bagian berikutnya.
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-medium text-gray-600 dark:text-gray-300">
-                    <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
-                      {card.sectionCount} section
-                    </span>
-                    <span className="rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 dark:border-gray-700 dark:bg-white/[0.03]">
-                      {card.moduleCount} modul
-                    </span>
-                  </div>
-                  <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
-                    <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
-                      Siap dipelajari
-                    </span>
-                    <span className="text-sm font-semibold text-brand-600 transition group-hover:translate-x-0.5">
-                      Lihat materi
-                    </span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        ) : (
-          <div className="mt-5 rounded-lg border border-dashed border-brand-200 bg-white px-5 py-4 text-sm text-gray-500">
-            Materi belum tersedia.
-          </div>
-        )}
-      </section>
-
-      <section id="tryout" className="mx-auto max-w-7xl px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
-        <div>
-          <div className="flex items-end justify-between gap-4">
-            <div className="max-w-2xl">
-              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">
-                Koleksi Tryout
-              </span>
-              <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-                Tryout untuk evaluasi
+              <div className="inline-flex items-center gap-2 text-xs font-bold text-brand-600">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-50">
+                  <TargetIcon />
+                </span>
+                Tryout Akbar CPNS 2026
+              </div>
+              <h2 className="mt-6 max-w-xl text-2xl font-bold leading-tight text-gray-950 sm:text-3xl">
+                {featuredTryout?.title || "Simulasi Tryout SKD Gratis untuk Ribuan Peserta"}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-gray-600">
-                Lanjut latihan setelah belajar materi.
+              <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">
+                Uji kemampuanmu dengan soal sesuai standar BKN, dapatkan ranking nasional,
+                dan analisis hasil mendetail.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-5 text-sm font-semibold text-gray-700">
+                <span className="inline-flex items-center gap-2">
+                  <UsersIcon />
+                  8.420 peserta terdaftar
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <GiftIcon />
+                  Hadiah voucher kelas premium
+                </span>
+              </div>
+
+              <Link
+                href={tryoutHref}
+                className="mt-7 inline-flex h-11 items-center justify-center rounded-md bg-brand-600 px-6 text-sm font-bold text-white shadow-theme-sm transition hover:bg-brand-700"
+              >
+                Daftar Tryout Gratis
+              </Link>
+            </div>
+
+            <div className="rounded-lg bg-linear-to-br from-brand-500 to-[#075be8] p-7 text-white shadow-[0_18px_38px_rgba(70,95,255,0.24)]">
+              <p className="text-center text-sm font-semibold text-white/85">
+                Pendaftaran ditutup dalam
+              </p>
+              <div className="mt-6 grid grid-cols-4 gap-3">
+                {[
+                  ["07", "Hari"],
+                  ["04", "Jam"],
+                  ["59", "Menit"],
+                  ["50", "Detik"],
+                ].map(([value, label]) => (
+                  <div key={label} className="rounded-lg bg-white/12 px-2 py-4 text-center">
+                    <p className="text-2xl font-bold leading-none sm:text-3xl">{value}</p>
+                    <p className="mt-2 text-xs font-semibold text-white/80">{label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-6 text-center text-xs leading-5 text-white/75">
+                Pelaksanaan serentak online. Sertifikat peserta tersedia.
               </p>
             </div>
-            <Link
-              href="/tryouts"
-              className="inline-flex shrink-0 rounded-lg border border-brand-200 px-3.5 py-2 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
-            >
-              Tampilkan Semua
-            </Link>
-          </div>
-
-          {tryoutCards.length ? (
-            <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {tryoutCards.map((card) => {
-                const isGeneratedThumbnail = isSvgImage(card.image);
-
-                return (
-                  <Link
-                    key={card.id}
-                    href={card.href}
-                    className="group block overflow-hidden rounded-lg border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
-                  >
-                    <div className="relative h-40 overflow-hidden border-b border-brand-200 bg-brand-500 p-5 dark:border-brand-500/20 dark:bg-brand-600">
-                      <Image
-                        src={card.image}
-                        alt={card.title}
-                        fill
-                        unoptimized={isGeneratedThumbnail}
-                        className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                        sizes="(min-width: 1280px) 25vw, (min-width: 640px) 50vw, 100vw"
-                      />
-                      {!isGeneratedThumbnail ? (
-                        <div className="absolute inset-0 bg-linear-to-br from-brand-500/70 via-brand-500/35 to-brand-800/75" />
-                      ) : null}
-                      <div className="relative flex h-full flex-col justify-between">
-                        <span className="inline-flex w-fit max-w-full rounded-full border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-semibold text-white/95 backdrop-blur">
-                          {card.learningPath}
-                        </span>
-                        {!isGeneratedThumbnail ? (
-                          <h3 className="line-clamp-2 max-w-[92%] text-lg font-semibold leading-7 text-white">
-                            {card.title}
-                          </h3>
-                        ) : null}
-                      </div>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="flex items-center justify-between gap-3 border-t border-gray-100 pt-4 dark:border-gray-800">
-                        <span className="inline-flex rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-600 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300">
-                          {card.total_questions ?? 0} soal
-                        </span>
-                        <span className="inline-flex h-10 items-center justify-center rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white transition group-hover:bg-brand-600">
-                          Kerjakan
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="mt-5 rounded-lg border border-dashed border-brand-200 bg-white px-5 py-4 text-sm text-gray-500">
-              Tryout belum tersedia.
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section id="cta" className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        <div className="rounded-lg border border-brand-100 bg-white px-5 py-6 shadow-theme-sm sm:px-6 lg:flex lg:items-center lg:justify-between">
-          <div className="max-w-xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600">
-              Mulai Sekarang
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-gray-900 sm:text-3xl">
-              Mulai belajar dari sekarang
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-gray-600">
-              Learning path, materi, dan tryout sudah disusun dalam satu alur.
-            </p>
-          </div>
-
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row lg:mt-0">
-            <a
-              href="#materi"
-              className="inline-flex items-center justify-center rounded-xl bg-brand-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-600"
-            >
-              Jelajahi Materi
-            </a>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center justify-center rounded-xl border border-brand-200 px-5 py-3 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
-            >
-              Buka Dashboard
-            </Link>
           </div>
         </div>
       </section>
 
-      <footer className="border-t border-brand-100 bg-gray-900 text-gray-300">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[1.2fr_0.8fr_0.8fr_0.8fr] lg:px-8">
+      <section id="tentang" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+        <SectionHeading
+          title="Apa Kata Mereka"
+          description="Ribuan siswa telah mencapai targetnya bersama EduPrime."
+          centered
+        />
+
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {testimonials.map((testimonial) => (
+            <article
+              key={testimonial.name}
+              className="rounded-lg border border-gray-200 bg-white p-7 shadow-[0_12px_32px_rgba(16,24,40,0.04)]"
+            >
+              <QuoteIcon />
+              <div className="mt-5 flex gap-1 text-[#f59e0b]" aria-label="Rating 5 dari 5">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <StarIcon key={index} />
+                ))}
+              </div>
+              <p className="mt-5 min-h-[96px] text-sm leading-6 text-gray-700">
+                &quot;{testimonial.quote}&quot;
+              </p>
+              <div className="mt-6 flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-600">
+                  {testimonial.initials}
+                </span>
+                <span>
+                  <span className="block text-sm font-bold text-gray-900">{testimonial.name}</span>
+                  <span className="block text-xs font-medium text-gray-500">{testimonial.role}</span>
+                </span>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <footer className="border-t border-gray-200 bg-gray-50">
+        <div className="mx-auto grid max-w-[1080px] gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_0.7fr_0.7fr_0.7fr] lg:px-0">
           <div>
-            <p className="text-lg font-semibold text-white">Course Online</p>
-            <p className="mt-3 max-w-sm text-sm leading-6 text-gray-400">
-              Platform belajar online dengan alur yang lebih rapi dan terarah.
+            <Link href="/" className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
+                <Image
+                  src="/images/logo/logo-icon.svg"
+                  alt=""
+                  width={17}
+                  height={17}
+                  className="brightness-0 invert"
+                />
+              </span>
+              <span className="text-sm font-bold text-gray-900">
+                Edu<span className="text-brand-600">Prime</span>
+              </span>
+            </Link>
+            <p className="mt-6 max-w-sm text-sm leading-6 text-gray-600">
+              Platform belajar online untuk persiapan CPNS, Bahasa Inggris, dan Teknologi
+              Informasi. Belajar terarah, raih targetmu.
             </p>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Navigasi</p>
-            <div className="mt-3 space-y-2 text-sm">
-              <a href="#hero" className="block transition hover:text-white">
-                Hero
-              </a>
-              <a href="#learning-path" className="block transition hover:text-white">
-                Learning Path
-              </a>
-              <a href="#materi" className="block transition hover:text-white">
-                Materi
-              </a>
-              <a href="#tryout" className="block transition hover:text-white">
-                Tryout
-              </a>
+            <div className="mt-6 flex gap-3">
+              {["Fb", "Ig", "Tw", "Yt"].map((item) => (
+                <a
+                  key={item}
+                  href="#beranda"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-xs font-bold text-gray-500 transition hover:border-brand-200 hover:text-brand-600"
+                >
+                  {item}
+                </a>
+              ))}
             </div>
           </div>
 
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Program</p>
-            <div className="mt-3 space-y-2 text-sm">
-              <p>Learning Path Terarah</p>
-              <p>Materi Bertahap</p>
-              <p>Tryout Evaluasi</p>
-              <p>Dashboard Belajar</p>
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-white">Kontak</p>
-            <div className="mt-3 space-y-2 text-sm">
-              <p>hello@courseonline.id</p>
-              <p>+62 812 0000 0000</p>
-              <p>Senin - Sabtu, 08.00 - 20.00</p>
-            </div>
-          </div>
+          <FooterColumn title="Kategori" items={["CPNS", "Bahasa Inggris", "TI & Perangkat Lunak", "Tryout"]} />
+          <FooterColumn title="Perusahaan" items={["Tentang Kami", "Karier", "Blog", "Kontak"]} />
+          <FooterColumn title="Bantuan" items={["Pusat Bantuan", "Syarat & Ketentuan", "Kebijakan Privasi", "FAQ"]} />
         </div>
 
-        <div className="border-t border-white/10">
-          <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-4 text-sm text-gray-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-            <p>(c) 2026 Course Online. Semua hak dilindungi.</p>
-            <div className="flex flex-wrap gap-4">
-              <p>Kebijakan Privasi</p>
-              <p>Syarat Layanan</p>
-              <p>Bantuan</p>
-            </div>
+        <div className="border-t border-gray-200">
+          <div className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-6 text-xs font-medium text-gray-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-0">
+            <p>Copyright 2026 EduPrime. Seluruh hak cipta dilindungi.</p>
+            <p>Dibuat untuk masa depan pendidikan Indonesia.</p>
           </div>
         </div>
       </footer>
     </main>
+  );
+}
+
+function SectionHeading({
+  title,
+  description,
+  centered = false,
+}: {
+  title: string;
+  description: string;
+  centered?: boolean;
+}) {
+  return (
+    <div className={centered ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
+      <h2 className="text-3xl font-bold leading-tight text-gray-950">{title}</h2>
+      <p className="mt-4 text-sm leading-6 text-gray-600">{description}</p>
+    </div>
+  );
+}
+
+function FooterColumn({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div>
+      <h3 className="text-xs font-bold text-gray-950">{title}</h3>
+      <div className="mt-5 space-y-3">
+        {items.map((item) => (
+          <a key={item} href="#beranda" className="block text-sm font-medium text-gray-600 hover:text-brand-600">
+            {item}
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BriefcaseIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M6.5 7V5.8A1.8 1.8 0 0 1 8.3 4h3.4a1.8 1.8 0 0 1 1.8 1.8V7M4.8 16h10.4a1.8 1.8 0 0 0 1.8-1.8V8.8A1.8 1.8 0 0 0 15.2 7H4.8A1.8 1.8 0 0 0 3 8.8v5.4A1.8 1.8 0 0 0 4.8 16Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function LanguageIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M4 5h7M7.5 3v2m1.8 0c-.7 3.3-2.4 5.5-5.3 7m1.8-5c1 2 2.4 3.5 4.2 4.6M11 17l3.5-8 3.5 8m-1.2-2.7h-4.6"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="m7.5 6-4 4 4 4M12.5 6l4 4-4 4M11 4.5l-2 11"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M4 10h12m0 0-4-4m4 4-4 4"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function StarIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path d="m10 1.7 2.4 5 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8L10 1.7Z" />
+    </svg>
+  );
+}
+
+function QuoteIcon() {
+  return (
+    <svg className="h-8 w-8 text-brand-100" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+      <path d="M12.5 8c-4 2.5-6 5.7-6 9.7 0 3.6 2 6.3 5.3 6.3 2.8 0 4.7-1.9 4.7-4.5 0-2.4-1.7-4.1-4-4.1-.6 0-1.1.1-1.6.3.4-1.7 1.8-3.4 4.1-5.1L12.5 8Zm13 0c-4 2.5-6 5.7-6 9.7 0 3.6 2 6.3 5.3 6.3 2.8 0 4.7-1.9 4.7-4.5 0-2.4-1.7-4.1-4-4.1-.6 0-1.1.1-1.6.3.4-1.7 1.8-3.4 4.1-5.1L25.5 8Z" />
+    </svg>
+  );
+}
+
+function TargetIcon() {
+  return (
+    <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm0-3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-2a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
+function UsersIcon() {
+  return (
+    <svg className="h-4 w-4 text-brand-500" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M7.5 9.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5 7c0-3-2-5-5-5s-5 2-5 5m12-7.2a2.5 2.5 0 0 0 0-4.6m3 11.8c0-2.4-1.4-4.1-3.6-4.7"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function GiftIcon() {
+  return (
+    <svg className="h-4 w-4 text-brand-500" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M3 8h14v9H3V8Zm7 0v9M2.5 5.5h15V8h-15V5.5ZM7.4 5.5C5 5.5 4.2 3 5.8 2.4c1.4-.5 2.9 1.1 4.2 3.1m2.6 0c2.4 0 3.2-2.5 1.6-3.1-1.4-.5-2.9 1.1-4.2 3.1"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

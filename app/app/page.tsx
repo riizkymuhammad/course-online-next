@@ -30,35 +30,27 @@ export const metadata: Metadata = {
 const promoSlides = [
   {
     id: 1,
-    image: "/images/hero/hero1.jpg",
-    badge: "Promo",
-    title: "Paket belajar intensif minggu ini",
+    image: "/images/hero/hero-cpns.png",
+    badge: "CPNS",
+    title: "Persiapan CPNS lebih terarah",
     description: "",
-    meta: "Materi pilihan dan tryout pendamping",
+    meta: "Materi SKD, SKB, dan tryout CAT dalam satu jalur belajar",
   },
   {
     id: 2,
-    image: "/images/hero/hero2.jpg",
-    badge: "Berita",
-    title: "Jadwal tryout nasional sudah dibuka",
+    image: "/images/hero/hero-english.png",
+    badge: "Bahasa Inggris",
+    title: "Tingkatkan kemampuan Bahasa Inggris",
     description: "",
-    meta: "Cek kesiapan sebelum periode ujian",
+    meta: "Kuasai grammar, TOEFL, IELTS, serta speaking dengan percaya diri",
   },
   {
     id: 3,
-    image: "/images/hero/hero3.jpg",
-    badge: "Update",
-    title: "Learning path baru untuk penalaran",
+    image: "/images/hero/hero-it.png",
+    badge: "TI & Perangkat Lunak",
+    title: "Bangun skill teknologi untuk masa depan",
     description: "",
-    meta: "Belajar bertahap dengan target yang jelas",
-  },
-  {
-    id: 4,
-    image: "/images/product/product-01.jpg",
-    badge: "Materi",
-    title: "Kelas ringkas untuk mengejar target harian",
-    description: "",
-    meta: "Belajar lebih ringan dan konsisten",
+    meta: "Belajar web development, data science, dan tools profesional",
   },
 ];
 
@@ -216,7 +208,7 @@ export default async function AppPage() {
           <AppPromoSlider slides={promoSlides} />
         </section>
 
-        <section className="mt-5">
+        <section className="mt-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-600 dark:text-brand-400">
@@ -263,7 +255,7 @@ export default async function AppPage() {
           </div>
         </section>
 
-        <section className="mt-5 grid gap-4 lg:grid-cols-2">
+        <section className="mt-3 grid gap-4 lg:grid-cols-2">
           <article className="rounded-xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03]">
             <div className="flex items-start justify-between gap-4">
               <div>
