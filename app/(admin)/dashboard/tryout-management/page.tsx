@@ -10,6 +10,8 @@ type Tryout = {
   id: string;
   title: string;
   learning_path_id: string | null;
+  category_id: string | null;
+  sub_category_id: string | null;
   learning_path_title: string;
   category: string | null;
   sub_category: string | null;
@@ -18,6 +20,17 @@ type Tryout = {
   total_questions: number;
   status: "draft" | "published" | "archived";
   updated_at: string;
+};
+
+type CategoryRow = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryRow = {
+  id: string;
+  category_id: string;
+  name: string;
 };
 
 export const metadata: Metadata = {
@@ -77,34 +90,48 @@ export default async function TryoutManagementPage({
   const params = await searchParams;
   const createdQuestionCount = getSearchParamValue(params.questions);
 
-  const [{ data: tryoutRows }, { data: learningPathRows }] = await Promise.all([
+  const [{ data: tryoutRows }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] = await Promise.all([
     supabase
       .from("tryouts")
       .select(
-        "id, title, learning_path_id, category, sub_category, total_questions, material_file_name, thumbnail_url, status, updated_at"
+        "id, title, learning_path_id, category_id, sub_category_id, total_questions, material_file_name, thumbnail_url, status, updated_at"
       )
       .order("updated_at", { ascending: false }),
     supabase.from("learning_paths").select("id, title, category, sub_category, sub_sub_category"),
+    supabase.from("categories").select("id, name"),
+    supabase.from("sub_categories").select("id, category_id, name"),
   ]);
 
   const learningPathMap = new Map(
     (learningPathRows ?? []).map((item) => [item.id, buildLearningPathOptionLabel(item)])
   );
+  const categoryMap = new Map(
+    ((categoryRows ?? []) as CategoryRow[]).map((item) => [item.id, item.name])
+  );
+  const subCategoryMap = new Map(
+    ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => [item.id, item.name])
+  );
 
   const tryouts: Tryout[] =
     tryoutRows?.map((item) => {
-      const categoryLabel = buildTryoutCategoryLabel(item.category, item.sub_category);
+      const category = item.category_id ? categoryMap.get(item.category_id) ?? null : null;
+      const subCategory = item.sub_category_id
+        ? subCategoryMap.get(item.sub_category_id) ?? null
+        : null;
+      const categoryLabel = buildTryoutCategoryLabel(category, subCategory);
 
       return {
         id: item.id,
         title: item.title,
         learning_path_id: item.learning_path_id,
+        category_id: item.category_id,
+        sub_category_id: item.sub_category_id,
         learning_path_title:
           (item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null) ??
           categoryLabel ??
           "Unassigned",
-        category: item.category ?? null,
-        sub_category: item.sub_category ?? null,
+        category,
+        sub_category: subCategory,
         material_file_name: item.material_file_name,
         thumbnail_url: item.thumbnail_url ?? null,
         total_questions: item.total_questions ?? 0,

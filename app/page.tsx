@@ -37,9 +37,22 @@ type TryoutRow = {
   id: string;
   title: string;
   learning_path_id: string | null;
+  category_id: string | null;
+  sub_category_id: string | null;
   total_questions: number | null;
   thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
+};
+
+type CategoryRow = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryRow = {
+  id: string;
+  category_id: string;
+  name: string;
 };
 
 const heroSlides = [
@@ -310,7 +323,9 @@ function buildTryoutHref(tryout: TryoutRow | undefined) {
 
 function buildTryoutCards(
   tryouts: TryoutRow[],
-  learningPathMap: Map<string, LearningPathRow>
+  learningPathMap: Map<string, LearningPathRow>,
+  categoryMap: Map<string, string>,
+  subCategoryMap: Map<string, string>
 ): TryoutCard[] {
   if (!tryouts.length) return fallbackTryouts;
 
@@ -318,7 +333,10 @@ function buildTryoutCards(
     const learningPath = tryout.learning_path_id
       ? learningPathMap.get(tryout.learning_path_id)
       : undefined;
-    const category = learningPath?.category?.trim() || resolveCourseCategory(tryout.title, index);
+    const category =
+      learningPath?.category?.trim() ||
+      (tryout.category_id ? categoryMap.get(tryout.category_id)?.trim() : undefined) ||
+      resolveCourseCategory(tryout.title, index);
 
     return {
       id: tryout.id,
@@ -327,6 +345,7 @@ function buildTryoutCards(
       subCategory:
         learningPath?.sub_category?.trim() ||
         learningPath?.sub_sub_category?.trim() ||
+        (tryout.sub_category_id ? subCategoryMap.get(tryout.sub_category_id)?.trim() : undefined) ||
         "Umum",
       backgroundColor: getCourseCardBackground(category),
       href: buildTryoutHref(tryout),
@@ -344,6 +363,8 @@ export default async function HomePage() {
     { data: learningPathRows },
     { data: tryoutRows },
     { data: courseRows },
+    { data: categoryRows },
+    { data: subCategoryRows },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
@@ -353,7 +374,9 @@ export default async function HomePage() {
       .order("created_at", { ascending: false }),
     supabase
       .from("tryouts")
-      .select("id, title, learning_path_id, total_questions, thumbnail_url, status")
+      .select(
+        "id, title, learning_path_id, category_id, sub_category_id, total_questions, thumbnail_url, status"
+      )
       .eq("status", "published")
       .order("updated_at", { ascending: false })
       .limit(8),
@@ -363,6 +386,8 @@ export default async function HomePage() {
       .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(12),
+    supabase.from("categories").select("id, name"),
+    supabase.from("sub_categories").select("id, category_id, name"),
   ]);
 
   const isLoggedIn = Boolean(user);
@@ -379,8 +404,14 @@ export default async function HomePage() {
   const learningPathMap = new Map(
     learningPaths.map((item) => [item.id, item])
   );
+  const categoryMap = new Map(
+    ((categoryRows ?? []) as CategoryRow[]).map((item) => [item.id, item.name])
+  );
+  const subCategoryMap = new Map(
+    ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => [item.id, item.name])
+  );
   const courseCards = buildCourseCards(courses, learningPathMap);
-  const tryoutCards = buildTryoutCards(tryouts, learningPathMap);
+  const tryoutCards = buildTryoutCards(tryouts, learningPathMap, categoryMap, subCategoryMap);
   const featuredTryout = tryouts[0];
   const tryoutHref = buildTryoutHref(featuredTryout);
   const actionHref = isLoggedIn ? "/app" : "/register";

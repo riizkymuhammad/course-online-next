@@ -17,10 +17,27 @@ const statusOptions = [
   { value: "archived", label: "Archived" },
 ] as const;
 
+type CategoryRow = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryRow = {
+  id: string;
+  category_id: string;
+  name: string;
+};
+
 function getErrorMessage(error: string) {
   switch (error) {
     case "required-fields":
       return "Field wajib belum lengkap. Pastikan judul, jumlah soal, dan status terisi.";
+    case "category-required":
+      return "Pilih kategori terlebih dahulu sebelum memilih sub kategori.";
+    case "category-not-found":
+      return "Kategori yang dipilih tidak ditemukan.";
+    case "sub-category-not-found":
+      return "Sub kategori tidak ditemukan untuk kategori yang dipilih.";
     case "PGRST116":
       return "Data tryout tidak ditemukan.";
     default:
@@ -36,11 +53,11 @@ export default async function EditTryoutPage({
   const query = await searchParams;
   const supabase = await createClient();
 
-  const [{ data: tryoutRow }, { data: learningPathRows }] = await Promise.all([
+  const [{ data: tryoutRow }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] = await Promise.all([
     supabase
       .from("tryouts")
       .select(
-        "id, title, learning_path_id, category, sub_category, total_questions, question_notes, status, material_file_name"
+        "id, title, learning_path_id, category_id, sub_category_id, total_questions, question_notes, status, material_file_name"
       )
       .eq("id", id)
       .single(),
@@ -51,6 +68,11 @@ export default async function EditTryoutPage({
       .order("sub_category", { ascending: true })
       .order("sub_sub_category", { ascending: true })
       .order("title", { ascending: true }),
+    supabase.from("categories").select("id, name").order("name", { ascending: true }),
+    supabase
+      .from("sub_categories")
+      .select("id, category_id, name")
+      .order("name", { ascending: true }),
   ]);
 
   if (!tryoutRow) {
@@ -62,6 +84,15 @@ export default async function EditTryoutPage({
       value: item.id,
       label: buildLearningPathOptionLabel(item),
     })) ?? [];
+  const categoryOptions = ((categoryRows ?? []) as CategoryRow[]).map((item) => ({
+    id: item.id,
+    name: item.name,
+  }));
+  const subCategoryOptions = ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => ({
+    id: item.id,
+    categoryId: item.category_id,
+    name: item.name,
+  }));
 
   return (
     <div className="space-y-6">
@@ -95,14 +126,16 @@ export default async function EditTryoutPage({
             id: tryoutRow.id,
             title: tryoutRow.title ?? "",
             learningPathId: tryoutRow.learning_path_id ?? "",
-            category: tryoutRow.category ?? "",
-            subCategory: tryoutRow.sub_category ?? "",
+            categoryId: tryoutRow.category_id ?? "",
+            subCategoryId: tryoutRow.sub_category_id ?? "",
             questionCount: tryoutRow.total_questions ?? 0,
             questionNotes: tryoutRow.question_notes ?? "",
             status: tryoutRow.status ?? "draft",
             materialFileName: tryoutRow.material_file_name ?? null,
           }}
           learningPathOptions={learningPathOptions}
+          categoryOptions={categoryOptions}
+          subCategoryOptions={subCategoryOptions}
           statusOptions={statusOptions.map((option) => ({
             value: option.value,
             label: option.label,

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { updateTryout } from "@/app/(admin)/dashboard/tryout-management/[id]/edit/actions";
 
 type Option = {
@@ -10,23 +13,47 @@ type EditTryoutValues = {
   id: string;
   title: string;
   learningPathId: string;
-  category: string;
-  subCategory: string;
+  categoryId: string;
+  subCategoryId: string;
   questionCount: number;
   questionNotes: string;
   status: string;
   materialFileName: string | null;
 };
 
+type CategoryOption = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryOption = {
+  id: string;
+  categoryId: string;
+  name: string;
+};
+
 export default function EditTryoutForm({
   values,
   learningPathOptions,
+  categoryOptions,
+  subCategoryOptions,
   statusOptions,
 }: {
   values: EditTryoutValues;
   learningPathOptions: Option[];
+  categoryOptions: CategoryOption[];
+  subCategoryOptions: SubCategoryOption[];
   statusOptions: Option[];
 }) {
+  const [selectedCategoryId, setSelectedCategoryId] = useState(values.categoryId);
+  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState(values.subCategoryId);
+  const filteredSubCategoryOptions = useMemo(
+    () => subCategoryOptions.filter((option) => option.categoryId === selectedCategoryId),
+    [selectedCategoryId, subCategoryOptions]
+  );
+  const hasCategories = categoryOptions.length > 0;
+  const hasSubCategoryOptions = filteredSubCategoryOptions.length > 0;
+
   return (
     <div className="space-y-6 px-5 py-5 sm:px-6 sm:py-6">
       <form action={updateTryout} className="space-y-6">
@@ -49,18 +76,46 @@ export default function EditTryoutForm({
               options={[{ value: "", label: "Opsional - pilih learning path" }, ...learningPathOptions]}
             />
 
-            <FormField
+            <SelectField
               label="Kategori"
-              name="category"
-              placeholder="Contoh: CPNS, Bahasa Inggris, Informatika"
-              defaultValue={values.category}
+              name="category_id"
+              value={selectedCategoryId}
+              defaultValue=""
+              disabled={!hasCategories}
+              options={[
+                {
+                  value: "",
+                  label: hasCategories ? "Opsional - pilih kategori" : "Belum ada kategori",
+                },
+                ...categoryOptions.map((option) => ({ value: option.id, label: option.name })),
+              ]}
+              onChange={(value) => {
+                setSelectedCategoryId(value);
+                setSelectedSubCategoryId("");
+              }}
             />
 
-            <FormField
+            <SelectField
               label="Sub Kategori"
-              name="sub_category"
-              placeholder="Contoh: SKD, SKB, Kosa Kata"
-              defaultValue={values.subCategory}
+              name="sub_category_id"
+              value={selectedSubCategoryId}
+              defaultValue=""
+              disabled={!selectedCategoryId || !hasSubCategoryOptions}
+              options={[
+                {
+                  value: "",
+                  label: !selectedCategoryId
+                    ? "Pilih kategori terlebih dahulu"
+                    : hasSubCategoryOptions
+                      ? "Opsional - pilih sub kategori"
+                      : "Belum ada sub kategori",
+                },
+                ...filteredSubCategoryOptions.map((option) => ({
+                  value: option.id,
+                  label: option.name,
+                })),
+              ]}
+              onChange={setSelectedSubCategoryId}
             />
 
             <FormField
@@ -187,12 +242,18 @@ function SelectField({
   defaultValue,
   required = false,
   options,
+  disabled = false,
+  value,
+  onChange,
 }: {
   label: string;
   name: string;
   defaultValue: string;
   required?: boolean;
   options: Array<{ value: string; label: string }>;
+  disabled?: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -200,9 +261,12 @@ function SelectField({
       <select
         id={name}
         name={name}
-        defaultValue={defaultValue}
+        value={value}
+        defaultValue={value === undefined ? defaultValue : undefined}
         required={required}
-        className="h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
+        disabled={disabled}
+        onChange={onChange ? (event) => onChange(event.target.value) : undefined}
+        className="h-11 w-full rounded-lg border border-gray-200 bg-transparent px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90 dark:disabled:bg-white/[0.02] dark:disabled:text-gray-500"
       >
         {options.map((option) => (
           <option key={option.value || option.label} value={option.value}>

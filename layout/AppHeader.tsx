@@ -1,12 +1,12 @@
 "use client";
 
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
+import BrandLogo from "@/components/header/BrandLogo";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
 import { useSidebar } from "@/context/SidebarContext";
 import type { AuthRole } from "@/lib/auth-roles";
 import type { UserProfile } from "@/lib/user-profile";
-import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -81,9 +81,11 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             </button>
           ) : null}
 
-          <Link href={logoHref} className={showSidebarToggle ? "lg:hidden" : "shrink-0"}>
-            <Image width={154} height={32} className="dark:hidden" src="/images/logo/logo.svg" alt="Logo" />
-            <Image width={154} height={32} className="hidden dark:block" src="/images/logo/logo-dark.svg" alt="Logo" />
+          <Link
+            href={logoHref}
+            className={`flex shrink-0 items-center gap-2 ${showSidebarToggle ? "lg:hidden" : ""}`}
+          >
+            <BrandLogo textClassName="text-gray-900 dark:text-white" />
           </Link>
 
           <button

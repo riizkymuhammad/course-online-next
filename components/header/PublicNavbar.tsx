@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import BrandLogo from "@/components/header/BrandLogo";
 import UserDropdown from "@/components/header/UserDropdown";
 import type { AuthRole } from "@/lib/auth-roles";
 import type { UserProfile } from "@/lib/user-profile";
@@ -23,18 +23,7 @@ export default function PublicNavbar({
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-[1080px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-0">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 shadow-theme-sm">
-            <Image
-              src="/images/logo/logo-icon.svg"
-              alt=""
-              width={17}
-              height={17}
-              className="brightness-0 invert"
-            />
-          </span>
-          <span className="text-sm font-bold tracking-normal text-gray-900">
-            Course<span className="text-brand-600">Online</span>
-          </span>
+          <BrandLogo />
         </Link>
 
         <label className="relative hidden min-w-0 flex-1 md:block md:max-w-[420px]">

@@ -230,8 +230,8 @@ export async function POST(request: Request) {
       .insert({
         id: tryoutId,
         learning_path_id: learningPathRow?.id ?? null,
-        category: category || null,
-        sub_category: subCategory || null,
+        category_id: categoryId || null,
+        sub_category_id: subCategoryId || null,
         title,
         total_questions: questionCount,
         question_notes: questionNotes || null,

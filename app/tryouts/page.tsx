@@ -13,8 +13,8 @@ type TryoutRow = {
   id: string;
   title: string;
   learning_path_id: string | null;
-  category: string | null;
-  sub_category: string | null;
+  category_id: string | null;
+  sub_category_id: string | null;
   total_questions: number | null;
   thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
@@ -26,6 +26,17 @@ type LearningPathRow = {
   category: string | null;
   sub_category: string | null;
   sub_sub_category: string | null;
+};
+
+type CategoryRow = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryRow = {
+  id: string;
+  category_id: string;
+  name: string;
 };
 
 const fallbackImages = [
@@ -48,31 +59,47 @@ export const metadata: Metadata = {
 export default async function TryoutsPage() {
   const supabase = await createClient();
 
-  const [{ data: tryoutRows }, { data: learningPathRows }] = await Promise.all([
+  const [{ data: tryoutRows }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] = await Promise.all([
     supabase
       .from("tryouts")
-      .select("id, title, learning_path_id, category, sub_category, total_questions, thumbnail_url, status")
+      .select(
+        "id, title, learning_path_id, category_id, sub_category_id, total_questions, thumbnail_url, status"
+      )
       .eq("status", "published")
       .order("updated_at", { ascending: false }),
     supabase
       .from("learning_paths")
       .select("id, title, category, sub_category, sub_sub_category")
       .eq("status", "published"),
+    supabase.from("categories").select("id, name"),
+    supabase.from("sub_categories").select("id, category_id, name"),
   ]);
 
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const learningPathMap = new Map(learningPaths.map((item) => [item.id, item]));
+  const categoryMap = new Map(
+    ((categoryRows ?? []) as CategoryRow[]).map((item) => [item.id, item.name])
+  );
+  const subCategoryMap = new Map(
+    ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => [item.id, item.name])
+  );
 
   const tryouts = ((tryoutRows as TryoutRow[] | null) ?? []).map((item, index) => {
     const learningPath = item.learning_path_id
       ? learningPathMap.get(item.learning_path_id)
       : null;
-    const category = learningPath?.category?.trim() ?? item.category?.trim() ?? "";
-    const subCategory = learningPath?.sub_category?.trim() ?? item.sub_category?.trim() ?? "";
+    const category =
+      learningPath?.category?.trim() ??
+      (item.category_id ? categoryMap.get(item.category_id)?.trim() : undefined) ??
+      "";
+    const subCategory =
+      learningPath?.sub_category?.trim() ??
+      (item.sub_category_id ? subCategoryMap.get(item.sub_category_id)?.trim() : undefined) ??
+      "";
     const subSubCategory = learningPath?.sub_sub_category?.trim() ?? "";
     const categoryPath = learningPath
       ? buildLearningPathCategoryPath(learningPath)
-      : buildCategoryPath(item.category, item.sub_category);
+      : buildCategoryPath(category, subCategory);
     const label = learningPath ? buildLearningPathLabel(learningPath) : categoryPath || "Tryout Umum";
 
     return {
