@@ -19,15 +19,22 @@ const supabaseImageHost = getSupabaseImageHost();
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: supabaseImageHost
-      ? [
-          {
-            protocol: "https",
-            hostname: supabaseImageHost,
-            pathname: "/storage/v1/object/public/**",
-          },
-        ]
-      : [],
+    remotePatterns: [
+      ...(supabaseImageHost
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: supabaseImageHost,
+              pathname: "/storage/v1/object/public/**",
+            },
+          ]
+        : []),
+      {
+        protocol: "https",
+        hostname: "**.googleusercontent.com",
+        pathname: "/**",
+      },
+    ],
   },
   turbopack: {
     root: path.join(__dirname),

@@ -69,14 +69,6 @@ const menuItems = [
     tone: "bg-orange-50 text-orange-600",
     group: "advanced" as const,
   },
-  {
-    title: "Buat Tryout",
-    description: "Siapkan tryout baru untuk evaluasi belajar.",
-    href: "/dashboard/tryout-management/create",
-    icon: PageIcon,
-    tone: "bg-gray-100 text-gray-700",
-    group: "advanced" as const,
-  },
 ];
 
 type DashboardMenuItem = (typeof menuItems)[number];

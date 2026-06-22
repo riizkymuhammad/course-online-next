@@ -35,6 +35,7 @@ drop policy if exists "Users can view own learning course" on public.learning_co
 drop policy if exists "Users can insert own learning course" on public.learning_course;
 drop policy if exists "Users can update own learning course" on public.learning_course;
 drop policy if exists "Users can delete own learning course" on public.learning_course;
+drop policy if exists "Admins can view learning course" on public.learning_course;
 
 create policy "Users can view own learning course"
 on public.learning_course
@@ -60,3 +61,15 @@ on public.learning_course
 for delete
 to authenticated
 using (auth.uid() = user_id);
+
+create policy "Admins can view learning course"
+on public.learning_course
+for select
+to authenticated
+using (
+  (auth.jwt() -> 'app_metadata' ->> 'role') in ('admin', 'super_admin')
+  or (auth.jwt() -> 'app_metadata' ->> 'user_role') in ('admin', 'super_admin')
+  or (auth.jwt() -> 'app_metadata' -> 'roles') ? 'admin'
+  or (auth.jwt() -> 'app_metadata' -> 'roles') ? 'super_admin'
+  or (auth.jwt() -> 'app_metadata' ->> 'is_admin') = 'true'
+);

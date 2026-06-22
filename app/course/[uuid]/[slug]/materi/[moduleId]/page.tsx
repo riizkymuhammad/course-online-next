@@ -66,6 +66,15 @@ export default async function CourseModuleMaterialPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(
+      `/login?redirectedFrom=${encodeURIComponent(
+        `/course/${routeParams.uuid}/${routeParams.slug}/materi/${routeParams.moduleId}`
+      )}`
+    );
+  }
+
   const { data: courseRow } = await supabase
     .from("courses")
     .select("id, title")

@@ -185,7 +185,7 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
                 href={startHref}
                 className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-500 px-6 text-sm font-semibold text-white hover:bg-brand-600"
               >
-                {user ? "Mulai" : "Masuk terlebih dahulu"}
+                Mulai
               </Link>
             </div>
           </div>

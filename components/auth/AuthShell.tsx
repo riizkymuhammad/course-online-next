@@ -1,6 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ChevronLeftIcon } from "@/icons";
+import BrandLogo from "@/components/header/BrandLogo";
 
 export default function AuthShell({
   eyebrow,
@@ -67,15 +67,11 @@ export default function AuthShell({
           <div className="absolute inset-0 bg-linear-to-br from-brand-500 via-brand-600 to-brand-800" />
           <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:56px_56px]" />
           <div className="relative z-10 flex max-w-md flex-col items-center px-8 text-center">
-            <Image
-              src="/images/logo/auth-logo.svg"
-              alt="Course Online"
-              width={210}
-              height={44}
-              priority
-            />
+            <Link href="/" aria-label="Kembali ke beranda">
+              <BrandLogo textClassName="text-white" />
+            </Link>
             <p className="mt-6 text-sm leading-6 text-gray-300">
-              Free and focused learning dashboard for materi, learning path, quiz, and tryout.
+              Platform belajar untuk materi, learning path, quiz, dan tryout.
             </p>
           </div>
         </section>

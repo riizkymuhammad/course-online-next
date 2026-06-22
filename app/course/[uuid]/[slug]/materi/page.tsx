@@ -11,6 +11,18 @@ export default async function CourseMaterialIndexPage({
 }: PageProps<"/course/[uuid]/[slug]/materi">) {
   const routeParams = (await params) as CourseMaterialParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect(
+      `/login?redirectedFrom=${encodeURIComponent(
+        `/course/${routeParams.uuid}/${routeParams.slug}/materi`
+      )}`
+    );
+  }
+
   const { data: sections } = await supabase
     .from("course_sections")
     .select("id")

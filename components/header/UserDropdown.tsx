@@ -19,10 +19,15 @@ function getRoleLabel(role: AuthRole) {
   return role === "admin" ? "Admin" : "User";
 }
 
+function getInitials(name: string) {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  return (words.slice(0, 2).map((word) => word[0]).join("") || "U").toUpperCase();
+}
+
 export default function UserDropdown({
-  avatarUrl = "/images/user/owner.jpg",
-  displayName = "Musharof Chowdhury",
-  email = "randomuser@pimjo.com",
+  avatarUrl,
+  displayName = "User",
+  email = "",
   activeRole = "user",
   canSwitchRole = false,
 }: UserDropdownProps) {
@@ -31,6 +36,8 @@ export default function UserDropdown({
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [isSwitchingRole, setIsSwitchingRole] = useState(false);
   const [roleSwitchError, setRoleSwitchError] = useState<string | null>(null);
+  const imageUrl = avatarUrl?.trim();
+  const initials = getInitials(displayName);
 
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
@@ -94,13 +101,12 @@ export default function UserDropdown({
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <Image
-            width={44}
-            height={44}
-            src={avatarUrl}
-            alt={displayName}
-          />
+        <span className="mr-3 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-500 text-sm font-bold text-white">
+          {imageUrl ? (
+            <Image width={44} height={44} src={imageUrl} alt={displayName} className="h-full w-full object-cover" />
+          ) : (
+            initials
+          )}
         </span>
 
         <span className="mr-1 block max-w-[140px] truncate font-medium text-theme-sm">

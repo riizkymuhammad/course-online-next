@@ -57,6 +57,7 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
   const { data: courseRow } = await supabase
     .from("courses")
     .select(
@@ -148,6 +149,9 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
   ).slice(0, 6);
 
   const detailHref = `/course/${courseRow.id}/${expectedSlug}`;
+  const materialHref = user
+    ? `${detailHref}/materi`
+    : `/login?redirectedFrom=${encodeURIComponent(`${detailHref}/materi`)}`;
   const userProfile = user ? getUserProfile(user) : null;
   const cookieStore = await cookies();
   const accountRole = getUserRole(user);
@@ -231,7 +235,7 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
 
               <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-end">
                 <Link
-                  href={`${detailHref}/materi`}
+                  href={materialHref}
                   className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-semibold text-white shadow-theme-sm transition hover:bg-brand-600"
                 >
                   Pelajari Materi

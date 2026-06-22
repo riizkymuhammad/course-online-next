@@ -56,9 +56,14 @@ const navItems: NavItem[] = [
     path: "/dashboard/riwayat-tryout",
   },
   {
+    icon: <BoxCubeIcon />,
+    name: "Learning Course",
+    path: "/dashboard/learning-course",
+  },
+  {
     icon: <UserCircleIcon />,
-    name: "User Profiles",
-    path: "/profile",
+    name: "Manajemen User",
+    path: "/dashboard/user-management",
   },
 ];
 

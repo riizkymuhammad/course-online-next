@@ -1,7 +1,7 @@
 import type { User } from "@supabase/supabase-js";
 
 export type UserProfile = {
-  avatarUrl: string;
+  avatarUrl?: string;
   displayName: string;
   email: string;
 };
@@ -9,6 +9,19 @@ export type UserProfile = {
 function getUserMetadataString(metadata: Record<string, unknown>, key: string) {
   const value = metadata[key];
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getAvatarUrl(value: string) {
+  if (value.startsWith("/")) return value;
+
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname.endsWith(".googleusercontent.com")
+      ? url.toString()
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function getUserProfile(user: User | null): UserProfile {
@@ -23,7 +36,7 @@ export function getUserProfile(user: User | null): UserProfile {
     getUserMetadataString(metadata, "picture");
 
   return {
-    avatarUrl: avatarCandidate.startsWith("/") ? avatarCandidate : "/images/user/owner.jpg",
+    avatarUrl: getAvatarUrl(avatarCandidate),
     displayName,
     email: user?.email ?? "",
   };
