@@ -292,6 +292,11 @@ function getCourseCardBackground(category: string) {
   return "#2C74B3";
 }
 
+function buildCourseHref(course: CourseRow | undefined) {
+  if (!course) return "/";
+  return `/course/${course.id}/${slugify(course.title)}`;
+}
+
 function buildCourseCards(
   courses: CourseRow[],
   learningPathMap: Map<string, LearningPathRow>,
@@ -320,6 +325,7 @@ function buildCourseCards(
         (course.sub_category_id ? subCategoryMap.get(course.sub_category_id)?.trim() : undefined) ||
         "Umum",
       backgroundColor: getCourseCardBackground(category),
+      href: buildCourseHref(course),
     };
   });
 }

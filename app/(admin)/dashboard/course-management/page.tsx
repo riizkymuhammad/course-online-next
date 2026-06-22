@@ -134,6 +134,13 @@ export default async function CourseManagementPage({
           message="Course dan outline hasil analisis PDF berhasil disimpan ke database."
         />
       ) : null}
+      {getSearchParamValue(params.updated) ? (
+        <StatusAlert
+          variant="success"
+          title="Course Berhasil Diperbarui"
+          message="Perubahan metadata course berhasil disimpan."
+        />
+      ) : null}
 
       <section className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
         <SummaryCard label="Total Course" value={String(courses.length)} note="Semua data course" />
@@ -175,6 +182,17 @@ export default async function CourseManagementPage({
               type: "badge",
               badgeToneMap: statusStyles,
             },
+            {
+              key: "actions",
+              label: "Aksi",
+              type: "actions",
+              searchable: false,
+              className: "w-[230px]",
+              actions: [
+                { label: "Edit", tone: "secondary", hrefKey: "edit_url" },
+                { label: "Lihat Materi", tone: "primary", hrefKey: "material_url" },
+              ],
+            },
           ]}
           data={courses.map((item) => ({
             ...item,
@@ -182,6 +200,8 @@ export default async function CourseManagementPage({
             material_file_name: item.material_file_name || "Belum ada file",
             section_count: `${item.section_count} Section`,
             module_count: `${item.module_count} Modul`,
+            edit_url: `/dashboard/course-management/${item.id}/edit`,
+            material_url: `/dashboard/course-management/${item.id}/material`,
           }))}
         />
       </section>

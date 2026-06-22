@@ -110,12 +110,23 @@ create table if not exists public.course_modules (
   course_section_id uuid not null references public.course_sections(id) on delete cascade,
   title text not null,
   description text null,
+  content_markdown text null,
+  learning_objectives jsonb null,
+  estimated_minutes integer null,
   module_order integer not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   constraint course_modules_section_order_unique unique (course_section_id, module_order),
-  constraint course_modules_order_positive check (module_order > 0)
+  constraint course_modules_order_positive check (module_order > 0),
+  constraint course_modules_estimated_minutes_positive check (
+    estimated_minutes is null or estimated_minutes > 0
+  )
 );
+
+alter table public.course_modules
+  add column if not exists content_markdown text,
+  add column if not exists learning_objectives jsonb,
+  add column if not exists estimated_minutes integer;
 
 create index if not exists idx_course_sections_course_id
   on public.course_sections (course_id, section_order);

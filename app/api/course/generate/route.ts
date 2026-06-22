@@ -2,7 +2,9 @@ import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getUserRole } from "@/lib/auth-roles";
 import { buildLearningPathLabel } from "@/lib/learning-path";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
@@ -20,24 +22,57 @@ const generatedCourseSchema = z.object({
             z.object({
               title: z.string().describe("Judul modul."),
               description: z.string().describe("Ringkasan isi modul."),
+              learningObjectives: z
+                .array(z.string())
+                .min(2)
+                .max(5)
+                .describe("Tujuan belajar modul."),
+              estimatedMinutes: z
+                .number()
+                .int()
+                .positive()
+                .max(180)
+                .describe("Estimasi durasi belajar dalam menit."),
+              contentMarkdown: z
+                .string()
+                .describe("Isi materi lengkap modul dalam Markdown."),
             })
           )
-          .min(1),
+          .min(1)
+          .max(5),
       })
     )
-    .min(1),
+    .min(1)
+    .max(6),
 });
+
+type GenerationStage =
+  | "validasi input"
+  | "verifikasi akses"
+  | "memuat data referensi"
+  | "membaca PDF"
+  | "membuat materi dengan AI"
+  | "menyimpan course"
+  | "menyimpan section"
+  | "menyimpan modul";
+
+function errorResponse(error: string, stage: GenerationStage, status: number) {
+  return Response.json({ error, stage }, { status });
+}
 
 function buildCategoryPath(category: string, subCategory: string) {
   return [category, subCategory].filter(Boolean).join(" > ");
 }
 
 export async function POST(request: Request) {
+  let stage: GenerationStage = "validasi input";
+
   try {
     if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      return Response.json(
-        { error: "GOOGLE_GENERATIVE_AI_API_KEY belum tersedia di environment project." },
-        { status: 500 }
+      return errorResponse(
+        "GOOGLE_GENERATIVE_AI_API_KEY belum tersedia di environment project.",
+        stage,
+        500
       );
     }
 
@@ -51,24 +86,49 @@ export async function POST(request: Request) {
     const materialFile = formData.get("material_file");
 
     if (!title || !(materialFile instanceof File)) {
-      return Response.json(
-        { error: "Field wajib belum lengkap. Pastikan nama course dan file PDF sudah diisi." },
-        { status: 400 }
+      return errorResponse(
+        "Field wajib belum lengkap. Pastikan nama course dan file PDF sudah diisi.",
+        stage,
+        400
       );
     }
 
     if (materialFile.type && materialFile.type !== "application/pdf") {
-      return Response.json({ error: "File materi harus berformat PDF." }, { status: 400 });
+      return errorResponse("File materi harus berformat PDF.", stage, 400);
     }
 
     if (!categoryId && subCategoryId) {
-      return Response.json(
-        { error: "Pilih kategori terlebih dahulu sebelum memilih sub kategori." },
-        { status: 400 }
+      return errorResponse(
+        "Pilih kategori terlebih dahulu sebelum memilih sub kategori.",
+        stage,
+        400
       );
     }
 
+    stage = "verifikasi akses";
     const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return errorResponse("Sesi login tidak ditemukan. Silakan masuk kembali.", stage, 401);
+    }
+
+    if (getUserRole(user) !== "admin") {
+      return errorResponse("Hanya admin yang dapat membuat course.", stage, 403);
+    }
+
+    const adminSupabase = createAdminClient();
+    if (!adminSupabase) {
+      return errorResponse(
+        "Konfigurasi server belum lengkap. Tambahkan SUPABASE_SERVICE_ROLE_KEY untuk menyimpan course.",
+        stage,
+        500
+      );
+    }
+
+    stage = "memuat data referensi";
     let category = "";
     let subCategory = "";
     let learningPathRow: {
@@ -87,10 +147,7 @@ export async function POST(request: Request) {
         .single();
 
       if (error || !data) {
-        return Response.json(
-          { error: "Learning path tidak ditemukan di database." },
-          { status: 400 }
-        );
+        return errorResponse("Learning path tidak ditemukan di database.", stage, 400);
       }
 
       learningPathRow = data;
@@ -104,7 +161,7 @@ export async function POST(request: Request) {
         .single();
 
       if (categoryError || !categoryRow) {
-        return Response.json({ error: "Kategori tidak ditemukan di database." }, { status: 400 });
+        return errorResponse("Kategori tidak ditemukan di database.", stage, 400);
       }
 
       category = String(categoryRow.name ?? "").trim();
@@ -118,9 +175,10 @@ export async function POST(request: Request) {
           .single();
 
         if (subCategoryError || !subCategoryRow) {
-          return Response.json(
-            { error: "Sub kategori tidak ditemukan untuk kategori yang dipilih." },
-            { status: 400 }
+          return errorResponse(
+            "Sub kategori tidak ditemukan untuk kategori yang dipilih.",
+            stage,
+            400
           );
         }
 
@@ -140,10 +198,12 @@ export async function POST(request: Request) {
     ]
       .filter(Boolean)
       .join(" ");
+    stage = "membaca PDF";
     const arrayBuffer = await materialFile.arrayBuffer();
     const base64Data = Buffer.from(arrayBuffer).toString("base64");
     const fileDataUrl = `data:${materialFile.type || "application/pdf"};base64,${base64Data}`;
 
+    stage = "membuat materi dengan AI";
     const result = await generateText({
       model: google("gemini-2.5-flash"),
       messages: [
@@ -155,7 +215,8 @@ export async function POST(request: Request) {
               text: [
                 "Susun outline course dari PDF materi yang diunggah.",
                 context,
-                "Buat section dan modul yang runtut, praktis, dan relevan bagi siswa Indonesia.",
+                "Buat maksimal 6 section dan maksimal 5 modul per section yang runtut, praktis, dan relevan bagi siswa Indonesia.",
+                "Untuk setiap modul, buat isi materi siap belajar dalam Markdown sekitar 350-500 kata: pembuka singkat, penjelasan konsep, contoh praktis bila relevan, poin penting, dan latihan/refleksi singkat.",
                 "Gunakan arahan tambahan admin jika tersedia.",
                 "Jangan membuat materi yang tidak didukung oleh PDF kecuali diperlukan sebagai pengantar singkat.",
               ].join(" "),
@@ -177,7 +238,8 @@ export async function POST(request: Request) {
       0
     );
     const courseId = crypto.randomUUID();
-    const { data: courseInsert, error: courseError } = await supabase
+    stage = "menyimpan course";
+    const { data: courseInsert, error: courseError } = await adminSupabase
       .from("courses")
       .insert({
         id: courseId,
@@ -195,16 +257,26 @@ export async function POST(request: Request) {
         ai_generation_status: "completed",
         ai_generation_notes: materialNotes || null,
         ai_generated_summary: result.output.summary,
-        course_outline: result.output.sections,
+        course_outline: result.output.sections.map((section) => ({
+          title: section.title,
+          description: section.description,
+          modules: section.modules.map((module) => ({
+            title: module.title,
+            description: module.description,
+            learningObjectives: module.learningObjectives,
+            estimatedMinutes: module.estimatedMinutes,
+          })),
+        })),
         status,
       })
       .select("id")
       .single();
 
     if (courseError || !courseInsert) {
-      return Response.json(
-        { error: courseError?.message || "Gagal menyimpan course ke database." },
-        { status: 500 }
+      return errorResponse(
+        courseError?.message || "Gagal menyimpan course ke database.",
+        stage,
+        500
       );
     }
 
@@ -215,14 +287,16 @@ export async function POST(request: Request) {
       description: section.description,
       section_order: index + 1,
     }));
-    const { error: sectionError } = await supabase.from("course_sections").insert(sectionRows);
+    stage = "menyimpan section";
+    const { error: sectionError } = await adminSupabase.from("course_sections").insert(sectionRows);
 
     if (sectionError) {
-      await supabase.from("courses").delete().eq("id", courseInsert.id);
+      await adminSupabase.from("courses").delete().eq("id", courseInsert.id);
 
-      return Response.json(
-        { error: sectionError.message || "Gagal menyimpan section course." },
-        { status: 500 }
+      return errorResponse(
+        sectionError.message || "Gagal menyimpan section course.",
+        stage,
+        500
       );
     }
 
@@ -231,17 +305,22 @@ export async function POST(request: Request) {
         course_section_id: sectionRows[sectionIndex].id,
         title: module.title,
         description: module.description,
+        content_markdown: module.contentMarkdown,
+        learning_objectives: module.learningObjectives,
+        estimated_minutes: module.estimatedMinutes,
         module_order: moduleIndex + 1,
       }))
     );
-    const { error: moduleError } = await supabase.from("course_modules").insert(moduleRows);
+    stage = "menyimpan modul";
+    const { error: moduleError } = await adminSupabase.from("course_modules").insert(moduleRows);
 
     if (moduleError) {
-      await supabase.from("courses").delete().eq("id", courseInsert.id);
+      await adminSupabase.from("courses").delete().eq("id", courseInsert.id);
 
-      return Response.json(
-        { error: moduleError.message || "Gagal menyimpan modul course." },
-        { status: 500 }
+      return errorResponse(
+        moduleError.message || "Gagal menyimpan modul course.",
+        stage,
+        500
       );
     }
 
@@ -258,6 +337,7 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Terjadi kesalahan saat membuat course.";
-    return Response.json({ error: message }, { status: 500 });
+    console.error(`[course:generate] Gagal pada tahap ${stage}`, error);
+    return errorResponse(`Gagal pada tahap ${stage}: ${message}`, stage, 500);
   }
 }

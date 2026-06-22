@@ -9,6 +9,7 @@ export type CourseCard = {
   category: string;
   subCategory: string;
   backgroundColor: string;
+  href?: string;
 };
 
 type CategoryKey = "all" | "cpns" | "english" | "it";
@@ -34,7 +35,7 @@ function getCategoryKey(category: string): Exclude<CategoryKey, "all"> {
 function CourseCardItem({ course, actionHref }: { course: CourseCard; actionHref: string }) {
   return (
     <Link
-      href={actionHref}
+      href={course.href || actionHref}
       aria-label={`Buka course ${course.title}`}
       className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
     >
