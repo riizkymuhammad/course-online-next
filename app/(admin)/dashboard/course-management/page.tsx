@@ -1,97 +1,41 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
+import { buildLearningPathOptionLabel } from "@/lib/learning-path";
+import { createClient } from "@/lib/supabase/server";
 
 type Course = {
   id: string;
-  learning_path_id: string | null;
-  learning_path_title: string;
   title: string;
-  slug: string;
-  description: string;
-  thumbnail: string;
+  learning_path_id: string | null;
+  category_id: string | null;
+  sub_category_id: string | null;
+  learning_path_title: string;
+  description: string | null;
+  thumbnail: string | null;
+  material_file_name: string | null;
   section_count: number;
   module_count: number;
-  presenter: string;
-  price: number;
-  is_free: boolean;
-  source_file: string;
-  ai_generated_summary: string;
   status: "draft" | "published" | "archived";
-  created_at: string;
   updated_at: string;
 };
 
-const courses: Course[] = [
-  {
-    id: "d071a84f-56e2-4e0c-bef3-4f7e88d00201",
-    learning_path_id: "8e3d9b68-4d0f-4a7b-bf5f-f1d52ff0b201",
-    learning_path_title: "SQL Fundamentals for Data Analysis",
-    title: "SQL Select, Filter, and Order By",
-    slug: "sql-select-filter-order-by",
-    description:
-      "Materi dasar untuk memahami cara mengambil, memfilter, dan mengurutkan data dari tabel.",
-    thumbnail: "/images/product/product-01.jpg",
-    section_count: 4,
-    module_count: 12,
-    presenter: "Rizky Pratama",
-    price: 0,
-    is_free: true,
-    source_file: "storage/courses/sql-select-filter-order-by.mp4",
-    ai_generated_summary:
-      "Membahas query SELECT, WHERE, ORDER BY, dan kombinasi kondisi dasar untuk eksplorasi dataset.",
-    status: "published",
-    created_at: "2026-04-11T09:00:00+07:00",
-    updated_at: "2026-04-24T13:45:00+07:00",
-  },
-  {
-    id: "5b40ff7a-a730-4860-9de7-909857a4e902",
-    learning_path_id: "71a10e9e-3362-465f-a1c7-32ed9afcf012",
-    learning_path_title: "Backend API with PostgreSQL",
-    title: "Build CRUD API for Course Catalog",
-    slug: "build-crud-api-for-course-catalog",
-    description:
-      "Membangun endpoint CRUD course dengan validasi payload, slug, dan koneksi PostgreSQL.",
-    thumbnail: "/images/product/product-02.jpg",
-    section_count: 6,
-    module_count: 18,
-    presenter: "Nabila Putri",
-    price: 149000,
-    is_free: false,
-    source_file: "storage/courses/build-crud-api-for-course-catalog.mp4",
-    ai_generated_summary:
-      "Fokus pada routing API, validasi data, pengelolaan slug unik, dan relasi ke learning path.",
-    status: "draft",
-    created_at: "2026-04-18T10:30:00+07:00",
-    updated_at: "2026-04-25T08:20:00+07:00",
-  },
-  {
-    id: "b4fb59cb-c28d-4499-9fa0-4f34b6853d03",
-    learning_path_id: null,
-    learning_path_title: "Unassigned",
-    title: "Database Indexing Essentials",
-    slug: "database-indexing-essentials",
-    description:
-      "Penjelasan konsep indexing untuk mempercepat query pencarian dan agregasi pada data besar.",
-    thumbnail: "/images/product/product-03.jpg",
-    section_count: 3,
-    module_count: 9,
-    presenter: "Bagas Aditya",
-    price: 99000,
-    is_free: false,
-    source_file: "storage/courses/database-indexing-essentials.pdf",
-    ai_generated_summary:
-      "Mengulas jenis index, trade-off performa write/read, dan kapan index perlu ditambahkan.",
-    status: "archived",
-    created_at: "2026-03-20T14:15:00+07:00",
-    updated_at: "2026-04-07T11:05:00+07:00",
-  },
-];
+type CategoryRow = {
+  id: string;
+  name: string;
+};
+
+type SubCategoryRow = {
+  id: string;
+  category_id: string;
+  name: string;
+};
 
 export const metadata: Metadata = {
   title: "Course Management Dashboard",
-  description: "Manajemen data course untuk dashboard admin.",
+  description: "Manajemen course untuk dashboard admin.",
 };
 
 const statusStyles: Record<Course["status"], string> = {
@@ -103,14 +47,76 @@ const statusStyles: Record<Course["status"], string> = {
     "bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-300",
 };
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
+function buildCategoryPath(category: string | null, subCategory: string | null) {
+  return [category, subCategory]
+    .map((item) => item?.trim() ?? "")
+    .filter(Boolean)
+    .join(" > ");
 }
 
-export default function CourseManagementPage() {
+function getSearchParamValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function CourseManagementPage({
+  searchParams,
+}: PageProps<"/dashboard/course-management">) {
+  const supabase = await createClient();
+  const params = await searchParams;
+  const [{ data: courseRows }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] =
+    await Promise.all([
+      supabase
+        .from("courses")
+        .select(
+          "id, title, learning_path_id, category_id, sub_category_id, description, thumbnail, material_file_name, section_count, module_count, status, updated_at"
+        )
+        .order("updated_at", { ascending: false }),
+      supabase.from("learning_paths").select("id, title, category, sub_category, sub_sub_category"),
+      supabase.from("categories").select("id, name"),
+      supabase.from("sub_categories").select("id, category_id, name"),
+    ]);
+
+  const learningPathMap = new Map(
+    (learningPathRows ?? []).map((item) => [item.id, buildLearningPathOptionLabel(item)])
+  );
+  const categoryMap = new Map(
+    ((categoryRows ?? []) as CategoryRow[]).map((item) => [item.id, item.name])
+  );
+  const subCategoryMap = new Map(
+    ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => [item.id, item.name])
+  );
+  const courses: Course[] =
+    courseRows?.map((item) => {
+      const category = item.category_id ? categoryMap.get(item.category_id) ?? null : null;
+      const subCategory = item.sub_category_id
+        ? subCategoryMap.get(item.sub_category_id) ?? null
+        : null;
+      const categoryPath = buildCategoryPath(category, subCategory);
+
+      return {
+        id: item.id,
+        title: item.title,
+        learning_path_id: item.learning_path_id,
+        category_id: item.category_id,
+        sub_category_id: item.sub_category_id,
+        learning_path_title:
+          (item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null) ??
+          categoryPath ??
+          "Unassigned",
+        description: item.description ?? null,
+        thumbnail: item.thumbnail ?? null,
+        material_file_name: item.material_file_name ?? null,
+        section_count: item.section_count ?? 0,
+        module_count: item.module_count ?? 0,
+        status: (item.status ?? "draft") as Course["status"],
+        updated_at: item.updated_at ?? "",
+      };
+    }) ?? [];
+
+  const publishedCount = courses.filter((item) => item.status === "published").length;
+  const draftCount = courses.filter((item) => item.status === "draft").length;
+  const materialCount = courses.filter((item) => Boolean(item.material_file_name)).length;
+
   return (
     <div className="space-y-6">
       <PageBreadcrumb
@@ -121,39 +127,47 @@ export default function CourseManagementPage() {
         title="Course Management"
       />
 
+      {getSearchParamValue(params.created) ? (
+        <StatusAlert
+          variant="success"
+          title="Course Berhasil Dibuat"
+          message="Course dan outline hasil analisis PDF berhasil disimpan ke database."
+        />
+      ) : null}
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
-        <SummaryCard label="Total Courses" value="3" note="Semua course aktif dan arsip" />
-        <SummaryCard label="Published" value="1" note="Sudah siap untuk siswa" />
-        <SummaryCard label="Paid Courses" value="2" note="Memiliki harga lebih dari 0" />
-        <SummaryCard label="Free Courses" value="1" note="Terbuka tanpa pembayaran" />
+        <SummaryCard label="Total Course" value={String(courses.length)} note="Semua data course" />
+        <SummaryCard label="Published" value={String(publishedCount)} note="Siap ditampilkan ke siswa" />
+        <SummaryCard label="Draft" value={String(draftCount)} note="Belum dipublikasikan" />
+        <SummaryCard label="PDF Materi" value={String(materialCount)} note="Memiliki file sumber" />
       </section>
 
       <section>
         <DataTable
           title="Course Records"
-          description="DataTable course dengan pencarian, sorting, dan pagination."
-          searchPlaceholder="Search courses..."
+          description="Daftar course yang dibuat dari materi PDF."
+          searchPlaceholder="Cari course..."
           action={
             <Link
               href="/dashboard/course-management/create"
               className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600"
             >
-              Add Materi
+              Add Course
             </Link>
           }
           columns={[
             {
               key: "title",
-              label: "Judul",
+              label: "Nama Course",
               sortable: true,
               type: "imageText",
               imageKey: "thumbnail",
               subtitleKey: "description",
             },
-            { key: "learning_path_title", label: "Learning Path", sortable: true },
+            { key: "learning_path_title", label: "Learning Path/Kategori", sortable: true },
+            { key: "material_file_name", label: "PDF Materi", sortable: true },
             { key: "section_count", label: "Section", sortable: true },
             { key: "module_count", label: "Modul", sortable: true },
-            { key: "presenter", label: "Pemateri", sortable: true },
             {
               key: "status",
               label: "Status",
@@ -161,25 +175,13 @@ export default function CourseManagementPage() {
               type: "badge",
               badgeToneMap: statusStyles,
             },
-            {
-              key: "actions",
-              label: "Aksi",
-              type: "actions",
-              searchable: false,
-              className: "w-[160px]",
-              actions: [
-                { label: "Edit", tone: "secondary" },
-                { label: "Detail", tone: "primary" },
-              ],
-            },
           ]}
           data={courses.map((item) => ({
             ...item,
-            title: `${item.title} (${item.slug})`,
+            description: item.description || "Belum ada ringkasan course.",
+            material_file_name: item.material_file_name || "Belum ada file",
             section_count: `${item.section_count} Section`,
             module_count: `${item.module_count} Modul`,
-            presenter: item.presenter,
-            updated_at: formatDate(item.updated_at),
           }))}
         />
       </section>

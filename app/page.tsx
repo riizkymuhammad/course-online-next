@@ -27,6 +27,8 @@ type CourseRow = {
   id: string;
   title: string;
   learning_path_id: string | null;
+  category_id: string | null;
+  sub_category_id: string | null;
   section_count: number | null;
   module_count: number | null;
   thumbnail: string | null;
@@ -292,7 +294,9 @@ function getCourseCardBackground(category: string) {
 
 function buildCourseCards(
   courses: CourseRow[],
-  learningPathMap: Map<string, LearningPathRow>
+  learningPathMap: Map<string, LearningPathRow>,
+  categoryMap: Map<string, string>,
+  subCategoryMap: Map<string, string>
 ): CourseCard[] {
   if (!courses.length) return fallbackCourses;
 
@@ -301,7 +305,10 @@ function buildCourseCards(
       ? learningPathMap.get(course.learning_path_id)
       : undefined;
 
-    const category = learningPath?.category?.trim() || resolveCourseCategory(course.title, index);
+    const category =
+      learningPath?.category?.trim() ||
+      (course.category_id ? categoryMap.get(course.category_id)?.trim() : undefined) ||
+      resolveCourseCategory(course.title, index);
 
     return {
       id: course.id,
@@ -310,6 +317,7 @@ function buildCourseCards(
       subCategory:
         learningPath?.sub_category?.trim() ||
         learningPath?.sub_sub_category?.trim() ||
+        (course.sub_category_id ? subCategoryMap.get(course.sub_category_id)?.trim() : undefined) ||
         "Umum",
       backgroundColor: getCourseCardBackground(category),
     };
@@ -382,7 +390,9 @@ export default async function HomePage() {
       .limit(8),
     supabase
       .from("courses")
-      .select("id, title, learning_path_id, section_count, module_count, thumbnail, status")
+      .select(
+        "id, title, learning_path_id, category_id, sub_category_id, section_count, module_count, thumbnail, status"
+      )
       .eq("status", "published")
       .order("created_at", { ascending: false })
       .limit(12),
@@ -410,7 +420,7 @@ export default async function HomePage() {
   const subCategoryMap = new Map(
     ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => [item.id, item.name])
   );
-  const courseCards = buildCourseCards(courses, learningPathMap);
+  const courseCards = buildCourseCards(courses, learningPathMap, categoryMap, subCategoryMap);
   const tryoutCards = buildTryoutCards(tryouts, learningPathMap, categoryMap, subCategoryMap);
   const featuredTryout = tryouts[0];
   const tryoutHref = buildTryoutHref(featuredTryout);
