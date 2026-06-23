@@ -292,6 +292,25 @@ function getCourseCardBackground(category: string) {
   return "#2C74B3";
 }
 
+function getHomepageCategoryTitle(category: string | null | undefined) {
+  const normalizedCategory = category?.trim().toLowerCase() ?? "";
+
+  if (normalizedCategory.includes("cpns")) return "CPNS";
+  if (normalizedCategory.includes("english") || normalizedCategory.includes("inggris")) {
+    return "Bahasa Inggris";
+  }
+  if (
+    normalizedCategory === "ti" ||
+    normalizedCategory === "it" ||
+    normalizedCategory.includes("teknologi") ||
+    normalizedCategory.includes("perangkat lunak")
+  ) {
+    return "TI & Perangkat Lunak";
+  }
+
+  return null;
+}
+
 function buildCourseHref(course: CourseRow | undefined) {
   if (!course) return "/";
   return `/course/${course.id}/${slugify(course.title)}`;
@@ -400,8 +419,7 @@ export default async function HomePage() {
         "id, title, learning_path_id, category_id, sub_category_id, section_count, module_count, thumbnail, status"
       )
       .eq("status", "published")
-      .order("created_at", { ascending: false })
-      .limit(12),
+      .order("created_at", { ascending: false }),
     supabase.from("categories").select("id, name"),
     supabase.from("sub_categories").select("id, category_id, name"),
   ]);
@@ -426,6 +444,24 @@ export default async function HomePage() {
   const subCategoryMap = new Map(
     ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => [item.id, item.name])
   );
+  const categoryCourseCounts = new Map(categories.map((category) => [category.title, 0]));
+
+  courses.forEach((course) => {
+    const learningPathCategory = course.learning_path_id
+      ? learningPathMap.get(course.learning_path_id)?.category
+      : null;
+    const directCategory = course.category_id ? categoryMap.get(course.category_id) : null;
+    const categoryTitle = getHomepageCategoryTitle(learningPathCategory?.trim() || directCategory);
+
+    if (categoryTitle) {
+      categoryCourseCounts.set(categoryTitle, (categoryCourseCounts.get(categoryTitle) ?? 0) + 1);
+    }
+  });
+
+  const categoryCards = categories.map((category) => ({
+    ...category,
+    count: `${categoryCourseCounts.get(category.title) ?? 0} kelas`,
+  }));
   const courseCards = buildCourseCards(courses, learningPathMap, categoryMap, subCategoryMap);
   const tryoutCards = buildTryoutCards(tryouts, learningPathMap, categoryMap, subCategoryMap);
   const featuredTryout = tryouts[0];
@@ -453,7 +489,7 @@ export default async function HomePage() {
         />
 
         <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {categories.map((category) => (
+          {categoryCards.map((category) => (
             <article
               key={category.title}
               className="rounded-lg border border-gray-200 bg-white p-7 shadow-[0_12px_32px_rgba(16,24,40,0.04)] transition hover:-translate-y-1 hover:border-brand-200 hover:shadow-[0_16px_40px_rgba(16,24,40,0.08)]"
