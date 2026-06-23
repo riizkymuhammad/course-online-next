@@ -21,6 +21,8 @@ const categoryFilters: Array<{ key: CategoryKey; label: string }> = [
   { key: "it", label: "TI & Perangkat Lunak" },
 ];
 
+const MAX_VISIBLE_COURSES = 12;
+
 function getCategoryKey(category: string): Exclude<CategoryKey, "all"> {
   const normalizedCategory = category.trim().toLowerCase();
 
@@ -78,32 +80,54 @@ export default function CourseList({
         : courses.filter((course) => getCategoryKey(course.category) === activeCategory),
     [activeCategory, courses]
   );
+  const visibleCourses = filteredCourses.slice(0, MAX_VISIBLE_COURSES);
+  const hasMoreCourses = filteredCourses.length > MAX_VISIBLE_COURSES;
 
   return (
     <div className="mt-8">
-      <div className="flex flex-wrap gap-2">
-        {categoryFilters.map((filter) => (
-          <button
-            key={filter.key}
-            type="button"
-            aria-pressed={activeCategory === filter.key}
-            onClick={() => setActiveCategory(filter.key)}
-            className={`inline-flex h-8 items-center rounded-md border px-4 text-xs font-bold transition ${
-              activeCategory === filter.key
-                ? "border-brand-600 bg-brand-600 text-white"
-                : "border-gray-200 bg-white text-gray-700 hover:border-brand-200 hover:text-brand-600"
-            }`}
-          >
-            {filter.label}
-          </button>
-        ))}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap gap-2">
+          {categoryFilters.map((filter) => (
+            <button
+              key={filter.key}
+              type="button"
+              aria-pressed={activeCategory === filter.key}
+              onClick={() => setActiveCategory(filter.key)}
+              className={`inline-flex h-8 items-center rounded-md border px-4 text-xs font-bold transition ${
+                activeCategory === filter.key
+                  ? "border-brand-600 bg-brand-600 text-white"
+                  : "border-gray-200 bg-white text-gray-700 hover:border-brand-200 hover:text-brand-600"
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+
+        <Link
+          href="/courses"
+          className="inline-flex h-8 w-fit items-center justify-center rounded-md border border-brand-200 px-4 text-xs font-bold text-brand-600 transition hover:bg-brand-50"
+        >
+          Lihat semua materi
+        </Link>
       </div>
 
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {filteredCourses.map((course) => (
+        {visibleCourses.map((course) => (
           <CourseCardItem key={course.id} course={course} actionHref={actionHref} />
         ))}
       </div>
+
+      {hasMoreCourses ? (
+        <div className="mt-7 flex justify-center">
+          <Link
+            href="/courses"
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-brand-200 px-5 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
+          >
+            Lihat course lebih banyak
+          </Link>
+        </div>
+      ) : null}
     </div>
   );
 }

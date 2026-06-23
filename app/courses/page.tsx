@@ -15,7 +15,7 @@ import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
 import { getUserProfile } from "@/lib/user-profile";
 
-type TryoutRow = {
+type CourseRow = {
   id: string;
   title: string;
   learning_path_id: string | null;
@@ -48,11 +48,11 @@ function buildCategoryPath(category: string | null, subCategory: string | null) 
 }
 
 export const metadata: Metadata = {
-  title: "Semua Tryout",
-  description: "Daftar seluruh tryout dengan pencarian dan filter kategori.",
+  title: "Semua Course",
+  description: "Daftar seluruh course dengan pencarian dan filter kategori.",
 };
 
-export default async function TryoutsPage() {
+export default async function CoursesPage() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -63,22 +63,20 @@ export default async function TryoutsPage() {
     accountRole,
     activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
   });
-
-  const [{ data: tryoutRows }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] = await Promise.all([
-    supabase
-      .from("tryouts")
-      .select(
-        "id, title, learning_path_id, category_id, sub_category_id, status"
-      )
-      .eq("status", "published")
-      .order("updated_at", { ascending: false }),
-    supabase
-      .from("learning_paths")
-      .select("id, title, category, sub_category, sub_sub_category")
-      .eq("status", "published"),
-    supabase.from("categories").select("id, name"),
-    supabase.from("sub_categories").select("id, category_id, name"),
-  ]);
+  const [{ data: courseRows }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] =
+    await Promise.all([
+      supabase
+        .from("courses")
+        .select("id, title, learning_path_id, category_id, sub_category_id, status")
+        .eq("status", "published")
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("learning_paths")
+        .select("id, title, category, sub_category, sub_sub_category")
+        .eq("status", "published"),
+      supabase.from("categories").select("id, name"),
+      supabase.from("sub_categories").select("id, category_id, name"),
+    ]);
 
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const learningPathMap = new Map(learningPaths.map((item) => [item.id, item]));
@@ -88,24 +86,22 @@ export default async function TryoutsPage() {
   const subCategoryMap = new Map(
     ((subCategoryRows ?? []) as SubCategoryRow[]).map((item) => [item.id, item.name])
   );
-
-  const tryouts = ((tryoutRows as TryoutRow[] | null) ?? []).map((item) => {
-    const learningPath = item.learning_path_id
-      ? learningPathMap.get(item.learning_path_id)
-      : null;
+  const courses = ((courseRows as CourseRow[] | null) ?? []).map((item) => {
+    const learningPath = item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null;
     const category =
       learningPath?.category?.trim() ??
       (item.category_id ? categoryMap.get(item.category_id)?.trim() : undefined) ??
-      "";
+      "Umum";
     const subCategory =
       learningPath?.sub_category?.trim() ??
+      learningPath?.sub_sub_category?.trim() ??
       (item.sub_category_id ? subCategoryMap.get(item.sub_category_id)?.trim() : undefined) ??
-      "";
+      "Umum";
     const subSubCategory = learningPath?.sub_sub_category?.trim() ?? "";
     const categoryPath = learningPath
       ? buildLearningPathCategoryPath(learningPath)
       : buildCategoryPath(category, subCategory);
-    const label = learningPath ? buildLearningPathLabel(learningPath) : categoryPath || "Tryout Umum";
+    const label = learningPath ? buildLearningPathLabel(learningPath) : categoryPath || "Course Umum";
 
     return {
       id: item.id,
@@ -116,7 +112,7 @@ export default async function TryoutsPage() {
       subCategory,
       subSubCategory,
       categoryPath,
-      href: `/tryout/${item.id}/${slugify(item.title)}`,
+      href: `/course/${item.id}/${slugify(item.title)}`,
     };
   });
 
@@ -131,7 +127,7 @@ export default async function TryoutsPage() {
       />
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <TryoutListClient tryouts={tryouts} />
+        <TryoutListClient tryouts={courses} catalogLabel="Course" />
       </div>
     </main>
   );

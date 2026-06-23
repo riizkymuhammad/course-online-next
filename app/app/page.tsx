@@ -40,7 +40,7 @@ const menuItems = [
   {
     title: "Materi",
     description: "Buka koleksi materi dan modul belajar.",
-    href: "/dashboard/course-management",
+    href: "/courses",
     icon: BoxCubeIcon,
     tone: "bg-blue-light-50 text-blue-light-600",
     group: "core" as const,
@@ -164,7 +164,7 @@ export default async function AppPage() {
   const isMaterialCompleted = Boolean(
     materialProgress?.completed_at || materialProgress?.status === "completed"
   );
-  const materialHref = "/dashboard/course-management";
+  const materialHref = "/courses";
   const tryoutHref =
     tryoutAttempt && attemptTryout
       ? `/tryout/exam/${attemptTryout.id}/${slugify(attemptTryout.title)}`

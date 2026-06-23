@@ -1,6 +1,4 @@
 "use client";
-
-import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import BrandLogo from "@/components/header/BrandLogo";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
@@ -137,16 +135,25 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           } w-full items-center justify-between gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
-            <ThemeToggleButton />
+           
             <NotificationDropdown />
           </div>
-          <UserDropdown
-            avatarUrl={userProfile?.avatarUrl}
-            displayName={userProfile?.displayName}
-            email={userProfile?.email}
-            activeRole={activeRole}
-            canSwitchRole={canSwitchRole}
-          />
+          {userProfile ? (
+            <UserDropdown
+              avatarUrl={userProfile.avatarUrl}
+              displayName={userProfile.displayName}
+              email={userProfile.email}
+              activeRole={activeRole}
+              canSwitchRole={canSwitchRole}
+            />
+          ) : (
+            <Link
+              href="/login"
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-semibold text-white transition hover:bg-brand-600"
+            >
+              Masuk
+            </Link>
+          )}
         </div>
       </div>
     </header>

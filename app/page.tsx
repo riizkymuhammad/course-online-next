@@ -605,7 +605,7 @@ export default async function HomePage() {
                 />
               </span>
               <span className="text-sm font-bold text-gray-900">
-                Edu<span className="text-brand-600">Prime</span>
+                Course<span className="text-brand-600">Online</span>
               </span>
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-6 text-gray-600">

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
 
@@ -13,17 +12,11 @@ type TryoutItem = {
   subCategory: string;
   subSubCategory: string;
   categoryPath: string;
-  totalQuestions: number;
   href: string;
-  image: string;
 };
 
 function normalizeText(value: string) {
   return value.toLowerCase().trim();
-}
-
-function isSvgImage(value: string) {
-  return value.toLowerCase().includes(".svg");
 }
 
 function getUniqueOptions(values: string[]) {
@@ -32,16 +25,30 @@ function getUniqueOptions(values: string[]) {
   );
 }
 
+function getCardBackground(category: string) {
+  const normalizedCategory = category.trim().toLowerCase();
+
+  if (normalizedCategory.includes("cpns")) return "#144272";
+  if (normalizedCategory.includes("english") || normalizedCategory.includes("inggris")) {
+    return "#205295";
+  }
+
+  return "#2C74B3";
+}
+
 export default function TryoutListClient({
   tryouts,
+  catalogLabel = "Tryout",
 }: {
   tryouts: TryoutItem[];
+  catalogLabel?: "Tryout" | "Course";
 }) {
   const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSubCategory, setSelectedSubCategory] = useState("all");
   const [selectedSubSubCategory, setSelectedSubSubCategory] = useState("all");
   const deferredQuery = useDeferredValue(query);
+  const catalogLabelLower = catalogLabel.toLowerCase();
 
   const categoryOptions = useMemo(
     () => getUniqueOptions(tryouts.map((item) => item.category)),
@@ -94,14 +101,14 @@ export default function TryoutListClient({
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
-              Halaman Tryout
+              Halaman {catalogLabel}
             </p>
             <h1 className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white/90 sm:text-3xl">
-              Koleksi Tryout
+              Koleksi {catalogLabel}
             </h1>
           </div>
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-            {filteredTryouts.length} tryout
+            {filteredTryouts.length} {catalogLabelLower}
           </p>
         </div>
 
@@ -122,7 +129,7 @@ export default function TryoutListClient({
                   setQuery(nextValue);
                 });
               }}
-              placeholder="Cari judul tryout, learning path, atau kategori..."
+              placeholder={`Cari judul ${catalogLabelLower}, learning path, atau kategori...`}
               className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
             />
           </div>
@@ -178,58 +185,41 @@ export default function TryoutListClient({
       </section>
 
       {filteredTryouts.length ? (
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          {filteredTryouts.map((item) => {
-            const isGeneratedThumbnail = isSvgImage(item.image);
-
-            return (
-              <Link
-                key={item.id}
-                href={item.href}
-                className="group block overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-theme-sm transition duration-300 hover:-translate-y-1 hover:shadow-theme-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 dark:border-gray-800 dark:bg-white/[0.03]"
-              >
-                <div className="relative h-40 overflow-hidden border-b border-brand-200 bg-brand-500 p-5 dark:border-brand-500/20 dark:bg-brand-600">
-                  <Image
-                    src={item.image}
-                    alt={item.title}
-                    fill
-                    unoptimized={isGeneratedThumbnail}
-                    className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                    sizes="(min-width: 1280px) 20vw, (min-width: 640px) 50vw, 100vw"
-                  />
-                  {!isGeneratedThumbnail ? (
-                    <div className="absolute inset-0 bg-linear-to-br from-brand-500/70 via-brand-500/35 to-brand-800/75" />
-                  ) : null}
-                  <div className="relative flex h-full flex-col justify-between">
-                    <span className="inline-flex max-w-full rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[11px] font-semibold tracking-[0.01em] text-white/90 backdrop-blur">
-                      <span className="truncate">{item.learningPath}</span>
-                    </span>
-                    {!isGeneratedThumbnail ? (
-                      <h3 className="max-w-[90%] text-lg font-semibold leading-7 text-white">
-                        {item.title}
-                      </h3>
-                    ) : null}
-                  </div>
+        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {filteredTryouts.map((item) => (
+            <Link
+              key={item.id}
+              href={item.href}
+              aria-label={`Buka ${catalogLabelLower} ${item.title}`}
+              className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+            >
+              <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-300 group-hover:shadow-md">
+                <div
+                  className="relative flex h-40 items-center justify-center"
+                  style={{ backgroundColor: getCardBackground(item.category) }}
+                >
+                  <span className="absolute left-3 top-3 rounded bg-white/90 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
+                    {item.category || "Umum"}
+                  </span>
+                  <span className="line-clamp-3 px-6 text-center text-base font-semibold text-white/95">
+                    {item.title}
+                  </span>
                 </div>
 
-                <div className="p-4">
-                  <div className="flex items-center justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
-                    <span className="inline-flex rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1 text-[11px] font-medium text-gray-600 dark:border-gray-700 dark:bg-white/[0.03] dark:text-gray-300">
-                      {item.totalQuestions} soal
-                    </span>
-                    <span className="inline-flex h-10 items-center justify-center rounded-xl bg-brand-500 px-4 text-sm font-semibold text-white transition group-hover:bg-brand-600">
-                      Kerjakan
-                    </span>
-                  </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="line-clamp-2 text-md font-semibold text-slate-900">{item.title}</h3>
+                  <span className="mt-1 w-fit rounded-md bg-slate-100 px-2 py-1 text-xs font-small text-slate-600">
+                    {item.subCategory || "Umum"}
+                  </span>
                 </div>
-              </Link>
-            );
-          })}
+              </article>
+            </Link>
+          ))}
         </section>
       ) : (
         <section className="rounded-3xl border border-dashed border-brand-200 bg-white px-6 py-10 text-center shadow-theme-sm dark:border-brand-500/20 dark:bg-white/[0.03]">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white/90">
-            Tryout tidak ditemukan
+            {catalogLabel} tidak ditemukan
           </h2>
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             Coba ganti kata kunci pencarian atau pilih kategori lain.
