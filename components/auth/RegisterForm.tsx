@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import FormField from "@/components/molecules/FormField";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterForm() {
@@ -75,15 +76,16 @@ export default function RegisterForm() {
       </div>
 
       <div className="grid gap-4">
-        <Field label="Nama" name="name" placeholder="John Doe" required />
-        <Field label="Email" name="email" type="email" placeholder="admin@courseonline.com" required />
-        <Field label="Password" name="password" type="password" placeholder="Buat password" required />
-        <Field
+        <FormField label="Nama" name="name" placeholder="John Doe" required inputClassName="rounded-xl" />
+        <FormField label="Email" name="email" type="email" placeholder="admin@courseonline.com" required inputClassName="rounded-xl" />
+        <FormField label="Password" name="password" type="password" placeholder="Buat password" required inputClassName="rounded-xl" />
+        <FormField
           label="Confirm Password"
           name="confirm_password"
           type="password"
           placeholder="Ulangi password"
           required
+          inputClassName="rounded-xl"
         />
       </div>
 
@@ -107,36 +109,5 @@ export default function RegisterForm() {
         {isSubmitting ? "Creating account..." : "Register"}
       </button>
     </form>
-  );
-}
-
-function Field({
-  label,
-  name,
-  placeholder,
-  type = "text",
-  required = false,
-}: {
-  label: string;
-  name: string;
-  placeholder: string;
-  type?: string;
-  required?: boolean;
-}) {
-  return (
-    <div className="space-y-2">
-      <label htmlFor={name} className="text-sm font-medium text-gray-700 dark:text-gray-200">
-        {label}
-        {required ? <span className="ml-1 text-error-500">*</span> : null}
-      </label>
-      <input
-        id={name}
-        name={name}
-        type={type}
-        placeholder={placeholder}
-        required={required}
-        className="h-11 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
-      />
-    </div>
   );
 }

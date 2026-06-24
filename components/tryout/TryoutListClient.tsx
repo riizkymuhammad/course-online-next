@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import LearningCard from "@/components/organisms/learning/LearningCard";
 
 type TryoutItem = {
   id: string;
@@ -187,33 +187,14 @@ export default function TryoutListClient({
       {filteredTryouts.length ? (
         <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {filteredTryouts.map((item) => (
-            <Link
+            <LearningCard
               key={item.id}
-              href={item.href}
-              aria-label={`Buka ${catalogLabelLower} ${item.title}`}
-              className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
-            >
-              <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-300 group-hover:shadow-md">
-                <div
-                  className="relative flex h-40 items-center justify-center"
-                  style={{ backgroundColor: getCardBackground(item.category) }}
-                >
-                  <span className="absolute left-3 top-3 rounded bg-white/90 px-2.5 py-0.5 text-xs font-semibold text-blue-800">
-                    {item.category || "Umum"}
-                  </span>
-                  <span className="line-clamp-3 px-6 text-center text-base font-semibold text-white/95">
-                    {item.title}
-                  </span>
-                </div>
-
-                <div className="flex flex-1 flex-col p-5">
-                  <h3 className="line-clamp-2 text-md font-semibold text-slate-900">{item.title}</h3>
-                  <span className="mt-1 w-fit rounded-md bg-slate-100 px-2 py-1 text-xs font-small text-slate-600">
-                    {item.subCategory || "Umum"}
-                  </span>
-                </div>
-              </article>
-            </Link>
+              label={catalogLabel}
+              item={{
+                ...item,
+                backgroundColor: getCardBackground(item.category),
+              }}
+            />
           ))}
         </section>
       ) : (
