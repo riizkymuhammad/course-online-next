@@ -7,6 +7,7 @@ import { useSidebar } from "../context/SidebarContext";
 import {
   BoxCubeIcon,
   ChevronDownIcon,
+  GridIcon,
   HorizontaLDots,
   ListIcon,
   PageIcon,
@@ -22,6 +23,11 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
+  {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/dashboard",
+  },
   {
     icon: <TableIcon />,
     name: "Master Data",
