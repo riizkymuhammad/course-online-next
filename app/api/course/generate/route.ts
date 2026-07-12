@@ -135,15 +135,12 @@ export async function POST(request: Request) {
     let learningPathRow: {
       id: string;
       title: string | null;
-      category: string | null;
-      sub_category: string | null;
-      sub_sub_category: string | null;
     } | null = null;
 
     if (learningPathId) {
       const { data, error } = await supabase
         .from("learning_paths")
-        .select("id, title, category, sub_category, sub_sub_category")
+        .select("id, title")
         .eq("id", learningPathId)
         .single();
 

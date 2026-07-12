@@ -57,24 +57,6 @@ export default async function CreateLearningPathPage({
                 required
               />
 
-              <FormField
-                label="Kategori Utama"
-                name="category"
-                placeholder="Contoh: CPNS, Bahasa Inggris, Informatika"
-              />
-
-              <FormField
-                label="Sub Kategori"
-                name="sub_category"
-                placeholder="Contoh: SKD, SKB, Kosa Kata"
-              />
-
-              <FormField
-                label="Sub Sub Kategori"
-                name="sub_sub_category"
-                placeholder="Contoh: Pranata Komputer"
-              />
-
               <TextAreaField
                 label="Description"
                 name="description"
@@ -188,6 +170,10 @@ function getErrorMessage(error: string | string[] | undefined) {
       return "Title tidak valid untuk dibuatkan slug.";
     case "23505":
       return "Learning path dengan judul atau slug yang sama sudah ada.";
+    case "invalid-status":
+      return "Status learning path tidak valid.";
+    case "PGRST204":
+      return "Kolom yang dikirim tidak sesuai dengan tabel learning_paths di Supabase.";
     default:
       return "Gagal menyimpan learning path ke database Supabase.";
   }

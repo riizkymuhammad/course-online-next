@@ -8,7 +8,6 @@ import {
   getUserRole,
 } from "@/lib/auth-roles";
 import {
-  buildLearningPathCategoryPath,
   buildLearningPathLabel,
 } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
@@ -27,9 +26,6 @@ type CourseRow = {
 type LearningPathRow = {
   id: string;
   title: string;
-  category: string | null;
-  sub_category: string | null;
-  sub_sub_category: string | null;
 };
 
 type CategoryRow = {
@@ -72,7 +68,7 @@ export default async function CoursesPage() {
         .order("updated_at", { ascending: false }),
       supabase
         .from("learning_paths")
-        .select("id, title, category, sub_category, sub_sub_category")
+        .select("id, title")
         .eq("status", "published"),
       supabase.from("categories").select("id, name"),
       supabase.from("sub_categories").select("id, category_id, name"),
@@ -89,18 +85,13 @@ export default async function CoursesPage() {
   const courses = ((courseRows as CourseRow[] | null) ?? []).map((item) => {
     const learningPath = item.learning_path_id ? learningPathMap.get(item.learning_path_id) : null;
     const category =
-      learningPath?.category?.trim() ??
       (item.category_id ? categoryMap.get(item.category_id)?.trim() : undefined) ??
       "Umum";
     const subCategory =
-      learningPath?.sub_category?.trim() ??
-      learningPath?.sub_sub_category?.trim() ??
       (item.sub_category_id ? subCategoryMap.get(item.sub_category_id)?.trim() : undefined) ??
       "Umum";
-    const subSubCategory = learningPath?.sub_sub_category?.trim() ?? "";
-    const categoryPath = learningPath
-      ? buildLearningPathCategoryPath(learningPath)
-      : buildCategoryPath(category, subCategory);
+    const subSubCategory = "";
+    const categoryPath = buildCategoryPath(category, subCategory);
     const label = learningPath ? buildLearningPathLabel(learningPath) : categoryPath || "Course Umum";
 
     return {

@@ -57,10 +57,7 @@ export default async function EditCoursePage({
         .single(),
       supabase
         .from("learning_paths")
-        .select("id, title, category, sub_category, sub_sub_category")
-        .order("category", { ascending: true })
-        .order("sub_category", { ascending: true })
-        .order("sub_sub_category", { ascending: true })
+        .select("id, title")
         .order("title", { ascending: true }),
       supabase.from("categories").select("id, name").order("name", { ascending: true }),
       supabase

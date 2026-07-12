@@ -97,7 +97,7 @@ export default async function TryoutManagementPage({
         "id, title, learning_path_id, category_id, sub_category_id, total_questions, material_file_name, thumbnail_url, status, updated_at"
       )
       .order("updated_at", { ascending: false }),
-    supabase.from("learning_paths").select("id, title, category, sub_category, sub_sub_category"),
+    supabase.from("learning_paths").select("id, title"),
     supabase.from("categories").select("id, name"),
     supabase.from("sub_categories").select("id, category_id, name"),
   ]);

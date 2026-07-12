@@ -81,7 +81,7 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
   if (tryoutRow.learning_path_id) {
     const { data: learningPathRow } = await supabase
       .from("learning_paths")
-      .select("title, category, sub_category, sub_sub_category")
+      .select("title")
       .eq("id", tryoutRow.learning_path_id)
       .single();
 

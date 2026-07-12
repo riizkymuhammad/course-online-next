@@ -3,7 +3,6 @@ import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
-import { buildLearningPathCategoryPath } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 
 type LearningPath = {
@@ -11,9 +10,6 @@ type LearningPath = {
   title: string;
   slug: string;
   description: string;
-  category: string | null;
-  sub_category: string | null;
-  sub_sub_category: string | null;
   material_count: number | string;
   status: "draft" | "published" | "archived";
   created_at: string;
@@ -42,7 +38,7 @@ export default async function LearningPathPage({
 
   const { data } = await supabase
     .from("learning_paths")
-    .select("id, title, slug, description, category, sub_category, sub_sub_category, status, created_at, updated_at")
+    .select("id, title, slug, description, status, created_at, updated_at")
     .order("created_at", { ascending: false });
 
   const learningPaths: LearningPath[] =
@@ -51,9 +47,6 @@ export default async function LearningPathPage({
       title: item.title,
       slug: item.slug,
       description: item.description ?? "",
-      category: item.category ?? null,
-      sub_category: item.sub_category ?? null,
-      sub_sub_category: item.sub_sub_category ?? null,
       material_count: 0,
       status: (item.status ?? "draft") as LearningPath["status"],
       created_at: item.created_at ?? "",
@@ -114,8 +107,8 @@ export default async function LearningPathPage({
               sortable: true,
             },
             {
-              key: "category_path",
-              label: "Kategori",
+              key: "slug",
+              label: "Slug",
               sortable: true,
             },
             { key: "material_count", label: "Jumlah Materi", sortable: true },
@@ -140,7 +133,7 @@ export default async function LearningPathPage({
           ]}
           data={learningPaths.map((item) => ({
             ...item,
-            category_path: buildLearningPathCategoryPath(item) || "Tanpa Kategori",
+            description: item.description || "Belum ada deskripsi.",
             material_count: `${item.material_count} Materi`,
           }))}
         />

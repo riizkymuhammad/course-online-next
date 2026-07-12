@@ -140,7 +140,7 @@ export default async function RiwayatTryoutPage() {
   const { data: rpcAttemptRows, error: rpcError } = await supabase.rpc("get_tryout_attempt_history");
   const { data: learningPathRows } = await supabase
     .from("learning_paths")
-    .select("id, title, category, sub_category, sub_sub_category");
+    .select("id, title");
   const learningPathMap = new Map(
     (learningPathRows ?? []).map((item) => [item.id, buildLearningPathLabel(item)])
   );

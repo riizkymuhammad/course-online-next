@@ -80,13 +80,12 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
   if (courseRow.learning_path_id) {
     const { data: learningPathRow } = await supabase
       .from("learning_paths")
-      .select("title, category, sub_category, sub_sub_category")
+      .select("title")
       .eq("id", courseRow.learning_path_id)
       .single();
 
     if (learningPathRow) {
-      category = learningPathRow.category?.trim() || buildLearningPathLabel(learningPathRow);
-      subCategory = learningPathRow.sub_category?.trim() || learningPathRow.sub_sub_category?.trim() || "Umum";
+      category = buildLearningPathLabel(learningPathRow);
     }
   }
 

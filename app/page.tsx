@@ -16,11 +16,6 @@ import { getUserProfile } from "@/lib/user-profile";
 type LearningPathRow = {
   id: string;
   title: string;
-  slug: string;
-  category: string | null;
-  sub_category: string | null;
-  sub_sub_category: string | null;
-  status: "draft" | "published" | "archived" | null;
 };
 
 type CourseRow = {
@@ -330,7 +325,6 @@ function buildCourseCards(
       : undefined;
 
     const category =
-      learningPath?.category?.trim() ||
       (course.category_id ? categoryMap.get(course.category_id)?.trim() : undefined) ||
       resolveCourseCategory(course.title, index);
 
@@ -339,8 +333,6 @@ function buildCourseCards(
       title: course.title,
       category,
       subCategory:
-        learningPath?.sub_category?.trim() ||
-        learningPath?.sub_sub_category?.trim() ||
         (course.sub_category_id ? subCategoryMap.get(course.sub_category_id)?.trim() : undefined) ||
         "Umum",
       backgroundColor: getCourseCardBackground(category),
@@ -367,7 +359,6 @@ function buildTryoutCards(
       ? learningPathMap.get(tryout.learning_path_id)
       : undefined;
     const category =
-      learningPath?.category?.trim() ||
       (tryout.category_id ? categoryMap.get(tryout.category_id)?.trim() : undefined) ||
       resolveCourseCategory(tryout.title, index);
 
@@ -376,8 +367,6 @@ function buildTryoutCards(
       title: tryout.title,
       category,
       subCategory:
-        learningPath?.sub_category?.trim() ||
-        learningPath?.sub_sub_category?.trim() ||
         (tryout.sub_category_id ? subCategoryMap.get(tryout.sub_category_id)?.trim() : undefined) ||
         "Umum",
       backgroundColor: getCourseCardBackground(category),
@@ -402,7 +391,7 @@ export default async function HomePage() {
     supabase.auth.getUser(),
     supabase
       .from("learning_paths")
-      .select("id, title, slug, category, sub_category, sub_sub_category, status")
+      .select("id, title")
       .eq("status", "published")
       .order("created_at", { ascending: false }),
     supabase
@@ -447,11 +436,8 @@ export default async function HomePage() {
   const categoryCourseCounts = new Map(categories.map((category) => [category.title, 0]));
 
   courses.forEach((course) => {
-    const learningPathCategory = course.learning_path_id
-      ? learningPathMap.get(course.learning_path_id)?.category
-      : null;
     const directCategory = course.category_id ? categoryMap.get(course.category_id) : null;
-    const categoryTitle = getHomepageCategoryTitle(learningPathCategory?.trim() || directCategory);
+    const categoryTitle = getHomepageCategoryTitle(directCategory);
 
     if (categoryTitle) {
       categoryCourseCounts.set(categoryTitle, (categoryCourseCounts.get(categoryTitle) ?? 0) + 1);
