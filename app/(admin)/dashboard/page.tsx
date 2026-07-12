@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import MetricCard from "@/components/molecules/MetricCard";
-import LearningCourseWeeklyChart from "@/components/organisms/dashboard/LearningCourseWeeklyChart";
+import GeminiLimitChart from "@/components/organisms/dashboard/GeminiLimitChart";
+import LearningCourseDailyChart from "@/components/organisms/dashboard/LearningCourseDailyChart";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { getUserRole } from "@/lib/auth-roles";
+import { getGeminiLimitSummary } from "@/lib/gemini-limits";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -73,37 +75,39 @@ function getTryoutStatus(status: string | null) {
   return "-";
 }
 
-function startOfWeek(value: Date) {
+function startOfDay(value: Date) {
   const date = new Date(value);
   date.setHours(0, 0, 0, 0);
-  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
   return date;
 }
 
-function getWeekKey(value: Date) {
-  return value.toISOString().slice(0, 10);
+function getDayKey(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
-function buildWeeklyLearningCourse(rows: Array<{ last_opened_at: string | null }>) {
-  const currentWeek = startOfWeek(new Date());
-  const weeks = Array.from({ length: 8 }, (_, index) => {
-    const week = new Date(currentWeek);
-    week.setDate(currentWeek.getDate() - (7 - index) * 7);
-    return week;
+function buildDailyLearningCourse(rows: Array<{ last_opened_at: string | null }>) {
+  const today = startOfDay(new Date());
+  const days = Array.from({ length: 14 }, (_, index) => {
+    const day = new Date(today);
+    day.setDate(today.getDate() - (13 - index));
+    return day;
   });
-  const counts = new Map(weeks.map((week) => [getWeekKey(week), 0]));
+  const counts = new Map(days.map((day) => [getDayKey(day), 0]));
 
   rows.forEach((row) => {
     if (!row.last_opened_at) return;
-    const key = getWeekKey(startOfWeek(new Date(row.last_opened_at)));
+    const key = getDayKey(startOfDay(new Date(row.last_opened_at)));
     if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
   });
 
   return {
-    labels: weeks.map((week) =>
-      new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short" }).format(week)
+    labels: days.map((day) =>
+      new Intl.DateTimeFormat("id-ID", { day: "numeric", month: "short" }).format(day)
     ),
-    values: weeks.map((week) => counts.get(getWeekKey(week)) ?? 0),
+    values: days.map((day) => counts.get(getDayKey(day)) ?? 0),
   };
 }
 
@@ -118,8 +122,8 @@ export default async function DashboardPage() {
 
   const adminClient = createAdminClient();
   const database = adminClient ?? supabase;
-  const eightWeeksAgo = new Date();
-  eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 56);
+  const fourteenDaysAgo = new Date();
+  fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
 
   const [
     courseCountResult,
@@ -137,7 +141,7 @@ export default async function DashboardPage() {
     database
       .from("learning_course")
       .select("last_opened_at")
-      .gte("last_opened_at", eightWeeksAgo.toISOString()),
+      .gte("last_opened_at", fourteenDaysAgo.toISOString()),
     database
       .from("learning_course")
       .select("id, user_id, status, last_opened_at, courses(id, title), course_modules(id, title)")
@@ -177,9 +181,10 @@ export default async function DashboardPage() {
     recentLearningCourseResult.error,
     recentLearningTryoutResult.error,
   ].filter((error): error is NonNullable<typeof error> => Boolean(error));
-  const weeklyData = buildWeeklyLearningCourse(
+  const dailyData = buildDailyLearningCourse(
     ((weeklyLearningResult.data as Array<{ last_opened_at: string | null }> | null) ?? [])
   );
+  const geminiLimitSummary = getGeminiLimitSummary();
   const recentLearningCourses =
     ((recentLearningCourseResult.data as LearningCourseRow[] | null) ?? []).map((item) => {
       const course = getRelation(item.courses);
@@ -237,7 +242,9 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      <LearningCourseWeeklyChart labels={weeklyData.labels} values={weeklyData.values} />
+      <LearningCourseDailyChart labels={dailyData.labels} values={dailyData.values} />
+
+      <GeminiLimitChart {...geminiLimitSummary} />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <DataTable

@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 
 const ReactApexChart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
-export default function LearningCourseWeeklyChart({
+export default function LearningCourseDailyChart({
   labels,
   values,
 }: {
@@ -23,7 +23,7 @@ export default function LearningCourseWeeklyChart({
     plotOptions: {
       bar: {
         borderRadius: 6,
-        columnWidth: "42%",
+        columnWidth: "55%",
       },
     },
     dataLabels: { enabled: false },
@@ -53,8 +53,8 @@ export default function LearningCourseWeeklyChart({
     <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">Aktivitas belajar</p>
       <div className="mt-1 flex items-baseline justify-between gap-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Learning Course per minggu</h2>
-        <span className="text-xs text-gray-400">8 minggu terakhir</span>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Learning Course per hari</h2>
+        <span className="text-xs text-gray-400">14 hari terakhir</span>
       </div>
       <div className="mt-5 min-h-[280px]">
         <ReactApexChart

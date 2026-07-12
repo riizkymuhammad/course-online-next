@@ -1,6 +1,7 @@
 import { google } from "@ai-sdk/google";
 import { generateText, Output } from "ai";
 import { z } from "zod";
+import { GEMINI_GENERATION_MODEL } from "@/lib/gemini-limits";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -178,7 +179,7 @@ export async function POST(request: Request) {
       : "Jika tidak ada catatan tambahan, buat seluruh soal sebagai pilihan ganda standar dengan 4 opsi jawaban.";
 
     const result = await generateText({
-      model: google("gemini-2.5-flash"),
+      model: google(GEMINI_GENERATION_MODEL),
       messages: [
         {
           role: "user",

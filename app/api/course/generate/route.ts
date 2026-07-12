@@ -3,6 +3,7 @@ import { generateText, Output } from "ai";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getUserRole } from "@/lib/auth-roles";
+import { GEMINI_GENERATION_MODEL } from "@/lib/gemini-limits";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -205,7 +206,7 @@ export async function POST(request: Request) {
 
     stage = "membuat materi dengan AI";
     const result = await generateText({
-      model: google("gemini-2.5-flash"),
+      model: google(GEMINI_GENERATION_MODEL),
       messages: [
         {
           role: "user",
