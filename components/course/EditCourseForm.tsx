@@ -101,7 +101,6 @@ export default function EditCourseForm({
               label="Sub Kategori"
               name="sub_category_id"
               value={selectedSubCategoryId}
-              defaultValue=""
               disabled={!selectedCategoryId || !hasSubCategoryOptions}
               options={[
                 {

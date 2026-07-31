@@ -213,7 +213,6 @@ export default function CreateCourseForm({
               label="Sub Kategori"
               name="sub_category_id"
               value={selectedSubCategoryId}
-              defaultValue=""
               disabled={!selectedCategoryId || !hasSubCategoryOptions}
               options={[
                 {

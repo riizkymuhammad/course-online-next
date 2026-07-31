@@ -13,11 +13,26 @@ type SelectFieldProps = Omit<SelectHTMLAttributes<HTMLSelectElement>, "name" | "
   onChange?: (value: string) => void;
 };
 
-export default function SelectField({ label, name, options, hint, error, required, className, onChange, ...props }: SelectFieldProps) {
+export default function SelectField({
+  label,
+  name,
+  options,
+  hint,
+  error,
+  required,
+  className,
+  onChange,
+  value,
+  defaultValue,
+  ...props
+}: SelectFieldProps) {
+  const selectionProps = value !== undefined ? { value } : { defaultValue };
+
   return (
     <FormControl label={label} name={name} required={required} hint={hint} error={error}>
       <select
         {...props}
+        {...selectionProps}
         id={name}
         name={name}
         required={required}

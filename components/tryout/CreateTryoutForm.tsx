@@ -184,7 +184,6 @@ export default function CreateTryoutForm({
               label="Kategori"
               name="category_id"
               value={selectedCategoryId}
-              defaultValue=""
               disabled={!hasCategories}
               options={[
                 {
@@ -208,7 +207,6 @@ export default function CreateTryoutForm({
               label="Sub Kategori"
               name="sub_category_id"
               value={selectedSubCategoryId}
-              defaultValue=""
               disabled={!selectedCategoryId || !hasSubCategoryOptions}
               options={[
                 {
