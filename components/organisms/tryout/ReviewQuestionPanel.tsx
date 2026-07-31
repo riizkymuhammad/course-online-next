@@ -1,6 +1,5 @@
 import ActionLink from "@/components/atoms/ActionLink";
 import Button from "@/components/atoms/Button";
-import SectionLabel from "@/components/atoms/SectionLabel";
 import Surface from "@/components/atoms/Surface";
 import QuestionResultAlert from "@/components/molecules/tryout/QuestionResultAlert";
 import ReviewAnswerOption from "@/components/molecules/tryout/ReviewAnswerOption";
@@ -35,8 +34,9 @@ export default function ReviewQuestionPanel({
     <Surface>
       <header className="flex flex-col gap-3 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <SectionLabel>Hasil Pengerjaan</SectionLabel>
-          <h1 className="mt-2 text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-[28px]">{tryoutTitle}</h1>
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-white/90 sm:text-[16px]">
+            {tryoutTitle}
+          </h1>
         </div>
         <p className="text-sm font-medium text-gray-500 dark:text-gray-400 sm:pt-1">
           Soal {question.order} dari {totalQuestions}

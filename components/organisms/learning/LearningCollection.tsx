@@ -53,7 +53,7 @@ export default function LearningCollection({
         </TextLinkButton>
       </div>
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {visibleItems.map((item) => (
           <LearningCard key={item.id} item={item} label={label} />
         ))}

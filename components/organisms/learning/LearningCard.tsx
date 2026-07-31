@@ -19,19 +19,19 @@ export default function LearningCard({ item, label }: { item: LearningCardItem; 
     >
       <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-300 group-hover:shadow-md">
         <div
-          className="relative flex h-40 items-center justify-center"
+          className="relative flex h-28 items-center justify-center sm:h-40"
           style={{ backgroundColor: item.backgroundColor }}
         >
           <span className="absolute left-3 top-3">
             <CategoryBadge>{item.category || "Umum"}</CategoryBadge>
           </span>
-          <span className="line-clamp-3 px-6 text-center text-base font-semibold text-white/95">
+          <span className="line-clamp-3 px-3 text-center text-xs font-semibold text-white/95 sm:px-6 sm:text-base">
             {item.title}
           </span>
         </div>
 
-        <div className="flex flex-1 flex-col p-5">
-          <h3 className="line-clamp-2 text-md font-semibold text-slate-900">{item.title}</h3>
+        <div className="flex flex-1 flex-col p-3 sm:p-5">
+          <h3 className="line-clamp-2 text-xs font-semibold text-slate-900 sm:text-base">{item.title}</h3>
           <span className="mt-1 w-fit">
             <CategoryBadge tone="muted">{item.subCategory || "Umum"}</CategoryBadge>
           </span>

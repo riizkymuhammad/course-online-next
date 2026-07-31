@@ -26,7 +26,7 @@ export default function ReviewAnswerOption({
       : "border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300";
 
   return (
-    <div className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left sm:px-5 ${optionClass}`}>
+    <div className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-2 text-left sm:px-5 ${optionClass}`}>
       <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${labelClass}`}>
         {label}
       </span>

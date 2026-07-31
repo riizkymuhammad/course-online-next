@@ -113,7 +113,7 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
           <p className="text-sm font-medium uppercase tracking-[0.24em] text-brand-500">
             Tryout Detail
           </p>
-          <h1 className="mt-3 text-3xl font-semibold text-gray-900 dark:text-white">
+          <h1 className="mt-3 text-xl font-semibold text-gray-900 dark:text-white">
             {tryoutRow.title}
           </h1>
         </div>

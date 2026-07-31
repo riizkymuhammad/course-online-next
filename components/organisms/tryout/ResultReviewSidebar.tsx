@@ -26,9 +26,13 @@ export default function ResultReviewSidebar({
     <aside className="space-y-4">
       <ResultScoreCard score={score} correctCount={correctCount} wrongCount={questions.length - correctCount} />
 
-      <Surface>
-        <h2 className="text-2xl font-semibold text-gray-800 dark:text-white/90">Peta Soal</h2>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Hijau benar, merah salah</p>
+      <Surface className="p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">Peta Soal</h2>
+          <p className="shrink-0 text-right text-sm text-gray-500 dark:text-gray-400">
+            Hijau benar, merah salah
+          </p>
+        </div>
         <div className="mt-5 grid grid-cols-5 gap-2">
           {questions.map((question, index) => (
             <button

@@ -136,7 +136,7 @@ export default function TryoutExamClient({
           <Surface>
             <div className="flex flex-col gap-3 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h1 className="text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-[28px]">
+                <h1 className="text-xl font-semibold text-gray-800 dark:text-white/90 sm:text-[16px]">
                   {tryoutTitle}
                 </h1>
               </div>
@@ -164,7 +164,7 @@ export default function TryoutExamClient({
                     key={option.id}
                     type="button"
                     onClick={() => handleSelectOption(activeQuestion.id, option.id)}
-                    className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition sm:px-5 ${
+                    className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-2 text-left transition sm:px-5 ${
                       isSelected
                         ? "border-brand-300 bg-brand-50 dark:border-brand-500/40 dark:bg-brand-500/10"
                         : "border-gray-200 bg-white hover:border-brand-300 hover:bg-gray-50 dark:border-gray-800 dark:bg-transparent dark:hover:bg-white/[0.03]"
@@ -224,13 +224,14 @@ export default function TryoutExamClient({
 
           <aside>
             <Surface className="p-5">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
-                Peta Soal
-              </h2>
-
-              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Terjawab {answeredCount}/{questions.length}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90">
+                  Peta Soal
+                </h2>
+                <p className="shrink-0 text-right text-sm text-gray-500 dark:text-gray-400">
+                  Terjawab {answeredCount}/{questions.length}
+                </p>
+              </div>
 
               <div className="mt-5 grid grid-cols-5 gap-2">
                 {questions.map((question, index) => {
