@@ -47,30 +47,26 @@ export const metadata: Metadata = {
 
 export default async function CoursesPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const cookieStore = await cookies();
+  const [
+    { data: { user } },
+    cookieStore,
+    { data: courseRows },
+    { data: learningPathRows },
+    { data: categoryRows },
+    { data: subCategoryRows },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    cookies(),
+    supabase.from("courses").select("id, title, learning_path_id, category_id, sub_category_id, status").eq("status", "published").order("updated_at", { ascending: false }),
+    supabase.from("learning_paths").select("id, title").eq("status", "published"),
+    supabase.from("categories").select("id, name"),
+    supabase.from("sub_categories").select("id, category_id, name"),
+  ]);
   const accountRole = getUserRole(user);
   const activeRole = getEffectiveRole({
     accountRole,
     activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
   });
-  const [{ data: courseRows }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] =
-    await Promise.all([
-      supabase
-        .from("courses")
-        .select("id, title, learning_path_id, category_id, sub_category_id, status")
-        .eq("status", "published")
-        .order("updated_at", { ascending: false }),
-      supabase
-        .from("learning_paths")
-        .select("id, title")
-        .eq("status", "published"),
-      supabase.from("categories").select("id, name"),
-      supabase.from("sub_categories").select("id, category_id, name"),
-    ]);
-
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const learningPathMap = new Map(learningPaths.map((item) => [item.id, item]));
   const categoryMap = new Map(

@@ -47,17 +47,11 @@ export async function generateMetadata(
 export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/[slug]">) {
   const params = (await props.params) as TryoutPageParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: tryoutRow } = await supabase
-    .from("tryouts")
-    .select(
-      "id, title, total_questions, learning_path_id, category_id, sub_category_id, thumbnail_url"
-    )
-    .eq("id", params.uuid)
-    .single();
+  const [{ data: { user } }, cookieStore, { data: tryoutRow }] = await Promise.all([
+    supabase.auth.getUser(),
+    cookies(),
+    supabase.from("tryouts").select("id, title, total_questions, learning_path_id, category_id, sub_category_id, thumbnail_url").eq("id", params.uuid).single(),
+  ]);
 
   if (!tryoutRow) {
     notFound();
@@ -68,43 +62,25 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
     redirect(`/tryout/${tryoutRow.id}/${expectedSlug}`);
   }
 
-  let learningPathTitle = "Unassigned";
-  if (tryoutRow.learning_path_id) {
-    const { data: learningPathRow } = await supabase
-      .from("learning_paths")
-      .select("title")
-      .eq("id", tryoutRow.learning_path_id)
-      .single();
-
-    learningPathTitle = learningPathRow ? buildLearningPathLabel(learningPathRow) : "Unassigned";
-  } else {
-    const [categoryResult, subCategoryResult] = await Promise.all([
-      tryoutRow.category_id
-        ? supabase.from("categories").select("name").eq("id", tryoutRow.category_id).maybeSingle()
-        : Promise.resolve({ data: null }),
-      tryoutRow.sub_category_id
-        ? supabase
-            .from("sub_categories")
-            .select("name")
-            .eq("id", tryoutRow.sub_category_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-    ]);
-
-    learningPathTitle =
-      buildCategoryPath(categoryResult.data?.name ?? null, subCategoryResult.data?.name ?? null) ||
-      "Unassigned";
-  }
-
-  const { data: attemptRows } = user
-    ? await supabase
+  const learningPathTitlePromise = tryoutRow.learning_path_id
+    ? supabase.from("learning_paths").select("title").eq("id", tryoutRow.learning_path_id).single().then(({ data }) => data ? buildLearningPathLabel(data) : "Unassigned")
+    : Promise.all([
+        tryoutRow.category_id ? supabase.from("categories").select("name").eq("id", tryoutRow.category_id).maybeSingle() : Promise.resolve({ data: null }),
+        tryoutRow.sub_category_id ? supabase.from("sub_categories").select("name").eq("id", tryoutRow.sub_category_id).maybeSingle() : Promise.resolve({ data: null }),
+      ]).then(([categoryResult, subCategoryResult]) => buildCategoryPath(categoryResult.data?.name, subCategoryResult.data?.name) || "Unassigned");
+  const attemptRowsPromise = user
+    ? supabase
         .from("tryout_attempts")
         .select("id, score, max_score, submitted_at, status")
         .eq("tryout_id", tryoutRow.id)
         .eq("user_id", user.id)
         .in("status", ["submitted", "graded"])
         .order("submitted_at", { ascending: false })
-    : { data: [] as AttemptScoreRow[] };
+    : Promise.resolve({ data: [] as AttemptScoreRow[] });
+  const [learningPathTitle, { data: attemptRows }] = await Promise.all([
+    learningPathTitlePromise,
+    attemptRowsPromise,
+  ]);
 
   const attempts = (attemptRows as AttemptScoreRow[] | null) ?? [];
   const detailHref = `/tryout/${tryoutRow.id}/${expectedSlug}`;
@@ -116,7 +92,6 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
     ? `/tryout/exam/${tryoutRow.id}/${expectedSlug}`
     : `/login?redirectedFrom=${encodeURIComponent(detailHref)}`;
   const userProfile = user ? getUserProfile(user) : null;
-  const cookieStore = await cookies();
   const accountRole = getUserRole(user);
   const activeRole = getEffectiveRole({
     accountRole,

@@ -47,17 +47,11 @@ export async function generateMetadata(
 export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/[slug]">) {
   const params = (await props.params) as CoursePageParams;
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: courseRow } = await supabase
-    .from("courses")
-    .select(
-      "id, title, description, learning_path_id, category_id, sub_category_id, section_count, module_count"
-    )
-    .eq("id", params.uuid)
-    .single();
+  const [{ data: { user } }, cookieStore, { data: courseRow }] = await Promise.all([
+    supabase.auth.getUser(),
+    cookies(),
+    supabase.from("courses").select("id, title, description, learning_path_id, category_id, sub_category_id, section_count, module_count").eq("id", params.uuid).single(),
+  ]);
 
   if (!courseRow) {
     notFound();
@@ -68,43 +62,15 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
     redirect(`/course/${courseRow.id}/${expectedSlug}`);
   }
 
-  let category = "Umum";
-  let subCategory = "Umum";
-  if (courseRow.learning_path_id) {
-    const { data: learningPathRow } = await supabase
-      .from("learning_paths")
-      .select("title")
-      .eq("id", courseRow.learning_path_id)
-      .single();
-
-    if (learningPathRow) {
-      category = buildLearningPathLabel(learningPathRow);
-    }
-  }
-
-  if (courseRow.category_id || courseRow.sub_category_id) {
-    const [categoryResult, subCategoryResult] = await Promise.all([
-      courseRow.category_id
-        ? supabase.from("categories").select("name").eq("id", courseRow.category_id).maybeSingle()
-        : Promise.resolve({ data: null }),
-      courseRow.sub_category_id
-        ? supabase
-            .from("sub_categories")
-            .select("name")
-            .eq("id", courseRow.sub_category_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-    ]);
-
-    category = categoryResult.data?.name?.trim() || category;
-    subCategory = subCategoryResult.data?.name?.trim() || subCategory;
-  }
-
-  const { data: sectionRows } = await supabase
-    .from("course_sections")
-    .select("id, title, section_order")
-    .eq("course_id", courseRow.id)
-    .order("section_order", { ascending: true });
+  const [learningPathResult, categoryResult, subCategoryResult, { data: sectionRows }] = await Promise.all([
+    courseRow.learning_path_id ? supabase.from("learning_paths").select("title").eq("id", courseRow.learning_path_id).maybeSingle() : Promise.resolve({ data: null }),
+    courseRow.category_id ? supabase.from("categories").select("name").eq("id", courseRow.category_id).maybeSingle() : Promise.resolve({ data: null }),
+    courseRow.sub_category_id ? supabase.from("sub_categories").select("name").eq("id", courseRow.sub_category_id).maybeSingle() : Promise.resolve({ data: null }),
+    supabase.from("course_sections").select("id, title, section_order").eq("course_id", courseRow.id).order("section_order", { ascending: true }),
+  ]);
+  const category = categoryResult.data?.name?.trim()
+    || (learningPathResult.data ? buildLearningPathLabel(learningPathResult.data) : "Umum");
+  const subCategory = subCategoryResult.data?.name?.trim() || "Umum";
   const sections = (sectionRows as SectionRow[] | null) ?? [];
   const sectionIds = sections.map((section) => section.id);
   const { data: moduleRows } = sectionIds.length
@@ -145,7 +111,6 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
     ? `${detailHref}/materi`
     : `/login?redirectedFrom=${encodeURIComponent(`${detailHref}/materi`)}`;
   const userProfile = user ? getUserProfile(user) : null;
-  const cookieStore = await cookies();
   const accountRole = getUserRole(user);
   const activeRole = getEffectiveRole({
     accountRole,
