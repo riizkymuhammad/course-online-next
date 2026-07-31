@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import MarkdownContent from "@/components/course/MarkdownContent";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -160,7 +161,7 @@ export default async function CourseMaterialPage({
                         </p>
                       ) : null}
                       <LearningObjectives value={module.learning_objectives} />
-                      <MarkdownContent value={module.content_markdown} />
+                      <MarkdownContent value={module.content_markdown} compact />
                     </article>
                   ))}
                 </div>
@@ -204,43 +205,6 @@ function LearningObjectives({ value }: { value: unknown }) {
           <li key={objective}>{objective}</li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function MarkdownContent({ value }: { value: string | null }) {
-  if (!value) {
-    return <p className="mt-4 text-sm text-gray-500 dark:text-gray-400">Isi materi belum tersedia.</p>;
-  }
-
-  return (
-    <div className="mt-4 space-y-3 text-sm leading-7 text-gray-700 dark:text-gray-200">
-      {value.split("\n").map((line, index) => {
-        const heading = line.match(/^(#{1,3})\s+(.+)/);
-        const bullet = line.match(/^[-*]\s+(.+)/);
-
-        if (heading) {
-          const headingClass =
-            heading[1].length === 1
-              ? "text-lg font-semibold text-gray-900 dark:text-white"
-              : "text-base font-semibold text-gray-900 dark:text-white";
-          return (
-            <p key={`${line}-${index}`} className={headingClass}>
-              {heading[2]}
-            </p>
-          );
-        }
-
-        if (bullet) {
-          return (
-            <p key={`${line}-${index}`} className="pl-4 before:mr-2 before:content-['•']">
-              {bullet[1]}
-            </p>
-          );
-        }
-
-        return line.trim() ? <p key={`${line}-${index}`}>{line}</p> : <div key={`space-${index}`} />;
-      })}
     </div>
   );
 }

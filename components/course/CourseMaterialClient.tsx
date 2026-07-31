@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import MarkdownContent from "@/components/course/MarkdownContent";
 
 export type CourseMaterialModule = {
   id: string;
@@ -56,6 +57,7 @@ export default function CourseMaterialClient({
     section.modules.some((module) => module.id === activeModule?.id)
   );
   const nextModule = activeModuleIndex >= 0 ? modules[activeModuleIndex + 1] : undefined;
+  const activeModuleIdForProgress = activeModule?.id;
 
   const saveProgress = useCallback(
     async (moduleId: string, action: "open" | "complete") => {
@@ -74,10 +76,10 @@ export default function CourseMaterialClient({
   );
 
   useEffect(() => {
-    if (!isLoggedIn || !activeModule) return;
+    if (!isLoggedIn || !activeModuleIdForProgress) return;
 
     let isCurrent = true;
-    void saveProgress(activeModule.id, "open").catch((error) => {
+    void saveProgress(activeModuleIdForProgress, "open").catch((error) => {
       if (isCurrent) {
         setErrorMessage(error instanceof Error ? error.message : "Gagal menyimpan progres pembelajaran.");
       }
@@ -86,7 +88,7 @@ export default function CourseMaterialClient({
     return () => {
       isCurrent = false;
     };
-  }, [activeModule?.id, isLoggedIn, saveProgress]);
+  }, [activeModuleIdForProgress, isLoggedIn, saveProgress]);
 
   function openModule(moduleId: string) {
     setActiveModuleId(moduleId);
@@ -290,43 +292,6 @@ function LearningObjectives({ value }: { value: unknown }) {
           <li key={objective}>{objective}</li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-function MarkdownContent({ value }: { value: string | null }) {
-  if (!value) {
-    return <p className="mt-7 text-sm text-gray-500 dark:text-gray-400">Isi materi belum tersedia.</p>;
-  }
-
-  return (
-    <div className="mt-7 space-y-3 text-sm leading-7 text-gray-700 dark:text-gray-200">
-      {value.split("\n").map((line, index) => {
-        const heading = line.match(/^(#{1,3})\s+(.+)/);
-        const bullet = line.match(/^[-*]\s+(.+)/);
-
-        if (heading) {
-          const headingClass =
-            heading[1].length === 1
-              ? "text-xl font-semibold text-gray-900 dark:text-white"
-              : "text-lg font-semibold text-gray-900 dark:text-white";
-          return (
-            <p key={`${line}-${index}`} className={headingClass}>
-              {heading[2]}
-            </p>
-          );
-        }
-
-        if (bullet) {
-          return (
-            <p key={`${line}-${index}`} className="pl-4 before:mr-2 before:content-['•']">
-              {bullet[1]}
-            </p>
-          );
-        }
-
-        return line.trim() ? <p key={`${line}-${index}`}>{line}</p> : <div key={`space-${index}`} />;
-      })}
     </div>
   );
 }

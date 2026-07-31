@@ -188,12 +188,12 @@ export default async function DashboardPage() {
   const recentLearningCourses =
     ((recentLearningCourseResult.data as LearningCourseRow[] | null) ?? []).map((item) => {
       const course = getRelation(item.courses);
-      const module = getRelation(item.course_modules);
+      const courseModule = getRelation(item.course_modules);
       return {
         id: item.id,
         user_name: userNameMap.get(item.user_id) ?? item.user_id,
         course_name: course?.title ?? "Course tidak ditemukan",
-        module_name: module?.title ?? "Modul tidak ditemukan",
+        module_name: courseModule?.title ?? "Modul tidak ditemukan",
         status: item.status === "complete" ? "Selesai" : "Membaca",
         last_opened_at: formatDateTime(item.last_opened_at),
       };

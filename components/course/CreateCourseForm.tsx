@@ -92,7 +92,11 @@ export default function CreateCourseForm({
       setGenerationPhase("generating");
       setGenerationLogs((logs) => [
         ...logs,
-        { message: "PDF sedang dianalisis untuk menyusun section, modul, dan materi.", tone: "default" },
+        {
+          message:
+            "PDF sedang dibaca untuk menyusun section, modul, dan poin penting yang scannable.",
+          tone: "default",
+        },
       ]);
     }, 600);
 
@@ -240,14 +244,14 @@ export default function CreateCourseForm({
               name="material_file"
               required
               accept="application/pdf"
-              hint="PDF digunakan AI untuk menyusun outline section dan modul course."
+              hint="PDF akan dibaca AI untuk menyusun section, modul, dan materi poin-poin yang mudah dipindai."
             />
 
             <TextAreaField
               label="Catatan Materi"
               name="material_notes"
-              placeholder="Opsional. Contoh: fokuskan pada pemula, sertakan latihan di setiap section, dan gunakan contoh kasus penjualan."
-              hint="Gunakan kolom ini untuk memberi arahan bagaimana materi perlu disusun oleh AI."
+              placeholder="Opsional. Contoh: fokuskan ke konsep utama, tebalkan istilah teknis, pakai contoh nyata, dan hindari dinding teks."
+              hint="Gunakan kolom ini untuk mengatur fokus materi, istilah penting, contoh praktis, dan tingkat keringkasan."
             />
           </div>
         </div>
@@ -323,7 +327,7 @@ function GenerationStatusPanel({
     {
       phase: "generating" as const,
       title: "Susun materi dengan AI",
-      description: "AI membaca PDF lalu membuat section, modul, dan konten pembelajaran.",
+      description: "AI menyusun section, modul, dan poin penting dari PDF.",
     },
     {
       phase: "saving" as const,

@@ -1,0 +1,50 @@
+<svg width="620" height="128" viewBox="0 0 620 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="18" y="12" width="92" height="96" rx="23" fill="url(#courseBaseLogoBlue)"/>
+  <path
+    d="M42 30h43.4c4.9 0 8.7 1.25 12.7 4.1l17.6 12.55C123.4 52.15 128 61.05 128 70.5v16.7c0 12.6-10.2 22.8-22.8 22.8H76.4c-8.15 0-15.95 3.25-21.7 9l-5.5 5.5V110H42c-12.7 0-23-10.3-23-23V53c0-12.7 10.3-23 23-23Z"
+    fill="white"
+    filter="url(#courseBaseLogoShadow)"
+  />
+  <path
+    d="M49.2 110h25.9c-7.65.28-14.9 3.43-20.4 8.95l-5.5 5.5V110Z"
+    fill="url(#courseBaseLogoFold)"
+  />
+  <rect x="58" y="51" width="42" height="7.5" rx="3.75" fill="url(#courseBaseLogoLine)"/>
+  <rect x="58" y="68" width="42" height="7.5" rx="3.75" fill="url(#courseBaseLogoLine)"/>
+  <text
+    x="166"
+    y="80"
+    fill="url(#courseBaseLogoText)"
+    font-family="Outfit, sans-serif"
+    font-size="70"
+    font-weight="800"
+  >Course Base</text>
+  <defs>
+    <linearGradient id="courseBaseLogoBlue" x1="23" y1="15" x2="111" y2="108" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#126CFF"/>
+      <stop offset="1" stop-color="#0757EA"/>
+    </linearGradient>
+    <linearGradient id="courseBaseLogoText" x1="166" y1="30" x2="600" y2="82" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#126CFF"/>
+      <stop offset="1" stop-color="#0757EA"/>
+    </linearGradient>
+    <linearGradient id="courseBaseLogoLine" x1="58" y1="54.8" x2="100" y2="54.8" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9FC5FF"/>
+      <stop offset="1" stop-color="#76AAF8"/>
+    </linearGradient>
+    <linearGradient id="courseBaseLogoFold" x1="49.2" y1="110" x2="75.1" y2="124" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DFECFF"/>
+      <stop offset="1" stop-color="#BBD6FF"/>
+    </linearGradient>
+    <filter id="courseBaseLogoShadow" x="15" y="27" width="116" height="102.2" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+      <feOffset dy="1.5"/>
+      <feGaussianBlur stdDeviation="2"/>
+      <feComposite in2="hardAlpha" operator="out"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0.06 0 0 0 0 0.24 0 0 0 0 0.62 0 0 0 0.16 0"/>
+      <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow"/>
+      <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow" result="shape"/>
+    </filter>
+  </defs>
+</svg>

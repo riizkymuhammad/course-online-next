@@ -7,6 +7,20 @@ export type GeminiRateLimitMetric = {
   description: string;
 };
 
+export type GeminiUsageSnapshot = {
+  sourceReady: boolean;
+  requestCountLastMinute: number;
+  inputTokensLastMinute: number;
+  outputTokensLastMinute: number;
+  totalTokensLastMinute: number;
+  requestCountToday: number;
+  inputTokensToday: number;
+  outputTokensToday: number;
+  totalTokensToday: number;
+  lastLoggedAt: string | null;
+  errorMessage: string | null;
+};
+
 export type GeminiLimitSummary = {
   apiKeyConfigured: boolean;
   model: string;

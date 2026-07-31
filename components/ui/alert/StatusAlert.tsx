@@ -25,12 +25,9 @@ export default function StatusAlert({
   message,
   durationMs = 4000,
 }: StatusAlertProps) {
-  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-
     const timeout = window.setTimeout(() => {
       setVisible(false);
     }, durationMs);
@@ -38,7 +35,7 @@ export default function StatusAlert({
     return () => window.clearTimeout(timeout);
   }, [durationMs]);
 
-  if (!mounted || !visible) return null;
+  if (!visible || typeof document === "undefined") return null;
 
   return createPortal(
     <div className="pointer-events-none fixed left-1/2 top-20 z-[120] w-full max-w-xl -translate-x-1/2 px-4 sm:top-24 sm:px-6">

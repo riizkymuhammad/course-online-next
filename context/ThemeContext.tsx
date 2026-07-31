@@ -12,27 +12,20 @@ type ThemeContextType = {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+function getInitialTheme(): Theme {
+  if (typeof window === "undefined") return "light";
+  return window.localStorage.getItem("theme") === "dark" ? "dark" : "light";
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [theme, setTheme] = useState<Theme>("light");
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [theme, setTheme] = useState<Theme>(getInitialTheme);
 
   useEffect(() => {
-    const savedTheme = window.localStorage.getItem("theme");
-    const nextTheme = savedTheme === "dark" ? "dark" : "light";
-
-    setTheme(nextTheme);
-    document.documentElement.classList.toggle("dark", nextTheme === "dark");
-    setIsHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isHydrated) return;
-
     window.localStorage.setItem("theme", theme);
     document.documentElement.classList.toggle("dark", theme === "dark");
-  }, [isHydrated, theme]);
+  }, [theme]);
 
   const toggleTheme = () => {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
