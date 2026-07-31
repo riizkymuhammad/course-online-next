@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { getUserProfile } from "@/lib/user-profile";
+import { slugify } from "@/lib/text";
 
 type CoursePageParams = {
   uuid: string;
@@ -32,15 +33,6 @@ type ModuleRow = {
   estimated_minutes: number | null;
   learning_objectives: unknown;
 };
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
 
 export async function generateMetadata(
   props: PageProps<"/course/[uuid]/[slug]">

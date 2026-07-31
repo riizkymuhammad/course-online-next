@@ -6,6 +6,7 @@ import ActionLink from "@/components/atoms/ActionLink";
 import Button from "@/components/atoms/Button";
 import { FileField, SelectField, TextAreaField, TextField as FormField } from "@/components/molecules/form";
 import InlineAlert from "@/components/molecules/InlineAlert";
+import GenerationStatusPanel, { type GenerationPhase, type GenerationStep } from "@/components/organisms/generation/GenerationStatusPanel";
 
 type Option = {
   value: string;
@@ -43,7 +44,12 @@ type GenerateTryoutResponse = {
   questions: GeneratedQuestion[];
 };
 
-type GenerationPhase = "idle" | "validating" | "generating" | "saving" | "success" | "error";
+const tryoutGenerationSteps: GenerationStep[] = [
+  { phase: "validating", title: "Validasi input dan file PDF", description: "Mengecek judul, learning path/kategori, jumlah soal, status, dan file materi." },
+  { phase: "generating", title: "Generate soal dengan AI", description: "AI membaca materi PDF dan menyusun soal sesuai jumlah yang diminta." },
+  { phase: "saving", title: "Simpan tryout dan thumbnail", description: "Menyimpan data tryout, soal, opsi jawaban, dan thumbnail ke Supabase." },
+  { phase: "success", title: "Selesai", description: "Tryout sudah siap dicek di halaman Tryout Management." },
+];
 
 export default function CreateTryoutForm({
   learningPathOptions,
@@ -263,10 +269,14 @@ export default function CreateTryoutForm({
 
         {generationPhase !== "idle" ? (
           <GenerationStatusPanel
+            title="Status generate tryout"
             phase={generationPhase}
-            elapsedSeconds={elapsedSeconds}
-            successSummary={successSummary}
-            errorMessage={errorMessage}
+            summary={generationPhase === "success"
+              ? `${successSummary?.questionCount ?? 0} soal "${successSummary?.title ?? "tryout"}" berhasil disimpan. Anda akan diarahkan ke daftar tryout.`
+              : generationPhase === "error"
+                ? errorMessage || "Generate tryout gagal. Silakan cek pesan error."
+                : `Proses berjalan ${elapsedSeconds} detik. Jangan tutup halaman ini.`}
+            steps={tryoutGenerationSteps}
           />
         ) : null}
 
@@ -292,143 +302,4 @@ function getSubmitLabel(phase: GenerationPhase) {
   if (phase === "saving") return "Menyimpan...";
   if (phase === "success") return "Berhasil";
   return "Memproses...";
-}
-
-function getStepStatus(step: GenerationPhase, current: GenerationPhase) {
-  const order: GenerationPhase[] = ["validating", "generating", "saving", "success"];
-  const stepIndex = order.indexOf(step);
-  const currentIndex = order.indexOf(current);
-
-  if (current === "error") return "error";
-  if (currentIndex > stepIndex) return "done";
-  if (current === step) return "active";
-  return "pending";
-}
-
-function GenerationStatusPanel({
-  phase,
-  elapsedSeconds,
-  successSummary,
-  errorMessage,
-}: {
-  phase: GenerationPhase;
-  elapsedSeconds: number;
-  successSummary: { title: string; questionCount: number } | null;
-  errorMessage: string | null;
-}) {
-  const steps = [
-    {
-      phase: "validating" as const,
-      title: "Validasi input dan file PDF",
-      description: "Mengecek judul, learning path/kategori, jumlah soal, status, dan file materi.",
-    },
-    {
-      phase: "generating" as const,
-      title: "Generate soal dengan AI",
-      description: "AI membaca materi PDF dan menyusun soal sesuai jumlah yang diminta.",
-    },
-    {
-      phase: "saving" as const,
-      title: "Simpan tryout dan thumbnail",
-      description: "Menyimpan data tryout, soal, opsi jawaban, dan thumbnail ke Supabase.",
-    },
-    {
-      phase: "success" as const,
-      title: "Selesai",
-      description: "Tryout sudah siap dicek di halaman Tryout Management.",
-    },
-  ];
-
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
-            Status generate tryout
-          </p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {phase === "success"
-              ? `${successSummary?.questionCount ?? 0} soal "${successSummary?.title ?? "tryout"}" berhasil disimpan. Anda akan diarahkan ke daftar tryout.`
-              : phase === "error"
-                ? errorMessage || "Generate tryout gagal. Silakan cek pesan error."
-                : `Proses berjalan ${elapsedSeconds} detik. Jangan tutup halaman ini.`}
-          </p>
-        </div>
-        <StatusPill phase={phase} />
-      </div>
-
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        {steps.map((step) => (
-          <ProcessStep
-            key={step.phase}
-            title={step.title}
-            description={step.description}
-            status={getStepStatus(step.phase, phase)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function StatusPill({ phase }: { phase: GenerationPhase }) {
-  const label =
-    phase === "success" ? "Berhasil" : phase === "error" ? "Gagal" : "Sedang proses";
-  const tone =
-    phase === "success"
-      ? "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-400"
-      : phase === "error"
-        ? "bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-400"
-        : "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400";
-
-  return (
-    <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${tone}`}>
-      {label}
-    </span>
-  );
-}
-
-function ProcessStep({
-  title,
-  description,
-  status,
-}: {
-  title: string;
-  description: string;
-  status: "pending" | "active" | "done" | "error";
-}) {
-  const markerClass =
-    status === "done"
-      ? "bg-success-500 text-white"
-      : status === "active"
-        ? "bg-brand-500 text-white"
-        : status === "error"
-          ? "bg-error-500 text-white"
-          : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400";
-  const cardClass =
-    status === "active"
-      ? "border-brand-200 bg-white dark:border-brand-500/30 dark:bg-brand-500/10"
-      : status === "done"
-        ? "border-success-200 bg-white dark:border-success-500/30 dark:bg-success-500/10"
-        : status === "error"
-          ? "border-error-200 bg-white dark:border-error-500/30 dark:bg-error-500/10"
-          : "border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]";
-
-  return (
-    <div className={`rounded-xl border p-3 ${cardClass}`}>
-      <div className="flex items-start gap-3">
-        <span
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${markerClass}`}
-        >
-          {status === "done" ? "OK" : status === "error" ? "!" : status === "active" ? "..." : ""}
-        </span>
-        <div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-white/90">{title}</p>
-          <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">
-            {description}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
 }

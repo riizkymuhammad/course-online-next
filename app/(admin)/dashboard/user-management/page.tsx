@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import SummaryCard from "@/components/molecules/SummaryCard";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { getUserRole } from "@/lib/auth-roles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { formatDateTime } from "@/lib/date";
 
 type UserTableRow = {
   id: string;
@@ -42,15 +44,6 @@ function getMetadataName(metadata: unknown, fallback: string) {
   }
 
   return fallback;
-}
-
-function formatDateTime(value: string | null | undefined) {
-  if (!value) return "-";
-
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }
 
 export default async function UserManagementPage() {
@@ -131,15 +124,5 @@ export default async function UserManagementPage() {
         data={records}
       />
     </div>
-  );
-}
-
-function SummaryCard({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <article className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900">
-      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
-      <p className="mt-1 text-xs text-gray-400">{note}</p>
-    </article>
   );
 }

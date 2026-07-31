@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import ActionLink from "@/components/atoms/ActionLink";
 import Button from "@/components/atoms/Button";
 import { FileField, SelectField, TextAreaField, TextField as FormField } from "@/components/molecules/form";
+import GenerationStatusPanel, { type GenerationLog, type GenerationPhase, type GenerationStep } from "@/components/organisms/generation/GenerationStatusPanel";
 
 type Option = {
   value: string;
@@ -36,12 +37,12 @@ type GenerateCourseError = {
   stage?: string;
 };
 
-type GenerationLog = {
-  message: string;
-  tone: "default" | "success" | "error";
-};
-
-type GenerationPhase = "idle" | "validating" | "generating" | "saving" | "success" | "error";
+const courseGenerationSteps: GenerationStep[] = [
+  { phase: "validating", title: "Validasi input dan PDF", description: "Mengecek nama course, kategori, status, dan file materi." },
+  { phase: "generating", title: "Susun materi dengan AI", description: "AI menyusun section, modul, dan poin penting dari PDF." },
+  { phase: "saving", title: "Simpan course", description: "Menyimpan course, section, modul, serta isi materi ke database." },
+  { phase: "success", title: "Selesai", description: "Course siap dikelola dari halaman Course Management." },
+];
 
 export default function CreateCourseForm({
   learningPathOptions,
@@ -260,10 +261,14 @@ export default function CreateCourseForm({
 
         {generationPhase !== "idle" ? (
           <GenerationStatusPanel
+            title="Status generate course"
             phase={generationPhase}
-            elapsedSeconds={elapsedSeconds}
-            successSummary={successSummary}
-            errorMessage={errorMessage}
+            summary={generationPhase === "success"
+              ? `Course "${successSummary?.title ?? "course"}" berhasil dibuat dengan ${successSummary?.sectionCount ?? 0} section dan ${successSummary?.moduleCount ?? 0} modul.`
+              : generationPhase === "error"
+                ? errorMessage || "Generate course gagal. Silakan cek pesan error."
+                : `Proses berjalan ${elapsedSeconds} detik. Jangan tutup halaman ini.`}
+            steps={courseGenerationSteps}
             logs={generationLogs}
           />
         ) : null}
@@ -290,159 +295,4 @@ function getSubmitLabel(phase: GenerationPhase) {
   if (phase === "saving") return "Menyimpan...";
   if (phase === "success") return "Berhasil";
   return "Memproses...";
-}
-
-function getStepStatus(step: GenerationPhase, current: GenerationPhase) {
-  const order: GenerationPhase[] = ["validating", "generating", "saving", "success"];
-  const stepIndex = order.indexOf(step);
-  const currentIndex = order.indexOf(current);
-
-  if (current === "error") return "error";
-  if (currentIndex > stepIndex) return "done";
-  if (current === step) return "active";
-  return "pending";
-}
-
-function GenerationStatusPanel({
-  phase,
-  elapsedSeconds,
-  successSummary,
-  errorMessage,
-  logs,
-}: {
-  phase: GenerationPhase;
-  elapsedSeconds: number;
-  successSummary: { title: string; sectionCount: number; moduleCount: number } | null;
-  errorMessage: string | null;
-  logs: GenerationLog[];
-}) {
-  const steps = [
-    {
-      phase: "validating" as const,
-      title: "Validasi input dan PDF",
-      description: "Mengecek nama course, kategori, status, dan file materi.",
-    },
-    {
-      phase: "generating" as const,
-      title: "Susun materi dengan AI",
-      description: "AI menyusun section, modul, dan poin penting dari PDF.",
-    },
-    {
-      phase: "saving" as const,
-      title: "Simpan course",
-      description: "Menyimpan course, section, modul, serta isi materi ke database.",
-    },
-    {
-      phase: "success" as const,
-      title: "Selesai",
-      description: "Course siap dikelola dari halaman Course Management.",
-    },
-  ];
-
-  const statusLabel =
-    phase === "success" ? "Berhasil" : phase === "error" ? "Gagal" : "Sedang proses";
-  const statusTone =
-    phase === "success"
-      ? "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-400"
-      : phase === "error"
-        ? "bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-400"
-        : "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400";
-
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.03]">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-white/90">
-            Status generate course
-          </p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {phase === "success"
-              ? `Course \"${successSummary?.title ?? "course"}\" berhasil dibuat dengan ${successSummary?.sectionCount ?? 0} section dan ${successSummary?.moduleCount ?? 0} modul.`
-              : phase === "error"
-                ? errorMessage || "Generate course gagal. Silakan cek pesan error."
-                : `Proses berjalan ${elapsedSeconds} detik. Jangan tutup halaman ini.`}
-          </p>
-        </div>
-        <span className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-semibold ${statusTone}`}>
-          {statusLabel}
-        </span>
-      </div>
-
-      <div className="mt-4 grid gap-3 lg:grid-cols-4">
-        {steps.map((step) => (
-          <ProcessStep
-            key={step.phase}
-            title={step.title}
-            description={step.description}
-            status={getStepStatus(step.phase, phase)}
-          />
-        ))}
-      </div>
-
-      {logs.length ? (
-        <div className="mt-4 rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-white/[0.02]">
-          <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">Log proses</p>
-          <ul className="mt-2 space-y-1.5">
-            {logs.map((log, index) => {
-              const tone =
-                log.tone === "success"
-                  ? "text-success-700 dark:text-success-400"
-                  : log.tone === "error"
-                    ? "text-error-700 dark:text-error-400"
-                    : "text-gray-600 dark:text-gray-300";
-
-              return (
-                <li key={`${log.message}-${index}`} className={`text-xs leading-5 ${tone}`}>
-                  {log.message}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function ProcessStep({
-  title,
-  description,
-  status,
-}: {
-  title: string;
-  description: string;
-  status: "pending" | "active" | "done" | "error";
-}) {
-  const markerClass =
-    status === "done"
-      ? "bg-success-500 text-white"
-      : status === "active"
-        ? "bg-brand-500 text-white"
-        : status === "error"
-          ? "bg-error-500 text-white"
-          : "bg-gray-200 text-gray-500 dark:bg-gray-800 dark:text-gray-400";
-  const cardClass =
-    status === "active"
-      ? "border-brand-200 bg-white dark:border-brand-500/30 dark:bg-brand-500/10"
-      : status === "done"
-        ? "border-success-200 bg-white dark:border-success-500/30 dark:bg-success-500/10"
-        : status === "error"
-          ? "border-error-200 bg-white dark:border-error-500/30 dark:bg-error-500/10"
-          : "border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]";
-
-  return (
-    <div className={`rounded-xl border p-3 ${cardClass}`}>
-      <div className="flex items-start gap-3">
-        <span
-          className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${markerClass}`}
-        >
-          {status === "done" ? "OK" : status === "error" ? "!" : status === "active" ? "..." : ""}
-        </span>
-        <div>
-          <p className="text-sm font-semibold text-gray-800 dark:text-white/90">{title}</p>
-          <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-gray-400">{description}</p>
-        </div>
-      </div>
-    </div>
-  );
 }

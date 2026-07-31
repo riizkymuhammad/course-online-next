@@ -2,10 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import SummaryCard from "@/components/molecules/SummaryCard";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getRelation } from "@/lib/supabase/relations";
+import { formatDateTime } from "@/lib/date";
 import { slugify } from "@/lib/tryout";
 
 type CourseRelation = {
@@ -49,19 +52,6 @@ const statusStyles: Record<string, string> = {
   Membaca: "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400",
   "-": "bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-300",
 };
-
-function getRelation<T>(value: T | T[] | null | undefined) {
-  return Array.isArray(value) ? value[0] ?? null : value ?? null;
-}
-
-function formatDateTime(value: string | null) {
-  if (!value) return "-";
-
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
 
 function getUserName(metadata: unknown, email: string | undefined, fallback: string) {
   if (metadata && typeof metadata === "object") {
@@ -232,15 +222,5 @@ export default async function LearningCoursePage() {
         data={records}
       />
     </div>
-  );
-}
-
-function SummaryCard({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <article className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900">
-      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
-      <p className="mt-1 text-xs text-gray-400">{note}</p>
-    </article>
   );
 }

@@ -12,11 +12,7 @@ import {
 } from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfile } from "@/lib/user-profile";
-
-type LearningPathRow = {
-  id: string;
-  title: string;
-};
+import { slugify } from "@/lib/text";
 
 type CourseRow = {
   id: string;
@@ -253,15 +249,6 @@ const testimonials = [
   },
 ];
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
-
 function resolveCourseCategory(title: string, index: number) {
   const value = title.toLowerCase();
 
@@ -313,17 +300,12 @@ function buildCourseHref(course: CourseRow | undefined) {
 
 function buildCourseCards(
   courses: CourseRow[],
-  learningPathMap: Map<string, LearningPathRow>,
   categoryMap: Map<string, string>,
   subCategoryMap: Map<string, string>
 ): CourseCard[] {
   if (!courses.length) return fallbackCourses;
 
   return courses.slice(0, 8).map((course, index) => {
-    const learningPath = course.learning_path_id
-      ? learningPathMap.get(course.learning_path_id)
-      : undefined;
-
     const category =
       (course.category_id ? categoryMap.get(course.category_id)?.trim() : undefined) ||
       resolveCourseCategory(course.title, index);
@@ -348,16 +330,12 @@ function buildTryoutHref(tryout: TryoutRow | undefined) {
 
 function buildTryoutCards(
   tryouts: TryoutRow[],
-  learningPathMap: Map<string, LearningPathRow>,
   categoryMap: Map<string, string>,
   subCategoryMap: Map<string, string>
 ): TryoutCard[] {
   if (!tryouts.length) return fallbackTryouts;
 
   return tryouts.slice(0, 8).map((tryout, index) => {
-    const learningPath = tryout.learning_path_id
-      ? learningPathMap.get(tryout.learning_path_id)
-      : undefined;
     const category =
       (tryout.category_id ? categoryMap.get(tryout.category_id)?.trim() : undefined) ||
       resolveCourseCategory(tryout.title, index);
@@ -382,18 +360,12 @@ export default async function HomePage() {
     {
       data: { user },
     },
-    { data: learningPathRows },
     { data: tryoutRows },
     { data: courseRows },
     { data: categoryRows },
     { data: subCategoryRows },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    supabase
-      .from("learning_paths")
-      .select("id, title")
-      .eq("status", "published")
-      .order("created_at", { ascending: false }),
     supabase
       .from("tryouts")
       .select(
@@ -421,12 +393,8 @@ export default async function HomePage() {
     accountRole,
     activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
   });
-  const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const tryouts = (tryoutRows as TryoutRow[] | null) ?? [];
   const courses = (courseRows as CourseRow[] | null) ?? [];
-  const learningPathMap = new Map(
-    learningPaths.map((item) => [item.id, item])
-  );
   const categoryMap = new Map(
     ((categoryRows ?? []) as CategoryRow[]).map((item) => [item.id, item.name])
   );
@@ -448,8 +416,8 @@ export default async function HomePage() {
     ...category,
     count: `${categoryCourseCounts.get(category.title) ?? 0} kelas`,
   }));
-  const courseCards = buildCourseCards(courses, learningPathMap, categoryMap, subCategoryMap);
-  const tryoutCards = buildTryoutCards(tryouts, learningPathMap, categoryMap, subCategoryMap);
+  const courseCards = buildCourseCards(courses, categoryMap, subCategoryMap);
+  const tryoutCards = buildTryoutCards(tryouts, categoryMap, subCategoryMap);
   const featuredTryout = tryouts[0];
   const tryoutHref = buildTryoutHref(featuredTryout);
   const actionHref = isLoggedIn ? "/app" : "/register";

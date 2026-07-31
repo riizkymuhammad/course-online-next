@@ -10,6 +10,8 @@ import {
   getUserRole,
 } from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";
+import { getRelation } from "@/lib/supabase/relations";
+import { formatDateTime } from "@/lib/date";
 import { slugify } from "@/lib/tryout";
 import { getUserProfile } from "@/lib/user-profile";
 
@@ -41,23 +43,6 @@ export const metadata: Metadata = {
   title: "Riwayat Tryout",
   description: "Riwayat tryout yang telah dikerjakan user.",
 };
-
-function getRelation<T>(value: T | T[] | null | undefined) {
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
-  }
-
-  return value ?? null;
-}
-
-function formatDateTime(value: string | null) {
-  if (!value) return "-";
-
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
 
 function formatScore(score: number | null, maxScore: number | null) {
   const scoreValue = Number(score ?? 0).toFixed(2);

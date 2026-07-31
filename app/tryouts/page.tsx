@@ -11,6 +11,7 @@ import {
   buildLearningPathLabel,
 } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
+import { buildCategoryPath } from "@/lib/text";
 import { slugify } from "@/lib/tryout";
 import { getUserProfile } from "@/lib/user-profile";
 
@@ -38,10 +39,6 @@ type SubCategoryRow = {
   category_id: string;
   name: string;
 };
-
-function buildCategoryPath(category: string | null, subCategory: string | null) {
-  return [category?.trim() ?? "", subCategory?.trim() ?? ""].filter(Boolean).join(" > ");
-}
 
 export const metadata: Metadata = {
   title: "Semua Tryout",

@@ -5,101 +5,18 @@ import BrandLogo from "@/components/header/BrandLogo";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "../context/SidebarContext";
 import {
-  BoxCubeIcon,
   ChevronDownIcon,
-  GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  TableIcon,
-  UserCircleIcon,
 } from "../icons/index";
-
-type NavItem = {
-  name: string;
-  icon: React.ReactNode;
-  path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
-};
-
-const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/dashboard",
-  },
-  {
-    icon: <TableIcon />,
-    name: "Master Data",
-    subItems: [
-      { name: "Kategori", path: "/dashboard/master-data/kategori" },
-      { name: "Sub Kategori", path: "/dashboard/master-data/sub-kategori" },
-    ],
-  },
-  {
-    icon: <ListIcon />,
-    name: "Learning Path",
-    path: "/dashboard/learning-path",
-  },
-  {
-    icon: <TableIcon />,
-    name: "Course Management",
-    path: "/dashboard/course-management",
-  },
-  {
-    icon: <PageIcon />,
-    name: "Quiz Management",
-    path: "/dashboard/quiz-management",
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Tryout Management",
-    path: "/dashboard/tryout-management",
-  },
-  {
-    icon: <ListIcon />,
-    name: "Riwayat Tryout",
-    path: "/dashboard/riwayat-tryout",
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Learning Course",
-    path: "/dashboard/learning-course",
-  },
-  {
-    icon: <UserCircleIcon />,
-    name: "Manajemen User",
-    path: "/dashboard/user-management",
-  },
-];
-
-function isRouteActive(pathname: string, path: string) {
-  if (path === "/dashboard") {
-    return pathname === path;
-  }
-
-  return pathname === path || pathname.startsWith(`${path}/`);
-}
-
-function findMatchedSubmenu(pathname: string) {
-  for (const [index, nav] of navItems.entries()) {
-    const hasMatch = nav.subItems?.some((subItem) =>
-      isRouteActive(pathname, subItem.path)
-    );
-    if (hasMatch) {
-      return { type: "main" as const, index };
-    }
-  }
-
-  return null;
-}
+import { isRouteActive } from "@/lib/navigation";
+import { findMatchedSidebarSubmenu, sidebarNavItems, type SidebarNavItem } from "@/layout/sidebar-navigation";
 
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
 
   const renderMenuItems = (
-    navItems: NavItem[],
+    navItems: SidebarNavItem[],
     menuType: "main" | "others"
   ) => (
     <ul className="flex flex-col gap-4">
@@ -240,7 +157,7 @@ const AppSidebar: React.FC = () => {
     (path: string) => isRouteActive(pathname, path),
     [pathname]
   );
-  const matchedSubmenu = useMemo(() => findMatchedSubmenu(pathname), [pathname]);
+  const matchedSubmenu = useMemo(() => findMatchedSidebarSubmenu(pathname), [pathname]);
   const activeOpenSubmenu = openSubmenu ?? matchedSubmenu;
   const activeOpenSubmenuKey =
     activeOpenSubmenu === null
@@ -325,7 +242,7 @@ const AppSidebar: React.FC = () => {
                   <HorizontaLDots />
                 )}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {renderMenuItems(sidebarNavItems, "main")}
             </div>
           </div>
         </nav>

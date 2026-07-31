@@ -3,6 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import {
+  filterTableRows,
+  normalizeTableValue,
+  paginateTableRows,
+  sortTableRows,
+  type TableCellValue,
+  type TableSortConfig,
+} from "@/components/ui/table/data-table.utils";
 
 export type DataTableColumn = {
   key: string;
@@ -20,14 +28,6 @@ export type DataTableColumn = {
     hrefKey?: string;
   }>;
 };
-
-type CellValue = string | number | boolean | null | undefined;
-
-function normalizeValue(value: CellValue) {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  return String(value);
-}
 
 function isSvgImage(value: string) {
   return value.toLowerCase().includes(".svg");
@@ -78,47 +78,23 @@ export default function DataTable<T extends object>({
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(
-    null
-  );
+  const [sortConfig, setSortConfig] = useState<TableSortConfig | null>(null);
 
   const searchableColumns = columns.filter((column) => column.searchable !== false);
 
   const filteredData = useMemo(() => {
-    const lowered = query.trim().toLowerCase();
-
-    if (!lowered) {
-      return data;
-    }
-
-    return data.filter((row) =>
-      searchableColumns.some((column) =>
-        normalizeValue((row as Record<string, CellValue>)[column.key]).toLowerCase().includes(lowered)
-      )
-    );
+    return filterTableRows(data, searchableColumns.map((column) => column.key), query);
   }, [data, query, searchableColumns]);
 
   const sortedData = useMemo(() => {
-    if (!sortConfig) {
-      return filteredData;
-    }
-
-    return [...filteredData].sort((a, b) => {
-      const left = normalizeValue((a as Record<string, CellValue>)[sortConfig.key]).toLowerCase();
-      const right = normalizeValue((b as Record<string, CellValue>)[sortConfig.key]).toLowerCase();
-
-      if (left < right) return sortConfig.direction === "asc" ? -1 : 1;
-      if (left > right) return sortConfig.direction === "asc" ? 1 : -1;
-      return 0;
-    });
+    return sortTableRows(filteredData, sortConfig);
   }, [filteredData, sortConfig]);
 
   const totalPages = Math.max(1, Math.ceil(sortedData.length / rowsPerPage));
   const currentPage = Math.min(page, totalPages);
 
   const paginatedData = useMemo(() => {
-    const start = (currentPage - 1) * rowsPerPage;
-    return sortedData.slice(start, start + rowsPerPage);
+    return paginateTableRows(sortedData, currentPage, rowsPerPage);
   }, [currentPage, rowsPerPage, sortedData]);
 
   function handleSort(column: DataTableColumn) {
@@ -141,12 +117,12 @@ export default function DataTable<T extends object>({
   }
 
   function renderCell(row: T, column: DataTableColumn) {
-    const record = row as Record<string, CellValue>;
-    const value = normalizeValue(record[column.key]);
+    const record = row as Record<string, TableCellValue>;
+    const value = normalizeTableValue(record[column.key]);
 
     if (column.type === "imageText") {
-      const imageSrc = normalizeValue(record[column.imageKey || "image"]);
-      const subtitle = normalizeValue(record[column.subtitleKey || "subtitle"]);
+      const imageSrc = normalizeTableValue(record[column.imageKey || "image"]);
+      const subtitle = normalizeTableValue(record[column.subtitleKey || "subtitle"]);
 
       return (
         <div className="flex items-start gap-3">
@@ -194,10 +170,10 @@ export default function DataTable<T extends object>({
                   : "border border-gray-200 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-200 dark:hover:bg-white/5";
 
             return (
-              action.hrefKey && normalizeValue(record[action.hrefKey]) ? (
+              action.hrefKey && normalizeTableValue(record[action.hrefKey]) ? (
                 <Link
                   key={action.label}
-                  href={normalizeValue(record[action.hrefKey])}
+                  href={normalizeTableValue(record[action.hrefKey])}
                   className={`inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-medium ${toneClass}`}
                 >
                   {action.label}
@@ -298,7 +274,7 @@ export default function DataTable<T extends object>({
             {paginatedData.length > 0 ? (
               paginatedData.map((row, index) => (
                 <tr
-                  key={`${normalizeValue((row as Record<string, CellValue>).id) || "row"}-${index}`}
+                  key={`${normalizeTableValue((row as Record<string, TableCellValue>).id) || "row"}-${index}`}
                 >
                   {columns.map((column) => (
                     <td

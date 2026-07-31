@@ -5,6 +5,7 @@ import { GEMINI_GENERATION_MODEL } from "@/lib/gemini-limits";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { buildCategoryPath } from "@/lib/text";
 import { TRYOUT_THUMBNAIL_BUCKET, uploadTryoutThumbnail } from "@/lib/tryout-thumbnail";
 
 export const runtime = "nodejs";
@@ -57,10 +58,6 @@ function resolveCorrectOptionIndex(answer: string, options: string[]) {
   );
 
   return containsIndex !== -1 ? containsIndex : null;
-}
-
-function buildCategoryPath(category: string, subCategory: string) {
-  return [category, subCategory].filter(Boolean).join(" > ");
 }
 
 export async function POST(request: Request) {

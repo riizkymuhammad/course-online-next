@@ -10,6 +10,8 @@ import { getUserRole } from "@/lib/auth-roles";
 import { getGeminiLimitSummary } from "@/lib/gemini-limits";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getRelation } from "@/lib/supabase/relations";
+import { formatDateTime } from "@/lib/date";
 
 type CourseRelation = { id: string; title: string } | { id: string; title: string }[] | null;
 type ModuleRelation = { id: string; title: string } | { id: string; title: string }[] | null;
@@ -46,10 +48,6 @@ const statusTone: Record<string, string> = {
   "-": "bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-300",
 };
 
-function getRelation<T>(value: T | T[] | null | undefined) {
-  return Array.isArray(value) ? value[0] ?? null : value ?? null;
-}
-
 function getUserName(metadata: unknown, email: string | undefined, fallback: string) {
   if (metadata && typeof metadata === "object") {
     const record = metadata as Record<string, unknown>;
@@ -60,13 +58,6 @@ function getUserName(metadata: unknown, email: string | undefined, fallback: str
   }
 
   return email?.trim() || fallback;
-}
-
-function formatDateTime(value: string | null) {
-  if (!value) return "-";
-  return new Intl.DateTimeFormat("id-ID", { dateStyle: "medium", timeStyle: "short" }).format(
-    new Date(value)
-  );
 }
 
 function getTryoutStatus(status: string | null) {

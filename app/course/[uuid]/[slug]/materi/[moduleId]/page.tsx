@@ -13,6 +13,7 @@ import {
   getUserRole,
 } from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";
+import { slugify } from "@/lib/text";
 import { getUserProfile } from "@/lib/user-profile";
 
 type CourseMaterialParams = {
@@ -38,15 +39,6 @@ type ModuleRow = {
   estimated_minutes: number | null;
   module_order: number;
 };
-
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
 
 export async function generateMetadata(
   props: PageProps<"/course/[uuid]/[slug]/materi/[moduleId]">

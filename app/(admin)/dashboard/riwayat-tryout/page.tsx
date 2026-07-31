@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import SummaryCard from "@/components/molecules/SummaryCard";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
+import { formatDateTime } from "@/lib/date";
 
 type TryoutAttemptRow = {
   attempt_id: string;
@@ -71,15 +73,6 @@ export const metadata: Metadata = {
   title: "Riwayat Tryout Dashboard",
   description: "Riwayat pengerjaan tryout user yang sedang login.",
 };
-
-function formatDateTime(value: string | null) {
-  if (!value) return "-";
-
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
 
 function formatDuration(durationSeconds: number | null) {
   if (!durationSeconds || durationSeconds < 0) return "-";
@@ -338,24 +331,6 @@ export default async function RiwayatTryoutPage() {
           data={attempts}
         />
       </section>
-    </div>
-  );
-}
-
-function SummaryCard({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="mt-3 text-2xl font-semibold text-gray-800 dark:text-white/90">{value}</p>
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{note}</p>
     </div>
   );
 }

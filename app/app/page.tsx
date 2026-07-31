@@ -9,7 +9,6 @@ import {
   CalenderIcon,
   GridIcon,
   ListIcon,
-  PageIcon,
   TableIcon,
 } from "@/icons";
 import AppHeader from "@/layout/AppHeader";
@@ -19,6 +18,7 @@ import {
   getUserRole,
 } from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";
+import { getRelation } from "@/lib/supabase/relations";
 import { getUserProfile } from "@/lib/user-profile";
 import { slugify } from "@/lib/tryout";
 
@@ -104,14 +104,6 @@ type TryoutAttemptRow = {
   started_at: string | null;
   tryouts: TryoutRelation | TryoutRelation[] | null;
 };
-
-function getRelation<T>(value: T | T[] | null | undefined) {
-  if (Array.isArray(value)) {
-    return value[0] ?? null;
-  }
-
-  return value ?? null;
-}
 
 function getAttemptScoreLabel(attempt: TryoutAttemptRow) {
   if (attempt.status === "submitted" || attempt.status === "graded") {

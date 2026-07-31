@@ -7,6 +7,7 @@ import { GEMINI_GENERATION_MODEL } from "@/lib/gemini-limits";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { buildCategoryPath } from "@/lib/text";
 
 export const runtime = "nodejs";
 
@@ -109,10 +110,6 @@ function cleanGeneratedMarkdown(value: string) {
 
 function errorResponse(error: string, stage: GenerationStage, status: number) {
   return Response.json({ error, stage }, { status });
-}
-
-function buildCategoryPath(category: string, subCategory: string) {
-  return [category, subCategory].filter(Boolean).join(" > ");
 }
 
 export async function POST(request: Request) {

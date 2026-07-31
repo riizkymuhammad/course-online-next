@@ -13,6 +13,8 @@ import {
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfile } from "@/lib/user-profile";
+import { buildCategoryPath, slugify } from "@/lib/text";
+import { formatDateTime } from "@/lib/date";
 
 type TryoutPageParams = {
   uuid: string;
@@ -27,22 +29,10 @@ type AttemptScoreRow = {
   status: string | null;
 };
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-");
-}
-
 function isSvgImage(value: string) {
   return value.toLowerCase().includes(".svg");
 }
 
-function buildCategoryPath(category: string | null, subCategory: string | null) {
-  return [category?.trim() ?? "", subCategory?.trim() ?? ""].filter(Boolean).join(" > ");
-}
 
 export async function generateMetadata(
   props: PageProps<"/tryout/[uuid]/[slug]">
@@ -244,13 +234,4 @@ export default async function TryoutDetailPage(props: PageProps<"/tryout/[uuid]/
       </main>
     </div>
   );
-}
-
-function formatDateTime(value: string | null) {
-  if (!value) return "-";
-
-  return new Intl.DateTimeFormat("id-ID", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }

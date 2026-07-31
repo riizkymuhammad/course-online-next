@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import SummaryCard from "@/components/molecules/SummaryCard";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { createClient } from "@/lib/supabase/server";
@@ -140,24 +141,6 @@ export default async function CategoryPage({
           }))}
         />
       </section>
-    </div>
-  );
-}
-
-function SummaryCard({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
-      <p className="text-sm text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="mt-3 text-3xl font-semibold text-gray-800 dark:text-white/90">{value}</p>
-      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{note}</p>
     </div>
   );
 }
