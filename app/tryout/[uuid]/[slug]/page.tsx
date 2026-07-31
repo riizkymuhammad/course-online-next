@@ -4,6 +4,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import PublicNavbar from "@/components/header/PublicNavbar";
+import InfoCard from "@/components/molecules/InfoCard";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -252,13 +253,4 @@ function formatDateTime(value: string | null) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
-}
-
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.03]">
-      <p className="text-xs font-medium uppercase tracking-[0.18em] text-gray-400">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-gray-800 dark:text-white/90">{value}</p>
-    </div>
-  );
 }

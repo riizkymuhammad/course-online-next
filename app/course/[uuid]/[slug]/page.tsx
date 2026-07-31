@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import PublicNavbar from "@/components/header/PublicNavbar";
+import InfoCard from "@/components/molecules/InfoCard";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -199,9 +200,10 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
               </div>
 
               <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                <InfoCard label="Jumlah Section" value={`${courseRow.section_count ?? sections.length} section`} />
-                <InfoCard label="Jumlah Modul" value={`${courseRow.module_count ?? modules.length} modul`} />
+                <InfoCard icon={<span className="h-2 w-2 rounded-full bg-current" />} label="Jumlah Section" value={`${courseRow.section_count ?? sections.length} section`} />
+                <InfoCard icon={<span className="h-2 w-2 rounded-full bg-current" />} label="Jumlah Modul" value={`${courseRow.module_count ?? modules.length} modul`} />
                 <InfoCard
+                  icon={<span className="h-2 w-2 rounded-full bg-current" />}
                   label="Estimasi"
                   value={totalEstimatedMinutes ? `${totalEstimatedMinutes} menit` : "-"}
                 />
@@ -310,20 +312,6 @@ export default async function CourseDetailPage(props: PageProps<"/course/[uuid]/
           </div>
         </div>
       </main>
-    </div>
-  );
-}
-
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-white/[0.03]">
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
-        •
-      </span>
-      <div className="min-w-0">
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-400">{label}</p>
-        <p className="truncate text-sm font-bold text-gray-900 dark:text-white">{value}</p>
-      </div>
     </div>
   );
 }

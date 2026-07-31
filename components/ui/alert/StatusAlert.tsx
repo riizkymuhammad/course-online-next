@@ -11,27 +11,16 @@ type StatusAlertProps = {
 };
 
 const styles: Record<StatusAlertProps["variant"], string> = {
-  success:
-    "border-success-500 bg-success-500 text-white shadow-lg shadow-success-500/30",
-  error:
-    "border-error-500 bg-error-500 text-white shadow-lg shadow-error-500/30",
-  warning:
-    "border-warning-500 bg-warning-500 text-white shadow-lg shadow-warning-500/30",
+  success: "border-success-500 bg-success-500 text-white shadow-lg shadow-success-500/30",
+  error: "border-error-500 bg-error-500 text-white shadow-lg shadow-error-500/30",
+  warning: "border-warning-500 bg-warning-500 text-white shadow-lg shadow-warning-500/30",
 };
 
-export default function StatusAlert({
-  variant,
-  title,
-  message,
-  durationMs = 4000,
-}: StatusAlertProps) {
+export default function StatusAlert({ variant, title, message, durationMs = 4000 }: StatusAlertProps) {
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => {
-      setVisible(false);
-    }, durationMs);
-
+    const timeout = window.setTimeout(() => setVisible(false), durationMs);
     return () => window.clearTimeout(timeout);
   }, [durationMs]);
 
@@ -39,24 +28,19 @@ export default function StatusAlert({
 
   return createPortal(
     <div className="pointer-events-none fixed left-1/2 top-20 z-[120] w-full max-w-xl -translate-x-1/2 px-4 sm:top-24 sm:px-6">
-      <div
-        className={`pointer-events-auto rounded-2xl border px-4 py-4 sm:px-5 ${styles[variant]}`}
-      >
+      <div className={`pointer-events-auto rounded-2xl border px-4 py-4 sm:px-5 ${styles[variant]}`}>
         <div className="flex items-start gap-3">
           <span className="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white/15 text-sm font-bold text-white">
-            {variant === "success" ? "!" : variant === "warning" ? "!" : "x"}
+            {variant === "error" ? "!" : variant === "warning" ? "!" : "OK"}
           </span>
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-semibold">{title}</h3>
             <p className="mt-1 text-sm text-white/90">{message}</p>
           </div>
-          <button
-            type="button"
-            onClick={() => setVisible(false)}
-            className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-sm font-medium text-white/90 transition hover:bg-white/20 hover:text-white"
-            aria-label="Close alert"
-          >
-            ×
+          <button type="button" onClick={() => setVisible(false)} className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-white/90 transition hover:bg-white/20 hover:text-white" aria-label="Tutup notifikasi">
+            <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+              <path d="m5.5 5.5 9 9m0-9-9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
           </button>
         </div>
       </div>

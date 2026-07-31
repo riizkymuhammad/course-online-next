@@ -2,6 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Button from "@/components/atoms/Button";
+import Surface from "@/components/atoms/Surface";
+import InlineAlert from "@/components/molecules/InlineAlert";
 import MarkdownContent from "@/components/course/MarkdownContent";
 
 export type CourseMaterialModule = {
@@ -147,7 +150,7 @@ export default function CourseMaterialClient({
 
   return (
     <div className="grid gap-6 lg:grid-cols-12">
-      <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900 sm:p-7 lg:col-span-8">
+      <Surface className="p-5 sm:p-7 lg:col-span-8 dark:bg-gray-900">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-500">
           {courseTitle} · Section {activeSection.sectionOrder}
         </p>
@@ -177,9 +180,7 @@ export default function CourseMaterialClient({
         <MarkdownContent value={activeModule.contentMarkdown} />
 
         {errorMessage ? (
-          <p className="mt-7 rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
-            {errorMessage}
-          </p>
+          <InlineAlert tone="error" className="mt-7">{errorMessage}</InlineAlert>
         ) : null}
 
         {!isLoggedIn ? (
@@ -189,22 +190,21 @@ export default function CourseMaterialClient({
         ) : null}
 
         <div className="mt-8 flex flex-col gap-3 border-t border-gray-100 pt-6 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-end">
-          <button
+          <Button
             type="button"
             onClick={completeAndContinue}
             disabled={isSaving}
-            className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving
               ? "Menyimpan progres..."
               : nextModule
                 ? "Selesai & Lanjut"
                 : "Selesai Course"}
-          </button>
+          </Button>
         </div>
-      </section>
+      </Surface>
 
-      <aside className="h-fit rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-gray-900 lg:sticky lg:top-24 lg:col-span-4">
+      <Surface as="aside" className="h-fit p-5 dark:bg-gray-900 lg:sticky lg:top-24 lg:col-span-4">
         <div className="flex items-center gap-3 border-b border-gray-100 pb-4 dark:border-gray-800">
           <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-lg text-brand-600 dark:bg-brand-500/10 dark:text-brand-300">
             ☷
@@ -272,7 +272,7 @@ export default function CourseMaterialClient({
             </details>
           ))}
         </div>
-      </aside>
+      </Surface>
     </div>
   );
 }

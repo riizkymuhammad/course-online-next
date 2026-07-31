@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import InfoCard from "@/components/molecules/InfoCard";
 import MarkdownContent from "@/components/course/MarkdownContent";
 import { createClient } from "@/lib/supabase/server";
 
@@ -101,9 +102,9 @@ export default async function CourseMaterialPage({
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-3">
-          <InfoCard label="Section" value={String(courseRow.section_count ?? sections.length)} />
-          <InfoCard label="Modul" value={String(courseRow.module_count ?? 0)} />
-          <InfoCard label="PDF Sumber" value={courseRow.material_file_name || "Tidak tersedia"} />
+          <InfoCard compact label="Section" value={String(courseRow.section_count ?? sections.length)} />
+          <InfoCard compact label="Modul" value={String(courseRow.module_count ?? 0)} />
+          <InfoCard compact label="PDF Sumber" value={courseRow.material_file_name || "Tidak tersedia"} />
         </div>
 
         {courseRow.ai_generated_summary ? (
@@ -177,15 +178,6 @@ export default async function CourseMaterialPage({
           </p>
         </section>
       )}
-    </div>
-  );
-}
-
-function InfoCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 dark:border-gray-800 dark:bg-white/[0.03]">
-      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="mt-1 truncate text-sm font-semibold text-gray-800 dark:text-white/90">{value}</p>
     </div>
   );
 }

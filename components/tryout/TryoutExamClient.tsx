@@ -1,8 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import ActionLink from "@/components/atoms/ActionLink";
+import Button from "@/components/atoms/Button";
+import SectionLabel from "@/components/atoms/SectionLabel";
+import Surface from "@/components/atoms/Surface";
+import InlineAlert from "@/components/molecules/InlineAlert";
 
 type TryoutExamOption = {
   id: string;
@@ -46,23 +50,18 @@ export default function TryoutExamClient({
   if (!questions.length) {
     return (
       <main className="min-h-screen bg-gray-50 px-4 py-8 dark:bg-gray-950 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-3xl rounded-2xl border border-gray-200 bg-white p-8 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03]">
-          <p className="text-sm font-semibold uppercase tracking-[0.22em] text-brand-500">
-            Tryout Exam
-          </p>
+        <Surface className="mx-auto max-w-3xl p-8">
+          <SectionLabel className="text-sm tracking-[0.22em]">Tryout Exam</SectionLabel>
           <h1 className="mt-3 text-2xl font-semibold text-gray-800 dark:text-white/90">
             {tryoutTitle}
           </h1>
           <p className="mt-3 text-sm leading-6 text-gray-500 dark:text-gray-400">
             Soal untuk tryout ini belum tersedia. Silakan kembali ke halaman preview tryout.
           </p>
-          <Link
-            href={previewHref}
-            className="mt-6 inline-flex h-11 items-center justify-center rounded-lg border border-gray-200 px-5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-white/[0.03]"
-          >
+          <ActionLink href={previewHref} variant="outline" className="mt-6">
             Kembali ke Preview
-          </Link>
-        </div>
+          </ActionLink>
+        </Surface>
       </main>
     );
   }
@@ -134,7 +133,7 @@ export default function TryoutExamClient({
     <main className="min-h-screen bg-gray-50 px-4 py-6 dark:bg-gray-950 sm:px-6 lg:px-8 lg:py-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.62fr)_340px]">
-          <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] sm:p-6">
+          <Surface>
             <div className="flex flex-col gap-3 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h1 className="text-2xl font-semibold text-gray-800 dark:text-white/90 sm:text-[28px]">
@@ -147,9 +146,7 @@ export default function TryoutExamClient({
             </div>
 
             {errorMessage ? (
-              <div className="mt-4 rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
-                {errorMessage}
-              </div>
+              <InlineAlert tone="error" className="mt-4">{errorMessage}</InlineAlert>
             ) : null}
 
             <div className="mt-5 rounded-2xl bg-gray-50 px-5 py-3.5 dark:bg-white/[0.03] sm:px-6">
@@ -196,15 +193,15 @@ export default function TryoutExamClient({
             </div>
 
             <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 pt-5 dark:border-gray-800 sm:flex-row sm:justify-between">
-              <button
+              <Button
                 type="button"
+                variant="outline"
                 onClick={() => setActiveIndex((current) => Math.max(current - 1, 0))}
                 disabled={activeIndex === 0}
-                className="inline-flex h-11 items-center justify-center rounded-lg border border-gray-200 px-5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-800 dark:text-gray-200 dark:hover:bg-white/[0.03]"
               >
                 Soal Sebelumnya
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => {
                   if (activeIndex === questions.length - 1) {
@@ -215,19 +212,18 @@ export default function TryoutExamClient({
                   setActiveIndex((current) => Math.min(current + 1, questions.length - 1));
                 }}
                 disabled={activeIndex === questions.length - 1 ? !allAnswered || isSubmitting : false}
-                className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {activeIndex === questions.length - 1
                   ? isSubmitting
                     ? "Mengumpulkan..."
                     : "Kumpulkan Tryout"
                   : "Soal Berikutnya"}
-              </button>
+              </Button>
             </div>
-          </section>
+          </Surface>
 
           <aside>
-            <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03]">
+            <Surface className="p-5">
               <h2 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
                 Peta Soal
               </h2>
@@ -259,7 +255,7 @@ export default function TryoutExamClient({
                   );
                 })}
               </div>
-            </section>
+            </Surface>
           </aside>
         </div>
       </div>

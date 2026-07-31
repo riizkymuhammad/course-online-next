@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Button from "@/components/atoms/Button";
 import GoogleAuthButton, { getAuthRedirectPath } from "@/components/auth/GoogleAuthButton";
 import FormField from "@/components/molecules/FormField";
+import InlineAlert from "@/components/molecules/InlineAlert";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
@@ -74,18 +76,16 @@ export default function LoginForm() {
       </div>
 
       {errorMessage ? (
-        <div className="rounded-xl border border-error-200 bg-error-50 px-4 py-3 text-sm text-error-700 dark:border-error-500/30 dark:bg-error-500/10 dark:text-error-400">
-          {errorMessage}
-        </div>
+        <InlineAlert tone="error">{errorMessage}</InlineAlert>
       ) : null}
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-semibold text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
+        className="w-full"
       >
         {isSubmitting ? "Signing in..." : "Sign in"}
-      </button>
+      </Button>
     </form>
   );
 }

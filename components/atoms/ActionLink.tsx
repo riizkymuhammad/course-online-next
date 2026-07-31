@@ -1,8 +1,7 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import Link, { type LinkProps } from "next/link";
+import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { cn } from "@/lib/cn";
-
-export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger" | "filter";
-export type ButtonSize = "sm" | "md" | "lg" | "icon";
+import type { ButtonSize, ButtonVariant } from "@/components/atoms/Button";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: "bg-brand-500 text-white hover:bg-brand-600",
@@ -20,28 +19,31 @@ const sizeClasses: Record<ButtonSize, string> = {
   icon: "h-10 w-10 rounded-lg",
 };
 
-export default function Button({
+type ActionLinkProps = LinkProps &
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps> & {
+    children: ReactNode;
+    variant?: ButtonVariant;
+    size?: ButtonSize;
+  };
+
+export default function ActionLink({
   children,
   variant = "primary",
   size = "lg",
   className,
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & {
-  children: ReactNode;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
-}) {
+}: ActionLinkProps) {
   return (
-    <button
+    <Link
       {...props}
       className={cn(
-        "inline-flex items-center justify-center gap-2 font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+        "inline-flex items-center justify-center gap-2 font-semibold transition",
         variantClasses[variant],
         sizeClasses[size],
         className
       )}
     >
       {children}
-    </button>
+    </Link>
   );
 }

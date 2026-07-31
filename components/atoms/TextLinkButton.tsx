@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
+import ActionLink from "@/components/atoms/ActionLink";
 
 export default function TextLinkButton({
   href,
@@ -11,11 +11,12 @@ export default function TextLinkButton({
   className?: string;
 }) {
   return (
-    <Link
+    <ActionLink
       href={href}
-      className={`inline-flex items-center justify-center rounded-md border border-brand-200 text-brand-600 transition hover:bg-brand-50 ${className}`}
+      variant="secondary"
+      className={className}
     >
       {children}
-    </Link>
+    </ActionLink>
   );
 }
