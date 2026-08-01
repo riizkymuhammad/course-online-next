@@ -99,132 +99,6 @@ const categories = [
   },
 ];
 
-const fallbackCourses: CourseCard[] = [
-  {
-    id: "fallback-course-1",
-    title: "Persiapan SKD CPNS: TWK, TIU & TKP Lengkap",
-    category: "CPNS",
-    subCategory: "SKD",
-    backgroundColor: "#144272",
-  },
-  {
-    id: "fallback-course-2",
-    title: "TOEFL ITP Mastery: Score 550+ in 30 Days",
-    category: "Bahasa Inggris",
-    subCategory: "TOEFL",
-    backgroundColor: "#205295",
-  },
-  {
-    id: "fallback-course-3",
-    title: "Fullstack Web Development dengan React & Node",
-    category: "TI & Perangkat Lunak",
-    subCategory: "Web Development",
-    backgroundColor: "#2C74B3",
-  },
-  {
-    id: "fallback-course-4",
-    title: "Bedah Kisi-Kisi TIU: Logika & Numerik",
-    category: "CPNS",
-    subCategory: "TIU",
-    backgroundColor: "#144272",
-  },
-  {
-    id: "fallback-course-5",
-    title: "English Conversation for Professionals",
-    category: "Bahasa Inggris",
-    subCategory: "Conversation",
-    backgroundColor: "#205295",
-  },
-  {
-    id: "fallback-course-6",
-    title: "Python untuk Data Science & Analitik",
-    category: "TI & Perangkat Lunak",
-    subCategory: "Data Science",
-    backgroundColor: "#2C74B3",
-  },
-  {
-    id: "fallback-course-7",
-    title: "Strategi Jitu Menjawab TKP Skor Maksimal",
-    category: "CPNS",
-    subCategory: "TKP",
-    backgroundColor: "#144272",
-  },
-  {
-    id: "fallback-course-8",
-    title: "IELTS Academic: Writing & Speaking Booster",
-    category: "Bahasa Inggris",
-    subCategory: "IELTS",
-    backgroundColor: "#205295",
-  },
-];
-
-const fallbackTryouts: TryoutCard[] = [
-  {
-    id: "fallback-tryout-1",
-    title: "Tryout SKD CPNS: TWK, TIU & TKP",
-    category: "CPNS",
-    subCategory: "SKD",
-    backgroundColor: "#144272",
-    href: "/tryouts",
-  },
-  {
-    id: "fallback-tryout-2",
-    title: "Simulasi TOEFL ITP Lengkap",
-    category: "Bahasa Inggris",
-    subCategory: "TOEFL",
-    backgroundColor: "#205295",
-    href: "/tryouts",
-  },
-  {
-    id: "fallback-tryout-3",
-    title: "Tryout Sertifikasi Web Development",
-    category: "TI & Perangkat Lunak",
-    subCategory: "Web Development",
-    backgroundColor: "#2C74B3",
-    href: "/tryouts",
-  },
-  {
-    id: "fallback-tryout-4",
-    title: "Latihan TIU: Logika & Numerik",
-    category: "CPNS",
-    subCategory: "TIU",
-    backgroundColor: "#144272",
-    href: "/tryouts",
-  },
-  {
-    id: "fallback-tryout-5",
-    title: "IELTS Academic Practice Test",
-    category: "Bahasa Inggris",
-    subCategory: "IELTS",
-    backgroundColor: "#205295",
-    href: "/tryouts",
-  },
-  {
-    id: "fallback-tryout-6",
-    title: "Coding Challenge Dasar",
-    category: "TI & Perangkat Lunak",
-    subCategory: "Programming",
-    backgroundColor: "#2C74B3",
-    href: "/tryouts",
-  },
-  {
-    id: "fallback-tryout-7",
-    title: "Strategi Menjawab Soal TKP",
-    category: "CPNS",
-    subCategory: "TKP",
-    backgroundColor: "#144272",
-    href: "/tryouts",
-  },
-  {
-    id: "fallback-tryout-8",
-    title: "English Grammar Assessment",
-    category: "Bahasa Inggris",
-    subCategory: "Grammar",
-    backgroundColor: "#205295",
-    href: "/tryouts",
-  },
-];
-
 const testimonials = [
   {
     quote:
@@ -303,7 +177,7 @@ function buildCourseCards(
   categoryMap: Map<string, string>,
   subCategoryMap: Map<string, string>
 ): CourseCard[] {
-  if (!courses.length) return fallbackCourses;
+  if (!courses.length) return [];
 
   return courses.slice(0, 8).map((course, index) => {
     const category =
@@ -333,7 +207,7 @@ function buildTryoutCards(
   categoryMap: Map<string, string>,
   subCategoryMap: Map<string, string>
 ): TryoutCard[] {
-  if (!tryouts.length) return fallbackTryouts;
+  if (!tryouts.length) return [];
 
   return tryouts.slice(0, 8).map((tryout, index) => {
     const category =
@@ -472,7 +346,11 @@ export default async function HomePage() {
           title="Kelas Populer Pilihan"
           description="Materi terkurasi yang paling banyak diikuti oleh siswa kami."
         />
-        <CourseList courses={courseCards} actionHref={actionHref} />
+        {courseCards.length ? (
+          <CourseList courses={courseCards} actionHref={actionHref} />
+        ) : (
+          <p className="mt-8 text-sm font-medium text-gray-500">Course belum tersedia</p>
+        )}
       </section>
 
       <section id="tryout" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
@@ -480,10 +358,14 @@ export default async function HomePage() {
           title="Tryout Populer Pilihan"
           description="Latihan dan simulasi tryout untuk mengukur progres belajarmu."
         />
-        <TryoutList tryouts={tryoutCards} />
+        {tryoutCards.length ? (
+          <TryoutList tryouts={tryoutCards} />
+        ) : (
+          <p className="mt-8 text-sm font-medium text-gray-500">Tryout belum tersedia</p>
+        )}
       </section>
 
-      <section id="promo-tryout" className="bg-gray-50">
+      {featuredTryout ? <section id="promo-tryout" className="bg-gray-50">
         <div className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
           <div className="grid gap-8 rounded-lg border border-gray-200 bg-white p-7 shadow-[0_16px_48px_rgba(16,24,40,0.06)] md:grid-cols-[1fr_0.9fr] md:items-center lg:p-10">
             <div>
@@ -494,7 +376,7 @@ export default async function HomePage() {
                 Tryout Akbar CPNS 2026
               </div>
               <h2 className="mt-6 max-w-xl text-2xl font-bold leading-tight text-gray-950 sm:text-3xl">
-                {featuredTryout?.title || "Simulasi Tryout SKD Gratis untuk Ribuan Peserta"}
+                 {featuredTryout.title}
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">
                 Uji kemampuanmu dengan soal sesuai standar BKN, dapatkan ranking nasional,
@@ -543,7 +425,7 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> : null}
 
       <section id="tentang" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
         <SectionHeading
