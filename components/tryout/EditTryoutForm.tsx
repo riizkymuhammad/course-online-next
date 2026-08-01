@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { updateTryout } from "@/app/(admin)/dashboard/tryout-management/[id]/edit/actions";
 import ActionLink from "@/components/atoms/ActionLink";
-import Button from "@/components/atoms/Button";
+import SubmitButton from "@/components/atoms/SubmitButton";
 import InfoField from "@/components/molecules/InfoField";
 import { SelectField, TextAreaField, TextField as FormField } from "@/components/molecules/form";
 
@@ -160,9 +160,9 @@ export default function EditTryoutForm({
           <ActionLink href="/dashboard/tryout-management" variant="outline">
             Cancel
           </ActionLink>
-          <Button type="submit">
+          <SubmitButton pendingLabel="Memperbarui Tryout...">
             Update Tryout
-          </Button>
+          </SubmitButton>
         </div>
       </form>
     </div>

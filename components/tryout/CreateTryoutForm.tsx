@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ActionLink from "@/components/atoms/ActionLink";
 import Button from "@/components/atoms/Button";
 import { FileField, SelectField, TextAreaField, TextField as FormField } from "@/components/molecules/form";
@@ -63,6 +63,7 @@ export default function CreateTryoutForm({
   statusOptions: Option[];
 }) {
   const router = useRouter();
+  const isSubmittingRef = useRef(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -98,6 +99,8 @@ export default function CreateTryoutForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
 
     const formData = new FormData(event.currentTarget);
 
@@ -158,6 +161,7 @@ export default function CreateTryoutForm({
       setGenerationPhase("error");
     } finally {
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   }
 

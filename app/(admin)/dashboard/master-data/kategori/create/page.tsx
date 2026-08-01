@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
+import SubmitButton from "@/components/atoms/SubmitButton";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import {
   TextField,
@@ -70,12 +71,9 @@ export default async function CreateCategoryPage({
             >
               Cancel
             </Link>
-            <button
-              type="submit"
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-medium text-white hover:bg-brand-600"
-            >
+            <SubmitButton pendingLabel="Menyimpan Kategori...">
               Save Kategori
-            </button>
+            </SubmitButton>
           </div>
         </form>
       </section>

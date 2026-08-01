@@ -1,5 +1,6 @@
 import Link from "next/link";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
+import SubmitButton from "@/components/atoms/SubmitButton";
 import { createSubCategory } from "../actions";
 
 export type CategoryOption = {
@@ -89,13 +90,12 @@ export default function SubCategoryForm({
           >
             Cancel
           </Link>
-          <button
-            type="submit"
+          <SubmitButton
             disabled={disabled}
-            className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-5 text-sm font-medium text-white hover:bg-brand-600 disabled:cursor-not-allowed disabled:bg-brand-300"
+            pendingLabel="Menyimpan Sub Kategori..."
           >
             Save Sub Kategori
-          </button>
+          </SubmitButton>
         </div>
       </form>
     </section>

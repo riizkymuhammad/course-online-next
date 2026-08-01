@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { updateCourse } from "@/app/(admin)/dashboard/course-management/[id]/edit/actions";
 import ActionLink from "@/components/atoms/ActionLink";
-import Button from "@/components/atoms/Button";
+import SubmitButton from "@/components/atoms/SubmitButton";
 import InfoField from "@/components/molecules/InfoField";
 import { SelectField, TextAreaField, TextField as FormField } from "@/components/molecules/form";
 
@@ -148,9 +148,9 @@ export default function EditCourseForm({
           <ActionLink href="/dashboard/course-management" variant="outline">
             Cancel
           </ActionLink>
-          <Button type="submit">
+          <SubmitButton pendingLabel="Memperbarui Course...">
             Update Course
-          </Button>
+          </SubmitButton>
         </div>
       </form>
     </div>

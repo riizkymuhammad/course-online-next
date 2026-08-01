@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import ActionLink from "@/components/atoms/ActionLink";
 import Button from "@/components/atoms/Button";
@@ -56,6 +56,7 @@ export default function CreateCourseForm({
   statusOptions: Option[];
 }) {
   const router = useRouter();
+  const isSubmittingRef = useRef(false);
   const [selectedCategoryId, setSelectedCategoryId] = useState("");
   const [selectedSubCategoryId, setSelectedSubCategoryId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,6 +109,8 @@ export default function CreateCourseForm({
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     const formData = new FormData(event.currentTarget);
 
     try {
@@ -168,6 +171,7 @@ export default function CreateCourseForm({
       setGenerationPhase("error");
       setGenerationLogs((logs) => [...logs, { message: `Gagal: ${message}`, tone: "error" }]);
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   }
 

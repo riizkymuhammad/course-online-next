@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Button from "@/components/atoms/Button";
 import GoogleAuthButton, { getAuthRedirectPath } from "@/components/auth/GoogleAuthButton";
 import FormField from "@/components/molecules/FormField";
@@ -11,11 +11,14 @@ import { createClient } from "@/lib/supabase/client";
 
 export default function LoginForm() {
   const router = useRouter();
+  const isSubmittingRef = useRef(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
     setErrorMessage(null);
     setIsSubmitting(true);
 
@@ -32,6 +35,7 @@ export default function LoginForm() {
     if (error) {
       setErrorMessage(error.message);
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
       return;
     }
 

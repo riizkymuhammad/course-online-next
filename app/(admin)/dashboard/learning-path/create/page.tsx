@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import ActionLink from "@/components/atoms/ActionLink";
-import Button from "@/components/atoms/Button";
+import SubmitButton from "@/components/atoms/SubmitButton";
 import Surface from "@/components/atoms/Surface";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import { SelectField, TextAreaField, TextField as FormField } from "@/components/molecules/form";
@@ -76,9 +76,9 @@ export default async function CreateLearningPathPage({
             <ActionLink href="/dashboard/learning-path" variant="outline">
               Cancel
             </ActionLink>
-            <Button type="submit">
+            <SubmitButton pendingLabel="Menyimpan Learning Path...">
               Save Learning Path
-            </Button>
+            </SubmitButton>
           </div>
         </form>
       </Surface>

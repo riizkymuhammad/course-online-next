@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Button from "@/components/atoms/Button";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import FormField from "@/components/molecules/FormField";
@@ -8,12 +8,14 @@ import InlineAlert from "@/components/molecules/InlineAlert";
 import { createClient } from "@/lib/supabase/client";
 
 export default function RegisterForm() {
+  const isSubmittingRef = useRef(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSubmittingRef.current) return;
     setErrorMessage(null);
     setSuccessMessage(null);
     const form = event.currentTarget;
@@ -29,6 +31,7 @@ export default function RegisterForm() {
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
 
     const supabase = createClient();
@@ -47,6 +50,7 @@ export default function RegisterForm() {
     if (error) {
       setErrorMessage(error.message);
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
       return;
     }
 
@@ -54,6 +58,7 @@ export default function RegisterForm() {
       "Registrasi berhasil. Jika email confirmation aktif di Supabase, silakan cek inbox Anda."
     );
     setIsSubmitting(false);
+    isSubmittingRef.current = false;
     form.reset();
   }
 
