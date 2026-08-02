@@ -259,8 +259,8 @@ export default function CreateTryoutForm({
             <TextAreaField
               label="Catatan Soal"
               name="question_notes"
-              placeholder="Opsional. Contoh: buat 10 soal pilihan ganda level menengah dengan fokus pada join dan aggregation."
-              hint="Catatan soal ini opsional. Jika kosong, sistem akan membuat soal pilihan ganda standar tanpa syarat tambahan."
+              placeholder="Opsional. Contoh: buat soal level menengah dengan fokus pada join dan aggregation."
+              hint="Catatan ini mengatur isi atau tingkat kesulitan. Setiap soal tetap dibuat dengan 5 opsi jawaban."
             />
           </div>
         </div>

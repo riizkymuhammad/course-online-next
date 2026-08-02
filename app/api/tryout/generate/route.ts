@@ -12,14 +12,12 @@ export const runtime = "nodejs";
 
 const generatedQuestionSchema = z.object({
   number: z.number().int().positive(),
-  type: z
-    .enum(["multiple-choice", "true-false", "short-answer", "essay"])
-    .describe("Jenis soal yang dibuat."),
+  type: z.literal("multiple-choice").describe("Jenis soal yang dibuat."),
   question: z.string().describe("Teks soal."),
   options: z
     .array(z.string())
-    .describe("Pilihan jawaban. Kosongkan jika tipe soal bukan pilihan ganda.")
-    .default([]),
+    .length(5)
+    .describe("Tepat lima pilihan jawaban untuk soal, berurutan dari opsi A sampai E."),
   answer: z.string().describe("Jawaban yang benar atau panduan jawaban."),
   explanation: z.string().describe("Penjelasan singkat mengapa jawaban tersebut benar."),
 });
@@ -169,8 +167,8 @@ export async function POST(request: Request) {
     const fileDataUrl = `data:${materialFile.type || "application/pdf"};base64,${base64Data}`;
 
     const instructionText = questionNotes
-      ? `Gunakan catatan tambahan berikut saat menyusun soal: ${questionNotes}`
-      : "Jika tidak ada catatan tambahan, buat seluruh soal sebagai pilihan ganda standar dengan 4 opsi jawaban.";
+      ? `Gunakan catatan tambahan berikut untuk menentukan isi dan tingkat kesulitan soal: ${questionNotes}`
+      : "Buat seluruh soal sebagai pilihan ganda standar.";
 
     const result = await generateText({
       model: google(GEMINI_GENERATION_MODEL),
@@ -188,8 +186,8 @@ export async function POST(request: Request) {
                 `Jumlah soal yang wajib dibuat: ${questionCount}.`,
                 instructionText,
                 "Kembalikan soal dalam format terstruktur.",
-                "Jika catatan kosong, seluruh soal harus multiple-choice dengan tepat 4 opsi.",
-                "Jika ada catatan, ikuti catatan tersebut dan sesuaikan tipe soal bila diperlukan.",
+                "Seluruh soal wajib bertipe multiple-choice dengan tepat 5 opsi jawaban (A, B, C, D, dan E).",
+                "Setiap opsi harus berbeda dan hanya satu opsi yang benar.",
               ].join(" "),
             },
             {
