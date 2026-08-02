@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import {
   filterTableRows,
@@ -26,7 +27,14 @@ export type DataTableColumn = {
     label: string;
     tone?: "primary" | "secondary" | "danger";
     hrefKey?: string;
+    actionKey?: string;
+    confirmMessage?: string;
   }>;
+};
+
+type RowActionResult = {
+  success: boolean;
+  error?: string;
 };
 
 function isSvgImage(value: string) {
@@ -65,6 +73,7 @@ export default function DataTable<T extends object>({
   pageSize = 5,
   pageSizeOptions = [5, 10, 25],
   action,
+  rowAction,
 }: {
   title: string;
   description?: string;
@@ -74,11 +83,15 @@ export default function DataTable<T extends object>({
   pageSize?: number;
   pageSizeOptions?: number[];
   action?: React.ReactNode;
+  rowAction?: (action: string, rowId: string) => Promise<RowActionResult>;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [sortConfig, setSortConfig] = useState<TableSortConfig | null>(null);
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const searchableColumns = columns.filter((column) => column.searchable !== false);
 
@@ -114,6 +127,33 @@ export default function DataTable<T extends object>({
         direction: "asc",
       };
     });
+  }
+
+  async function handleRowAction(
+    actionKey: string,
+    rowId: string,
+    confirmMessage?: string
+  ) {
+    if (!rowAction || !rowId || pendingAction) return;
+    if (confirmMessage && !window.confirm(confirmMessage)) return;
+
+    const pendingKey = `${actionKey}:${rowId}`;
+    setPendingAction(pendingKey);
+    setActionError(null);
+
+    try {
+      const result = await rowAction(actionKey, rowId);
+      if (!result.success) {
+        setActionError(result.error || "Aksi gagal dijalankan.");
+        return;
+      }
+
+      router.refresh();
+    } catch {
+      setActionError("Terjadi kesalahan saat menjalankan aksi.");
+    } finally {
+      setPendingAction(null);
+    }
   }
 
   function renderCell(row: T, column: DataTableColumn) {
@@ -162,6 +202,8 @@ export default function DataTable<T extends object>({
       return (
         <div className="flex items-center gap-2">
           {(column.actions ?? []).map((action) => {
+            const rowId = normalizeTableValue(record.id);
+            const actionPending = pendingAction === `${action.actionKey}:${rowId}`;
             const toneClass =
               action.tone === "primary"
                 ? "bg-brand-500 text-white hover:bg-brand-600"
@@ -182,9 +224,15 @@ export default function DataTable<T extends object>({
                 <button
                   key={action.label}
                   type="button"
+                  onClick={() => {
+                    if (action.actionKey) {
+                      void handleRowAction(action.actionKey, rowId, action.confirmMessage);
+                    }
+                  }}
+                  disabled={!action.actionKey || actionPending}
                   className={`inline-flex h-9 items-center justify-center rounded-lg px-3 text-xs font-medium ${toneClass}`}
                 >
-                  {action.label}
+                  {actionPending ? "Memproses..." : action.label}
                 </button>
               )
             );
@@ -208,6 +256,12 @@ export default function DataTable<T extends object>({
           </div>
           {action ? <div className="shrink-0">{action}</div> : null}
         </div>
+
+        {actionError ? (
+          <p role="alert" className="text-sm text-error-600 dark:text-error-400">
+            {actionError}
+          </p>
+        ) : null}
 
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">

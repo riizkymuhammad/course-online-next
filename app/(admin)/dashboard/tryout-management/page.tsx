@@ -7,6 +7,7 @@ import DataTable from "@/components/ui/table/DataTable";
 import { buildLearningPathOptionLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/text";
+import { deleteTryoutAction } from "./actions";
 
 type Tryout = {
   id: string;
@@ -225,11 +226,18 @@ export default async function TryoutManagementPage({
               className: "w-[240px]",
               actions: [
                 { label: "Edit", tone: "secondary", hrefKey: "edit_url" },
-                { label: "Detail", tone: "primary" },
                 { label: "Kerjakan", tone: "primary", hrefKey: "public_url" },
+                {
+                  label: "Hapus",
+                  tone: "danger",
+                  actionKey: "delete",
+                  confirmMessage:
+                    "Hapus tryout ini? Seluruh soal, opsi jawaban, dan riwayat pengerjaan terkait juga akan dihapus permanen.",
+                },
               ],
             },
           ]}
+          rowAction={deleteTryoutAction}
           data={tryouts.map((item) => ({
             ...item,
             material_label: getMaterialLabel(item.material_file_name),
