@@ -171,7 +171,7 @@ export default function TryoutExamClient({
                     }`}
                   >
                     <span
-                      className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
+                      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
                         isSelected
                           ? "border-brand-500 bg-brand-500 text-white"
                           : "border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300"
