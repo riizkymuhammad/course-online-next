@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# Trigger.dev local build cache and runtime state
+/.trigger/
+
 # production
 /build
 

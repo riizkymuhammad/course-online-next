@@ -24,31 +24,19 @@ type SubCategoryOption = {
   name: string;
 };
 
-type GeneratedQuestion = {
-  number: number;
-  type: string;
-  question: string;
-  options: string[];
-  answer: string;
-  explanation: string;
-};
-
 type GenerateTryoutResponse = {
-  tryoutId?: string;
+  tryoutId: string;
+  runId: string;
   tryoutTitle: string;
-  learningPath: string;
-  status: string;
   questionCount: number;
-  savedQuestionCount?: number;
-  notes?: string;
-  questions: GeneratedQuestion[];
+  generationStatus: "pending";
 };
 
 const tryoutGenerationSteps: GenerationStep[] = [
   { phase: "validating", title: "Validasi input dan file PDF", description: "Mengecek judul, learning path/kategori, jumlah soal, status, dan file materi." },
-  { phase: "generating", title: "Generate soal dengan AI", description: "AI membaca materi PDF dan menyusun soal sesuai jumlah yang diminta." },
-  { phase: "saving", title: "Simpan tryout dan thumbnail", description: "Menyimpan data tryout, soal, opsi jawaban, dan thumbnail ke Supabase." },
-  { phase: "success", title: "Selesai", description: "Tryout sudah siap dicek di halaman Tryout Management." },
+  { phase: "generating", title: "Upload materi", description: "Mengunggah PDF agar dapat diproses oleh worker di background." },
+  { phase: "saving", title: "Masukkan ke antrean", description: "Membuat data tryout dan mengirim job ke Trigger.dev." },
+  { phase: "success", title: "Masuk antrean", description: "Halaman boleh ditutup; status generate dapat dipantau dari Tryout Management." },
 ];
 
 export default function CreateTryoutForm({
@@ -135,23 +123,16 @@ export default function CreateTryoutForm({
 
       setGenerationPhase("saving");
 
-      const savedQuestionCount =
-        typeof resultPayload.savedQuestionCount === "number"
-          ? resultPayload.savedQuestionCount
-          : resultPayload.questions.length
-            ? resultPayload.questions.length
-            : resultPayload.questionCount;
-
       setSuccessSummary({
         title: resultPayload.tryoutTitle,
-        questionCount: savedQuestionCount,
+        questionCount: resultPayload.questionCount,
       });
       setGenerationPhase("success");
 
-      await new Promise((resolve) => window.setTimeout(resolve, 1200));
+      await new Promise((resolve) => window.setTimeout(resolve, 700));
 
       router.push(
-        `/dashboard/tryout-management?created=1&questions=${savedQuestionCount}`
+        `/dashboard/tryout-management?queued=1&tryoutId=${resultPayload.tryoutId}`
       );
       router.refresh();
     } catch (error) {
@@ -274,7 +255,7 @@ export default function CreateTryoutForm({
             title="Status generate tryout"
             phase={generationPhase}
             summary={generationPhase === "success"
-              ? `${successSummary?.questionCount ?? 0} soal "${successSummary?.title ?? "tryout"}" berhasil disimpan. Anda akan diarahkan ke daftar tryout.`
+              ? `Generate ${successSummary?.questionCount ?? 0} soal "${successSummary?.title ?? "tryout"}" sudah masuk antrean. Anda akan diarahkan ke daftar tryout.`
               : generationPhase === "error"
                 ? errorMessage || "Generate tryout gagal. Silakan cek pesan error."
                 : `Proses berjalan ${elapsedSeconds} detik. Jangan tutup halaman ini.`}
@@ -300,8 +281,8 @@ export default function CreateTryoutForm({
 
 function getSubmitLabel(phase: GenerationPhase) {
   if (phase === "validating") return "Memvalidasi...";
-  if (phase === "generating") return "Generate soal...";
-  if (phase === "saving") return "Menyimpan...";
-  if (phase === "success") return "Berhasil";
+  if (phase === "generating") return "Mengunggah PDF...";
+  if (phase === "saving") return "Memasukkan antrean...";
+  if (phase === "success") return "Masuk antrean";
   return "Memproses...";
 }

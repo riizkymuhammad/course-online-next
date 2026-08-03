@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 type StatusAlertProps = {
@@ -16,15 +16,18 @@ const styles: Record<StatusAlertProps["variant"], string> = {
   warning: "border-warning-500 bg-warning-500 text-white shadow-lg shadow-warning-500/30",
 };
 
+const subscribeToClient = () => () => {};
+
 export default function StatusAlert({ variant, title, message, durationMs = 4000 }: StatusAlertProps) {
   const [visible, setVisible] = useState(true);
+  const mounted = useSyncExternalStore(subscribeToClient, () => true, () => false);
 
   useEffect(() => {
     const timeout = window.setTimeout(() => setVisible(false), durationMs);
     return () => window.clearTimeout(timeout);
   }, [durationMs]);
 
-  if (!visible || typeof document === "undefined") return null;
+  if (!mounted || !visible) return null;
 
   return createPortal(
     <div className="pointer-events-none fixed left-1/2 top-20 z-[120] w-full max-w-xl -translate-x-1/2 px-4 sm:top-24 sm:px-6">

@@ -4,6 +4,7 @@ import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import SummaryCard from "@/components/molecules/SummaryCard";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
+import TryoutGenerationRefresh from "@/components/tryout/TryoutGenerationRefresh";
 import { buildLearningPathOptionLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/text";
@@ -21,6 +22,7 @@ type Tryout = {
   material_file_name: string | null;
   total_questions: number;
   status: "draft" | "published" | "archived";
+  ai_generation_status: "pending" | "processing" | "completed" | "failed";
   updated_at: string;
 };
 
@@ -49,6 +51,23 @@ const statusStyles: Record<Tryout["status"], string> = {
     "bg-gray-100 text-gray-700 dark:bg-white/5 dark:text-gray-300",
 };
 
+const generationStatusStyles: Record<Tryout["ai_generation_status"], string> = {
+  pending:
+    "bg-warning-50 text-warning-700 dark:bg-warning-500/15 dark:text-warning-400",
+  processing:
+    "bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-400",
+  completed:
+    "bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-400",
+  failed: "bg-error-50 text-error-700 dark:bg-error-500/15 dark:text-error-400",
+};
+
+const generationStatusLabels: Record<Tryout["ai_generation_status"], string> = {
+  pending: "Menunggu antrean",
+  processing: "Sedang generate",
+  completed: "Selesai",
+  failed: "Gagal",
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("id-ID", {
     dateStyle: "medium",
@@ -60,11 +79,6 @@ function getMaterialLabel(value: string | null) {
   if (!value) return "Belum ada file";
   const parts = value.split(/[\\/]/);
   return parts[parts.length - 1] || value;
-}
-
-function getSearchParamValue(value: string | string[] | undefined) {
-  if (Array.isArray(value)) return value[0];
-  return value;
 }
 
 function buildTryoutCategoryLabel(category: string | null, subCategory: string | null) {
@@ -81,13 +95,11 @@ export default async function TryoutManagementPage({
 }: PageProps<"/dashboard/tryout-management">) {
   const supabase = await createClient();
   const params = await searchParams;
-  const createdQuestionCount = getSearchParamValue(params.questions);
-
   const [{ data: tryoutRows }, { data: learningPathRows }, { data: categoryRows }, { data: subCategoryRows }] = await Promise.all([
     supabase
       .from("tryouts")
       .select(
-        "id, title, learning_path_id, category_id, sub_category_id, total_questions, material_file_name, status, updated_at"
+        "id, title, learning_path_id, category_id, sub_category_id, total_questions, material_file_name, status, ai_generation_status, updated_at"
       )
       .order("updated_at", { ascending: false }),
     supabase.from("learning_paths").select("id, title"),
@@ -128,6 +140,8 @@ export default async function TryoutManagementPage({
         material_file_name: item.material_file_name,
         total_questions: item.total_questions ?? 0,
         status: (item.status ?? "draft") as Tryout["status"],
+        ai_generation_status: (item.ai_generation_status ??
+          "completed") as Tryout["ai_generation_status"],
         updated_at: item.updated_at ?? "",
       };
     }) ?? [];
@@ -135,9 +149,15 @@ export default async function TryoutManagementPage({
   const publishedCount = tryouts.filter((item) => item.status === "published").length;
   const totalQuestions = tryouts.reduce((sum, item) => sum + (item.total_questions || 0), 0);
   const materialsCount = tryouts.filter((item) => Boolean(item.material_file_name)).length;
+  const hasActiveGeneration = tryouts.some(
+    (item) =>
+      item.ai_generation_status === "pending" ||
+      item.ai_generation_status === "processing"
+  );
 
   return (
     <div className="space-y-6">
+      <TryoutGenerationRefresh enabled={hasActiveGeneration} />
       <PageBreadcrumb
         items={[
           { label: "Dashboard", href: "/dashboard" },
@@ -146,15 +166,11 @@ export default async function TryoutManagementPage({
         title="Tryout Management"
       />
 
-      {params.created ? (
+      {params.queued ? (
         <StatusAlert
           variant="success"
-          title="Tryout Berhasil Disimpan"
-          message={
-            createdQuestionCount
-              ? `Tryout berhasil di-generate. ${createdQuestionCount} soal berhasil disimpan ke database.`
-              : "Tryout berhasil di-generate dan disimpan ke database."
-          }
+          title="Generate Tryout Masuk Antrean"
+          message="PDF sudah disimpan dan job sudah dikirim ke Trigger.dev. Anda boleh meninggalkan halaman ini selama soal diproses di background."
         />
       ) : null}
       {params.updated ? (
@@ -217,6 +233,18 @@ export default async function TryoutManagementPage({
               type: "badge",
               badgeToneMap: statusStyles,
             },
+            {
+              key: "generation_status_label",
+              label: "Generate AI",
+              sortable: true,
+              type: "badge",
+              badgeToneMap: Object.fromEntries(
+                Object.entries(generationStatusLabels).map(([status, label]) => [
+                  label,
+                  generationStatusStyles[status as Tryout["ai_generation_status"]],
+                ])
+              ),
+            },
             { key: "updated_at", label: "Updated", sortable: true },
             {
               key: "actions",
@@ -240,10 +268,15 @@ export default async function TryoutManagementPage({
           rowAction={deleteTryoutAction}
           data={tryouts.map((item) => ({
             ...item,
+            generation_status_label:
+              generationStatusLabels[item.ai_generation_status],
             material_label: getMaterialLabel(item.material_file_name),
             total_questions: `${item.total_questions} Soal`,
             edit_url: `/dashboard/tryout-management/${item.id}/edit`,
-            public_url: `/tryout/${item.id}/${slugify(item.title)}`,
+            public_url:
+              item.ai_generation_status === "completed"
+                ? `/tryout/${item.id}/${slugify(item.title)}`
+                : "",
             updated_at: formatDate(item.updated_at),
           }))}
         />

@@ -17,6 +17,7 @@
     "@react-jvectormap/world": "^1.1.2",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.104.1",
+    "@trigger.dev/sdk": "4.5.9",
     "ai": "^6.0.168",
     "apexcharts": "^4.7.0",
     "flatpickr": "^4.6.13",
