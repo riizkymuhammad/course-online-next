@@ -173,6 +173,13 @@ export default async function TryoutManagementPage({
           message="PDF sudah disimpan dan job sudah dikirim ke Trigger.dev. Anda boleh meninggalkan halaman ini selama soal diproses di background."
         />
       ) : null}
+      {params.bundleQueued ? (
+        <StatusAlert
+          variant="success"
+          title="Bundle Tryout Masuk Antrean"
+          message={`${String(params.count ?? "Beberapa")} tryout akan dibuat dari rentang bab PDF. Hasilnya akan muncul otomatis setelah ekstraksi bab selesai.`}
+        />
+      ) : null}
       {params.updated ? (
         <StatusAlert
           variant="success"
@@ -210,12 +217,20 @@ export default async function TryoutManagementPage({
           description="DataTable tryout dengan pencarian, sorting, dan pagination."
           searchPlaceholder="Search tryouts..."
           action={
-            <Link
-              href="/dashboard/tryout-management/create"
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600"
-            >
-              Add Tryout
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/dashboard/tryout-management/bundle/create"
+                className="inline-flex h-11 items-center justify-center rounded-lg border border-brand-500 px-4 text-sm font-medium text-brand-600 hover:bg-brand-50 dark:text-brand-400 dark:hover:bg-brand-500/10"
+              >
+                Add Bundle Tryout
+              </Link>
+              <Link
+                href="/dashboard/tryout-management/create"
+                className="inline-flex h-11 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white hover:bg-brand-600"
+              >
+                Add Tryout
+              </Link>
+            </div>
           }
           columns={[
             {

@@ -18,7 +18,9 @@ const generatedQuestionSchema = z.object({
   type: z.literal("multiple-choice"),
   question: z.string(),
   options: z.array(z.string()).length(5),
-  answer: z.string(),
+  correctOption: z
+    .enum(["A", "B", "C", "D", "E"])
+    .describe("Huruf opsi jawaban yang benar."),
   explanation: z.string(),
 });
 
@@ -30,31 +32,6 @@ const generatedTryoutSchema = z.object({
   notes: z.string().optional(),
   questions: z.array(generatedQuestionSchema),
 });
-
-function resolveCorrectOptionIndex(answer: string, options: string[]) {
-  const normalizedAnswer = answer.trim().toLowerCase();
-  const letterMatch = normalizedAnswer.match(/^([a-z])(?:[\).\-\s]|$)/i);
-
-  if (letterMatch) {
-    const index = letterMatch[1].toUpperCase().charCodeAt(0) - 65;
-    if (index >= 0 && index < options.length) return index;
-  }
-
-  const exactIndex = options.findIndex(
-    (option) => option.trim().toLowerCase() === normalizedAnswer
-  );
-  if (exactIndex !== -1) return exactIndex;
-
-  const containsIndex = options.findIndex((option) => {
-    const normalizedOption = option.trim().toLowerCase();
-    return (
-      normalizedAnswer.includes(normalizedOption) ||
-      normalizedOption.includes(normalizedAnswer)
-    );
-  });
-
-  return containsIndex !== -1 ? containsIndex : null;
-}
 
 export const generateTryoutTask = task({
   id: "generate-tryout",
@@ -162,6 +139,7 @@ export const generateTryoutTask = task({
                   "Kembalikan soal dalam format terstruktur.",
                   "Seluruh soal wajib bertipe multiple-choice dengan tepat 5 opsi jawaban (A, B, C, D, dan E).",
                   "Setiap opsi harus berbeda dan hanya satu opsi yang benar.",
+                  "Isi correctOption hanya dengan satu huruf A, B, C, D, atau E yang menunjuk posisi opsi benar.",
                 ].join(" "),
               },
               {
@@ -240,9 +218,9 @@ export const generateTryoutTask = task({
           .select("id, option_order");
         if (optionsError) throw new Error(optionsError.message);
 
-        const correctIndex = resolveCorrectOptionIndex(question.answer, question.options);
+        const correctIndex = question.correctOption.charCodeAt(0) - 65;
         const correctOption = optionRows?.find(
-          (option) => option.option_order === (correctIndex ?? -1) + 1
+          (option) => option.option_order === correctIndex + 1
         );
         if (!correctOption) {
           throw new Error(`Jawaban benar soal nomor ${index + 1} tidak dapat dicocokkan.`);

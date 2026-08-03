@@ -60,6 +60,24 @@ export async function deleteTryoutAction(
   }
 
   const questionIds = (questions ?? []).map((question) => question.id);
+  let materialStillUsed = false;
+
+  if (tryout.material_file_url) {
+    const { data: otherMaterialUsers, error: materialReferenceError } =
+      await adminSupabase
+        .from("tryouts")
+        .select("id")
+        .eq("material_file_url", tryout.material_file_url)
+        .neq("id", tryoutId)
+        .limit(1);
+
+    if (materialReferenceError) {
+      return { success: false, error: materialReferenceError.message };
+    }
+
+    materialStillUsed = Boolean(otherMaterialUsers?.length);
+  }
+
   const { error: answersError } = await adminSupabase
     .from("tryout_attempt_answers")
     .delete()
@@ -122,7 +140,7 @@ export async function deleteTryoutAction(
       .remove([tryout.thumbnail_path]);
   }
 
-  if (tryout.material_file_url) {
+  if (tryout.material_file_url && !materialStillUsed) {
     await adminSupabase.storage
       .from(TRYOUT_MATERIAL_BUCKET)
       .remove([tryout.material_file_url]);
