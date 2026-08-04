@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import PublicNavbar from "@/components/header/PublicNavbar";
 import CourseList, { type CourseCard } from "@/components/home/CourseList";
 import HeroSlider from "@/components/home/HeroSlider";
+import LearningPathList, { type LearningPathCard } from "@/components/home/LearningPathList";
 import TryoutList, { type TryoutCard } from "@/components/home/TryoutList";
 import {
   ACTIVE_ROLE_COOKIE,
@@ -35,6 +36,15 @@ type TryoutRow = {
   total_questions: number | null;
   thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
+};
+
+type LearningPathRow = {
+  id: string;
+  title: string;
+};
+
+type LearningPathTryoutRow = {
+  learning_path_id: string | null;
 };
 
 type CategoryRow = {
@@ -227,6 +237,23 @@ function buildTryoutCards(
   });
 }
 
+function buildLearningPathCards(
+  learningPaths: LearningPathRow[],
+  tryoutCounts: Map<string, number>
+): LearningPathCard[] {
+  return learningPaths.slice(0, 8).map((learningPath, index) => {
+    const category = resolveCourseCategory(learningPath.title, index);
+
+    return {
+      id: learningPath.id,
+      title: learningPath.title,
+      tryoutCount: tryoutCounts.get(learningPath.id) ?? 0,
+      backgroundColor: getCourseCardBackground(category),
+      href: `/courses?learningPath=${learningPath.id}`,
+    };
+  });
+}
+
 export default async function HomePage() {
   const supabase = await createClient();
 
@@ -236,6 +263,8 @@ export default async function HomePage() {
     },
     { data: tryoutRows },
     { data: courseRows },
+    { data: learningPathRows },
+    { data: learningPathTryoutRows },
     { data: categoryRows },
     { data: subCategoryRows },
   ] = await Promise.all([
@@ -255,6 +284,17 @@ export default async function HomePage() {
       )
       .eq("status", "published")
       .order("created_at", { ascending: false }),
+    supabase
+      .from("learning_paths")
+      .select("id, title")
+      .eq("status", "published")
+      .order("created_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("tryouts")
+      .select("learning_path_id")
+      .eq("status", "published")
+      .not("learning_path_id", "is", null),
     supabase.from("categories").select("id, name"),
     supabase.from("sub_categories").select("id, category_id, name"),
   ]);
@@ -269,6 +309,16 @@ export default async function HomePage() {
   });
   const tryouts = (tryoutRows as TryoutRow[] | null) ?? [];
   const courses = (courseRows as CourseRow[] | null) ?? [];
+  const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
+  const learningPathTryoutCounts = new Map<string, number>();
+  ((learningPathTryoutRows as LearningPathTryoutRow[] | null) ?? []).forEach((tryout) => {
+    if (tryout.learning_path_id) {
+      learningPathTryoutCounts.set(
+        tryout.learning_path_id,
+        (learningPathTryoutCounts.get(tryout.learning_path_id) ?? 0) + 1
+      );
+    }
+  });
   const categoryMap = new Map(
     ((categoryRows ?? []) as CategoryRow[]).map((item) => [item.id, item.name])
   );
@@ -291,6 +341,7 @@ export default async function HomePage() {
     count: `${categoryCourseCounts.get(category.title) ?? 0} kelas`,
   }));
   const courseCards = buildCourseCards(courses, categoryMap, subCategoryMap);
+  const learningPathCards = buildLearningPathCards(learningPaths, learningPathTryoutCounts);
   const tryoutCards = buildTryoutCards(tryouts, categoryMap, subCategoryMap);
   const featuredTryout = tryouts[0];
   const tryoutHref = buildTryoutHref(featuredTryout);
@@ -339,6 +390,18 @@ export default async function HomePage() {
             </article>
           ))}
         </div>
+      </section>
+
+      <section id="learning-path" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+        <SectionHeading
+          title="Learning Path Pilihan"
+          description="Ikuti jalur belajar terstruktur untuk mencapai targetmu langkah demi langkah."
+        />
+        {learningPathCards.length ? (
+          <LearningPathList items={learningPathCards} />
+        ) : (
+          <p className="mt-8 text-sm font-medium text-gray-500">Learning path belum tersedia</p>
+        )}
       </section>
 
       <section id="kelas" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
