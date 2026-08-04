@@ -88,7 +88,7 @@ export function createTryoutThumbnailSvg(title: string) {
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${THUMBNAIL_WIDTH}" height="${THUMBNAIL_HEIGHT}" viewBox="0 0 ${THUMBNAIL_WIDTH} ${THUMBNAIL_HEIGHT}">`,
     `<rect width="${THUMBNAIL_WIDTH}" height="${THUMBNAIL_HEIGHT}" fill="${THUMBNAIL_BACKGROUND}"/>`,
-    `<text font-family="Inter, Arial, sans-serif" font-size="64" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">${titleLines}</text>`,
+    `<text font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="64" font-weight="700" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">${titleLines}</text>`,
     "</svg>",
   ].join("");
 }

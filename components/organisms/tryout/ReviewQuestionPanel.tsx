@@ -34,7 +34,7 @@ export default function ReviewQuestionPanel({
     <Surface>
       <header className="flex flex-col gap-3 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-gray-800 dark:text-white/90 sm:text-[16px]">
+          <h1 className="text-xl font-semibold text-gray-800 dark:text-white/90 sm:text-base">
             {tryoutTitle}
           </h1>
         </div>

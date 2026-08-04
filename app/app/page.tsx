@@ -34,7 +34,6 @@ const menuItems = [
     description: "Pilih jalur belajar yang sesuai target.",
     href: "/dashboard/learning-path",
     icon: GridIcon,
-    tone: "bg-brand-50 text-brand-600",
     group: "core" as const,
   },
   {
@@ -42,7 +41,6 @@ const menuItems = [
     description: "Buka koleksi materi dan modul belajar.",
     href: "/courses",
     icon: BoxCubeIcon,
-    tone: "bg-blue-light-50 text-blue-light-600",
     group: "core" as const,
   },
   {
@@ -50,7 +48,6 @@ const menuItems = [
     description: "Latihan soal dan simulasi evaluasi.",
     href: "/tryouts",
     icon: ListIcon,
-    tone: "bg-success-50 text-success-600",
     group: "core" as const,
   },
   {
@@ -58,7 +55,6 @@ const menuItems = [
     description: "Lihat hasil pengerjaan dan progres.",
     href: "/app/history-tryout",
     icon: CalenderIcon,
-    tone: "bg-warning-50 text-warning-600",
     group: "advanced" as const,
   },
   {
@@ -66,7 +62,6 @@ const menuItems = [
     description: "Kelola latihan pendek untuk setiap materi.",
     href: "/dashboard/quiz-management",
     icon: TableIcon,
-    tone: "bg-orange-50 text-orange-600",
     group: "advanced" as const,
   },
 ];
@@ -153,6 +148,9 @@ export default async function AppPage() {
   const attemptTryout = getRelation(tryoutAttempt?.tryouts);
   const hasMaterialAccess = Boolean(materialProgress && materialCourse);
   const hasTryoutAccess = Boolean(tryoutAttempt && attemptTryout);
+  const isTryoutCompleted = Boolean(
+    tryoutAttempt?.status === "submitted" || tryoutAttempt?.status === "graded"
+  );
   const isMaterialCompleted = Boolean(
     materialProgress?.completed_at || materialProgress?.status === "completed"
   );
@@ -175,28 +173,28 @@ export default async function AppPage() {
       value: hasMaterialAccess ? "1" : "0",
       hint: hasMaterialAccess ? "Course terakhir siap dilanjutkan" : "Mulai course pertamamu",
       icon: BoxCubeIcon,
-      tone: "bg-[#144272]",
+      isNumeric: true,
     },
     {
       label: "Modul tersedia",
       value: String(materialCourse?.module_count ?? 0),
       hint: materialCourse ? `${materialCourse.section_count ?? 0} section pada course terakhir` : "Belum ada modul aktif",
       icon: GridIcon,
-      tone: "bg-[#205295]",
+      isNumeric: true,
     },
     {
       label: "Tryout dikerjakan",
       value: hasTryoutAccess ? "1" : "0",
       hint: hasTryoutAccess ? "Riwayat tryout terbaru tersedia" : "Mulai tryout pertamamu",
       icon: ListIcon,
-      tone: "bg-[#2C74B3]",
+      isNumeric: true,
     },
     {
       label: "Nilai terakhir",
       value: tryoutAttempt ? getAttemptScoreLabel(tryoutAttempt) : "-",
       hint: tryoutAttempt ? "Dari tryout terbaru" : "Belum ada nilai tryout",
       icon: CalenderIcon,
-      tone: "bg-brand-500",
+      isNumeric: isTryoutCompleted,
     },
   ];
   const coreMenuItems = menuItems.filter((item) => item.group === "core");
@@ -218,13 +216,13 @@ export default async function AppPage() {
             <div className="pointer-events-none absolute inset-0 opacity-20 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.5)_1px,transparent_0)] [background-size:22px_22px]" />
             <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-[#2C74B3] opacity-40 blur-3xl" />
             <div className="relative">
-              <p className="text-sm font-medium text-blue-light-100">{today}</p>
-              <h1 className="mt-1 text-2xl font-extrabold tracking-tight sm:text-3xl">
+              <p className="text-sm text-blue-light-100">{today}</p>
+              <h1 className="mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
                 Halo, {firstName} 👋
               </h1>
               <p className="mt-2 max-w-xl text-sm leading-6 text-blue-light-100">
                 Lanjutkan progres belajarmu di jalur{" "}
-                <span className="font-semibold text-white">{learningFocus}</span>. Konsistensi kecil hari
+                <span className="text-white">{learningFocus}</span>. Konsistensi kecil hari
                 ini menentukan hasil besar nanti.
               </p>
               <div className="mt-5 inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur">
@@ -243,11 +241,15 @@ export default async function AppPage() {
                   key={stat.label}
                   className="rounded-xl border border-gray-200 bg-white p-5 transition-shadow hover:shadow-theme-sm"
                 >
-                  <span className={`flex h-10 w-10 items-center justify-center rounded-lg text-white ${stat.tone}`}>
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  <p className="mt-4 text-2xl font-extrabold text-gray-900">{stat.value}</p>
-                  <p className="text-sm font-medium text-gray-700">{stat.label}</p>
+                  <IconTile icon={Icon} />
+                  <p
+                    className={`mt-4 text-gray-900 ${
+                      stat.isNumeric ? "text-2xl font-bold" : "text-sm font-medium leading-8"
+                    }`}
+                  >
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-gray-700">{stat.label}</p>
                   <p className="mt-1 text-xs leading-5 text-gray-400">{stat.hint}</p>
                 </article>
               );
@@ -257,8 +259,8 @@ export default async function AppPage() {
           <section>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-brand-600">Menu</p>
-                <h2 className="mt-1 text-lg font-bold text-gray-900">Akses cepat</h2>
+                <p className="text-xs font-medium uppercase tracking-wider text-brand-600">Menu</p>
+                <h2 className="mt-1 text-lg font-semibold text-gray-900">Akses cepat</h2>
               </div>
               <span className="text-xs text-gray-400">{menuItems.length} menu tersedia</span>
             </div>
@@ -267,7 +269,7 @@ export default async function AppPage() {
 
             {advancedMenuItems.length ? (
               <div className="mt-4">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                <p className="mb-3 text-xs font-medium uppercase tracking-wider text-gray-400">
                   Fitur lanjutan
                 </p>
                 <DashboardMenuGrid items={advancedMenuItems} advanced />
@@ -279,14 +281,12 @@ export default async function AppPage() {
             <article className="rounded-xl border border-gray-200 bg-white p-5">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                    <BoxCubeIcon className="h-5 w-5" />
-                  </span>
+                  <IconTile icon={BoxCubeIcon} />
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
                       Materi terakhir
                     </p>
-                    <h2 className="text-base font-bold text-gray-900">Lanjutkan belajar</h2>
+                    <h2 className="text-base font-semibold text-gray-900">Lanjutkan belajar</h2>
                   </div>
                 </div>
                 <Link href={materialHref} className="text-sm font-medium text-brand-600 hover:text-brand-700">
@@ -296,7 +296,7 @@ export default async function AppPage() {
 
               {hasMaterialAccess ? (
                 <div className="mt-4 flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:border-gray-200 hover:bg-gray-50">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#144272] text-xs font-bold text-white">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#144272] text-xs font-medium text-white">
                     COURSE
                   </span>
                   <div className="min-w-0 flex-1">
@@ -308,7 +308,7 @@ export default async function AppPage() {
                           style={{ width: isMaterialCompleted ? "100%" : "50%" }}
                         />
                       </div>
-                      <span className="text-xs font-medium text-gray-500">
+                      <span className="text-xs font-bold text-gray-500">
                         {isMaterialCompleted ? "100" : "50"}%
                       </span>
                     </div>
@@ -337,14 +337,12 @@ export default async function AppPage() {
             <article className="rounded-xl border border-gray-200 bg-white p-5">
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-                    <ListIcon className="h-5 w-5" />
-                  </span>
+                  <IconTile icon={ListIcon} />
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                    <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
                       Tryout terakhir
                     </p>
-                    <h2 className="text-base font-bold text-gray-900">Hasil pengerjaan</h2>
+                    <h2 className="text-base font-semibold text-gray-900">Hasil pengerjaan</h2>
                   </div>
                 </div>
                 <Link href="/app/history-tryout" className="text-sm font-medium text-brand-600 hover:text-brand-700">
@@ -354,9 +352,6 @@ export default async function AppPage() {
 
               {hasTryoutAccess && tryoutAttempt ? (
                 <div className="mt-4 flex items-center gap-4 rounded-lg border border-gray-100 p-3 transition-colors hover:border-gray-200 hover:bg-gray-50">
-                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#2C74B3] text-xs font-bold text-white">
-                    TRYOUT
-                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-gray-900">{attemptTryout?.title}</p>
                     <p className="mt-1 text-xs text-gray-400">
@@ -364,10 +359,14 @@ export default async function AppPage() {
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
-                    <p className="text-lg font-extrabold leading-none text-gray-900">
+                    <p
+                      className={`${
+                        isTryoutCompleted ? "text-lg font-bold" : "text-sm font-medium"
+                      } leading-none text-gray-900`}
+                    >
                       {getAttemptScoreLabel(tryoutAttempt)}
                     </p>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-400">skor</p>
+                    <p className="text-xs uppercase tracking-wider text-gray-400">skor</p>
                   </div>
                   <Link
                     href={tryoutHref}
@@ -406,7 +405,7 @@ export default async function AppPage() {
           <FooterColumn title="Bantuan" items={["Pusat Bantuan", "Syarat & Ketentuan", "Kebijakan Privasi", "FAQ"]} />
         </div>
         <div className="border-t border-gray-200">
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-xs font-medium text-gray-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
+          <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-6 text-xs text-gray-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
             <p>Copyright 2026 Course Online. Seluruh hak cipta dilindungi.</p>
             <p>Dibuat untuk masa depan pendidikan Indonesia.</p>
           </div>
@@ -432,30 +431,42 @@ function DashboardMenuGrid({
           <Link
             key={item.title}
             href={item.href}
-            className={`group flex items-start gap-4 rounded-xl border p-5 transition-all hover:border-brand-500 hover:shadow-theme-sm ${
+            className={`group relative flex min-h-40 flex-col items-start rounded-xl border p-5 transition-all hover:border-brand-500 hover:shadow-theme-sm ${
               advanced
                 ? "border-dashed border-gray-300 bg-gray-50 hover:bg-white"
                 : "border-gray-200 bg-white"
             }`}
           >
-            <span
-              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                advanced
-                  ? "bg-white text-gray-500 group-hover:bg-brand-50 group-hover:text-brand-600"
-                  : `${item.tone} group-hover:bg-brand-500 group-hover:text-white`
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-            </span>
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">{item.title}</p>
+            <IconTile
+              icon={Icon}
+              className="transition-colors group-hover:bg-brand-100 group-hover:text-brand-700"
+            />
+            <div className="mt-4 min-w-0 pr-6">
+              <p className="font-medium text-gray-900">{item.title}</p>
               <p className="mt-0.5 text-sm leading-5 text-gray-500">{item.description}</p>
             </div>
-            <ArrowRightIcon className="h-4 w-4 text-gray-300 transition-colors group-hover:text-brand-600" />
+            <ArrowRightIcon className="absolute right-5 top-5 h-4 w-4 text-gray-300 transition-colors group-hover:translate-x-0.5 group-hover:text-brand-600" />
           </Link>
         );
       })}
     </div>
+  );
+}
+
+function IconTile({
+  icon: Icon,
+  className = "",
+}: {
+  icon: DashboardMenuItem["icon"];
+  className?: string;
+}) {
+  return (
+    <span
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600 ${className}`}
+      aria-hidden="true"
+    >
+      <Icon className="h-[18px] w-[18px] shrink-0" />
+    </span>
   );
 }
 
@@ -472,9 +483,9 @@ function EmptyPanel({
 }) {
   return (
     <div className="mt-6 rounded-lg border border-dashed border-gray-300 p-6 text-center">
-      <p className="font-medium text-gray-900">{title}</p>
+      <p className="font-semibold text-gray-900">{title}</p>
       <p className="mt-1 text-sm leading-6 text-gray-500">{description}</p>
-      <Link href={href} className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:text-brand-700">
+      <Link href={href} className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-700">
         {action}
         <ArrowRightIcon className="h-4 w-4" />
       </Link>
@@ -485,7 +496,7 @@ function EmptyPanel({
 function FooterColumn({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <h2 className="text-xs font-bold text-gray-950">{title}</h2>
+      <h2 className="text-xs font-semibold text-gray-950">{title}</h2>
       <div className="mt-5 space-y-3">
         {items.map((item) => (
           <Link key={item} href="/" className="block text-sm font-medium text-gray-600 hover:text-brand-600">

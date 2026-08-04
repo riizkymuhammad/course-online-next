@@ -89,7 +89,7 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
         initial: {
           fill: mapColor || "#D0D5DD",
           fillOpacity: 1,
-          fontFamily: "Outfit",
+          fontFamily: "var(--font-sans)",
           stroke: "none",
           strokeWidth: 0,
           strokeOpacity: 0,
@@ -109,7 +109,7 @@ const CountryMap: React.FC<CountryMapProps> = ({ mapColor }) => {
         initial: {
           fill: "#35373e",
           fontWeight: 500,
-          fontSize: "13px",
+          fontSize: "var(--font-sm)",
           stroke: "none",
         },
         hover: {},

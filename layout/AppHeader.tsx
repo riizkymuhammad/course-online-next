@@ -149,7 +149,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           ) : (
             <Link
               href="/login"
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-semibold text-white transition hover:bg-brand-600"
+              className="inline-flex h-10 items-center justify-center rounded-lg bg-brand-500 px-4 text-sm font-medium text-white transition hover:bg-brand-600"
             >
               Masuk
             </Link>

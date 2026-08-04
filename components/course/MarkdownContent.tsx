@@ -292,7 +292,7 @@ function MarkdownList({
 }) {
   const content = items.map((item, index) => (
     <li key={`${item}-${index}`} className="flex gap-3">
-      <span className="mt-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-[11px] font-bold text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
+      <span className="mt-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-600 dark:bg-brand-500/15 dark:text-brand-300">
         {ordered ? index + 1 : <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />}
       </span>
       <span className="min-w-0 flex-1">{renderInline(item)}</span>
@@ -357,7 +357,7 @@ export default function MarkdownContent({
   return (
     <article
       className={`${
-        compact ? "mt-4 space-y-4 text-sm leading-7" : "mt-8 space-y-5 text-[15px] leading-8"
+        compact ? "mt-4 space-y-4 text-sm leading-7" : "mt-8 space-y-5 text-base leading-8"
       } ${className}`}
     >
       {blocks.map((block, index) => renderBlock(block, index, compact))}

@@ -130,7 +130,7 @@ export default async function CategoryPage({
               key: "id",
               label: "ID",
               sortable: true,
-              className: "min-w-[260px] font-mono text-xs",
+              className: "min-w-[260px] font-sans text-xs",
             },
             { key: "name", label: "Kategori", sortable: true },
             { key: "sub_category_label", label: "Jumlah Sub Kategori", sortable: true },

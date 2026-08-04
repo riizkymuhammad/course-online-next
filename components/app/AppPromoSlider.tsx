@@ -52,7 +52,7 @@ export default function AppPromoSlider({ slides }: { slides: PromoSlide[] }) {
               />
               <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-950/45 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-4 text-white sm:p-5">
-                <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/90">
+                <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-white/90">
                   {slide.badge}
                 </span>
                 <h2 className="mt-3 max-w-md text-lg font-semibold leading-6 sm:text-xl">

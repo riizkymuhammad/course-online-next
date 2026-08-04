@@ -251,7 +251,7 @@ export default function CourseMaterialClient({
                           }`}
                         >
                           <span
-                            className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+                            className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                               isCompleted
                                 ? "bg-success-500 text-white"
                                 : "border border-gray-300 text-transparent dark:border-gray-600"

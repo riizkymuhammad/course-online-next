@@ -136,7 +136,7 @@ export default function TryoutExamClient({
           <Surface>
             <div className="flex flex-col gap-3 border-b border-gray-100 pb-5 dark:border-gray-800 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <h1 className="text-xl font-semibold text-gray-800 dark:text-white/90 sm:text-[16px]">
+                <h1 className="text-xl font-semibold text-gray-800 dark:text-white/90 sm:text-base">
                   {tryoutTitle}
                 </h1>
               </div>
@@ -179,7 +179,7 @@ export default function TryoutExamClient({
                     >
                       {getOptionLabel(optionIndex)}
                     </span>
-                    <span className="pt-0.5 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:text-[15px]">
+                    <span className="pt-0.5 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:text-base">
                       {option.text}
                     </span>
                     {isSaving === activeQuestion.id && selectedOptionId === option.id ? (

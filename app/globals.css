@@ -2,9 +2,48 @@
 
 @custom-variant dark (&:is(.dark *));
 
+:root {
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-active: #1e40af;
+  --primary-soft: #eff6ff;
+
+  --background: #f8fafc;
+  --surface: #ffffff;
+  --foreground: #262626;
+  --muted-foreground: #696969;
+  --border: #eeeeee;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-xs: 0.75rem;
+  --font-sm: 0.875rem;
+  --font-base: 1rem;
+  --font-lg: 1.125rem;
+  --font-xl: 1.25rem;
+  --font-2xl: 1.5rem;
+  --font-3xl: 1.875rem;
+  --font-4xl: 2.25rem;
+
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+  --blue-950: #172554;
+}
+
 @theme {
   --font-*: initial;
-  --font-outfit: Outfit, sans-serif;
+  --font-sans: var(--font-sans);
+
+  --text-xs: var(--font-xs);
+  --text-sm: var(--font-sm);
+  --text-base: var(--font-base);
+  --text-lg: var(--font-lg);
+  --text-xl: var(--font-xl);
+  --text-2xl: var(--font-2xl);
+  --text-3xl: var(--font-3xl);
+  --text-4xl: var(--font-4xl);
 
   --breakpoint-*: initial;
   --breakpoint-2xsm: 375px;
@@ -16,21 +55,15 @@
   --breakpoint-xl: 1280px;
   --breakpoint-2xl: 1536px;
 
-  --text-title-2xl: 72px;
-  --text-title-2xl--line-height: 90px;
-  --text-title-xl: 60px;
-  --text-title-xl--line-height: 72px;
-  --text-title-lg: 48px;
-  --text-title-lg--line-height: 60px;
-  --text-title-md: 36px;
+  --text-title-md: var(--font-4xl);
   --text-title-md--line-height: 44px;
-  --text-title-sm: 30px;
+  --text-title-sm: var(--font-3xl);
   --text-title-sm--line-height: 38px;
-  --text-theme-xl: 20px;
+  --text-theme-xl: var(--font-xl);
   --text-theme-xl--line-height: 30px;
-  --text-theme-sm: 14px;
+  --text-theme-sm: var(--font-sm);
   --text-theme-sm--line-height: 20px;
-  --text-theme-xs: 12px;
+  --text-theme-xs: var(--font-xs);
   --text-theme-xs--line-height: 18px;
 
   --color-current: currentColor;
@@ -38,18 +71,18 @@
   --color-white: #ffffff;
   --color-black: #101828;
 
-  --color-brand-25: #f7faff;
-  --color-brand-50: #e7f1ff;
-  --color-brand-100: #cfe2ff;
-  --color-brand-200: #9ec5fe;
-  --color-brand-300: #6ea8fe;
-  --color-brand-400: #3d8bfd;
-  --color-brand-500: #0d6efd;
-  --color-brand-600: #0b5ed7;
-  --color-brand-700: #0a58ca;
-  --color-brand-800: #084298;
-  --color-brand-900: #052c65;
-  --color-brand-950: #031633;
+  --color-brand-25: #f8fbff;
+  --color-brand-50: var(--primary-soft);
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: var(--primary);
+  --color-brand-600: var(--primary-hover);
+  --color-brand-700: var(--primary-active);
+  --color-brand-800: var(--blue-900);
+  --color-brand-900: var(--blue-950);
+  --color-brand-950: #0f172a;
 
   --color-blue-light-25: #f5fbff;
   --color-blue-light-50: #f0f9ff;
@@ -65,16 +98,16 @@
   --color-blue-light-950: #062c41;
 
   --color-gray-25: #fcfcfd;
-  --color-gray-50: #f9fafb;
+  --color-gray-50: var(--background);
   --color-gray-100: #f2f4f7;
   --color-gray-200: #e4e7ec;
   --color-gray-300: #d0d5dd;
   --color-gray-400: #98a2b3;
-  --color-gray-500: #667085;
+  --color-gray-500: var(--muted-foreground);
   --color-gray-600: #475467;
   --color-gray-700: #344054;
-  --color-gray-800: #1d2939;
-  --color-gray-900: #101828;
+  --color-gray-800: var(--foreground);
+  --color-gray-900: var(--foreground);
   --color-gray-950: #0c111d;
   --color-gray-dark: #1a2231;
 
@@ -188,7 +221,7 @@
     cursor: pointer;
   }
   body {
-    @apply relative font-normal font-outfit z-1 bg-gray-50;
+    @apply relative z-1 bg-gray-50 font-sans font-normal text-gray-800;
   }
 }
 
@@ -315,7 +348,7 @@
   @apply !p-0;
 }
 .apexcharts-tooltip-title {
-  @apply !mb-0 !border-b-0 !bg-transparent !p-0 !text-[10px] !leading-4 !text-gray-800 dark:!text-white/90;
+  @apply !mb-0 !border-b-0 !bg-transparent !p-0 !text-xs !leading-4 !text-gray-800 dark:!text-white/90;
 }
 .apexcharts-tooltip-text {
   @apply !text-theme-xs !text-gray-700 dark:!text-white/90;

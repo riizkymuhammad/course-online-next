@@ -17,7 +17,7 @@ export default function LearningCourseDailyChart({
     chart: {
       type: "bar",
       height: 280,
-      fontFamily: "Inter, sans-serif",
+      fontFamily: "var(--font-sans)",
       toolbar: { show: false },
     },
     plotOptions: {
@@ -31,12 +31,12 @@ export default function LearningCourseDailyChart({
       categories: labels,
       axisBorder: { show: false },
       axisTicks: { show: false },
-      labels: { style: { colors: "#6b7280", fontSize: "12px" } },
+      labels: { style: { colors: "#6b7280", fontSize: "var(--font-xs)" } },
     },
     yaxis: {
       min: 0,
       forceNiceScale: true,
-      labels: { style: { colors: "#6b7280", fontSize: "12px" } },
+      labels: { style: { colors: "#6b7280", fontSize: "var(--font-xs)" } },
     },
     grid: {
       borderColor: "#e5e7eb",

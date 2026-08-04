@@ -46,7 +46,7 @@ export default function StatisticsChart() {
     },
     colors: ["#465FFF", "#9CB9FF"], // Define line colors
     chart: {
-      fontFamily: "Outfit, sans-serif",
+      fontFamily: "var(--font-sans)",
       height: 310,
       type: "line", // Set the chart type to 'line'
       toolbar: {
@@ -120,7 +120,7 @@ export default function StatisticsChart() {
     yaxis: {
       labels: {
         style: {
-          fontSize: "12px", // Adjust font size for y-axis labels
+          fontSize: "var(--font-xs)",
           colors: ["#6B7280"], // Color of the labels
         },
       },

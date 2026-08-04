@@ -29,7 +29,7 @@ export default function GeminiLimitChart({
     chart: {
       type: "bar",
       height: 280,
-      fontFamily: "Inter, sans-serif",
+      fontFamily: "var(--font-sans)",
       toolbar: { show: false },
     },
     plotOptions: {
@@ -45,7 +45,7 @@ export default function GeminiLimitChart({
       formatter: (value) => numberFormatter.format(Number(value)),
       style: {
         colors: ["#ffffff"],
-        fontSize: "12px",
+        fontSize: "var(--font-xs)",
         fontWeight: 600,
       },
     },
@@ -55,13 +55,13 @@ export default function GeminiLimitChart({
       min: 0,
       labels: {
         formatter: (value) => numberFormatter.format(Number(value)),
-        style: { colors: "#6b7280", fontSize: "12px" },
+        style: { colors: "#6b7280", fontSize: "var(--font-xs)" },
       },
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
     yaxis: {
-      labels: { style: { colors: "#6b7280", fontSize: "12px" } },
+      labels: { style: { colors: "#6b7280", fontSize: "var(--font-xs)" } },
     },
     grid: {
       borderColor: "#e5e7eb",

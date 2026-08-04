@@ -30,7 +30,7 @@ export default function ReviewAnswerOption({
       <span className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${labelClass}`}>
         {label}
       </span>
-      <span className="min-w-0 flex-1 pt-0.5 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:text-[15px]">
+      <span className="min-w-0 flex-1 pt-0.5 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:text-base">
         {text}
       </span>
       <div className="ml-auto flex shrink-0 flex-col items-end gap-1 pt-0.5">

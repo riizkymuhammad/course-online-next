@@ -145,7 +145,7 @@ export default function UserDropdown({
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {email}
           </span>
-          <span className="mt-2 inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+          <span className="mt-2 inline-flex rounded-full bg-brand-50 px-2.5 py-1 text-xs font-medium text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
             Mode {getRoleLabel(activeRole)}
           </span>
         </div>
@@ -166,7 +166,7 @@ export default function UserDropdown({
                 void handleSwitchRole();
               }}
               disabled={isSwitchingRole}
-              className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-500 px-3 text-xs font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-3 inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-500 px-3 text-xs font-medium text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
             >
               {isSwitchingRole
                 ? "Mengganti..."

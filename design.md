@@ -442,7 +442,7 @@ Bahasa visual:
   - warning untuk draft/score sedang.
   - error untuk gagal/score rendah.
   - gray untuk archived/neutral.
-- Font global: Outfit via `next/font/google`.
+- Font global: Inter via `next/font/google` dengan token `--font-sans`.
 - Dark mode memakai class `dark` pada `documentElement`.
 
 Komponen umum:

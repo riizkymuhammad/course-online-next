@@ -56,7 +56,7 @@ export default function LearningPathCarousel({
               className="w-[220px] shrink-0 snap-start rounded-lg border border-brand-100 bg-white p-4 shadow-theme-sm transition hover:-translate-y-1 hover:shadow-theme-md sm:w-[240px]"
             >
               {path.categoryPath ? (
-                <p className="mb-2 line-clamp-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-600">
+                <p className="mb-2 line-clamp-2 text-xs font-semibold uppercase tracking-[0.12em] text-brand-600">
                   {path.categoryPath}
                 </p>
               ) : null}

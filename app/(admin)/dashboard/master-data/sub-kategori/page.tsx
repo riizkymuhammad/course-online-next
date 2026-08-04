@@ -111,7 +111,7 @@ export default async function SubCategoryPage({
               key: "id",
               label: "ID",
               sortable: true,
-              className: "min-w-[260px] font-mono text-xs",
+              className: "min-w-[260px] font-sans text-xs",
             },
             { key: "category_name", label: "Kategori", sortable: true },
             { key: "name", label: "Sub Kategori", sortable: true },
