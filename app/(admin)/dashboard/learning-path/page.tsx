@@ -128,12 +128,13 @@ export default async function LearningPathPage({
               className: "w-[160px]",
               actions: [
                 { label: "Edit", tone: "secondary" },
-                { label: "Detail", tone: "primary" },
+                { label: "Detail", tone: "primary", hrefKey: "detail_href" },
               ],
             },
           ]}
           data={learningPaths.map((item) => ({
             ...item,
+            detail_href: `/dashboard/learning-path/${item.id}`,
             description: item.description || "Belum ada deskripsi.",
             material_count: `${item.material_count} Materi`,
           }))}

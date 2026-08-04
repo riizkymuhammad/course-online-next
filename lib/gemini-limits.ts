@@ -31,7 +31,7 @@ export type GeminiLimitSummary = {
   docsUrl: string;
 };
 
-export const GEMINI_GENERATION_MODEL = "gemini-2.5-flash";
+export const GEMINI_GENERATION_MODEL = "gemini-3.6-flash";
 
 const activeLimitUrl = "https://aistudio.google.com/app/apikey";
 const docsUrl = "https://ai.google.dev/gemini-api/docs/rate-limits";
