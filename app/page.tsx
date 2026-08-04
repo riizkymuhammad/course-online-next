@@ -249,7 +249,7 @@ function buildLearningPathCards(
       title: learningPath.title,
       tryoutCount: tryoutCounts.get(learningPath.id) ?? 0,
       backgroundColor: getCourseCardBackground(category),
-      href: `/courses?learningPath=${learningPath.id}`,
+      href: `/learning-path/${learningPath.id}`,
     };
   });
 }
