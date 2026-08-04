@@ -11,6 +11,6 @@ export default function CategoryBadge({
       : "bg-slate-100 text-slate-600";
 
   return (
-    <span className={`rounded px-2.5 py-0.5 text-xs font-semibold ${className}`}>{children}</span>
+    <span className={`rounded px-2.5 py-0.5 text-xs font-medium ${className}`}>{children}</span>
   );
 }

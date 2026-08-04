@@ -25,13 +25,13 @@ export default function LearningCard({ item, label }: { item: LearningCardItem; 
           <span className="absolute left-3 top-3">
             <CategoryBadge>{item.category || "Umum"}</CategoryBadge>
           </span>
-          <span className="line-clamp-3 px-3 text-center text-xs font-semibold text-white/95 sm:px-6 sm:text-base">
+          <span className="line-clamp-3 px-3 text-center text-sm font-semibold text-white/95 sm:px-6 sm:text-base">
             {item.title}
           </span>
         </div>
 
         <div className="flex flex-1 flex-col p-3 sm:p-5">
-          <h3 className="line-clamp-2 text-xs font-semibold text-slate-900 sm:text-base">{item.title}</h3>
+          <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 sm:text-base">{item.title}</h3>
           <span className="mt-1 w-fit">
             <CategoryBadge tone="muted">{item.subCategory || "Umum"}</CategoryBadge>
           </span>

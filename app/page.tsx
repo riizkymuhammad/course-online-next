@@ -376,13 +376,13 @@ export default async function HomePage() {
               <div className={`flex h-11 w-11 items-center justify-center rounded-lg ${category.tone}`}>
                 {category.icon}
               </div>
-              <h3 className="mt-7 text-base font-bold text-gray-900">{category.title}</h3>
+              <h3 className="mt-7 text-base font-semibold text-gray-900">{category.title}</h3>
               <p className="mt-4 min-h-[72px] text-sm leading-6 text-gray-600">
                 {category.description}
               </p>
               <a
                 href="#kelas"
-                className="mt-4 inline-flex items-center gap-2 text-xs font-bold text-brand-600 transition hover:text-brand-700"
+                className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-brand-600 transition hover:text-brand-700"
               >
                 {category.count}
                 <ArrowRightIcon className="h-3.5 w-3.5" />
@@ -400,7 +400,7 @@ export default async function HomePage() {
         {learningPathCards.length ? (
           <LearningPathList items={learningPathCards} />
         ) : (
-          <p className="mt-8 text-sm font-medium text-gray-500">Learning path belum tersedia</p>
+          <p className="mt-8 text-sm text-gray-500">Learning path belum tersedia</p>
         )}
       </section>
 
@@ -412,7 +412,7 @@ export default async function HomePage() {
         {courseCards.length ? (
           <CourseList courses={courseCards} actionHref={actionHref} />
         ) : (
-          <p className="mt-8 text-sm font-medium text-gray-500">Course belum tersedia</p>
+          <p className="mt-8 text-sm text-gray-500">Course belum tersedia</p>
         )}
       </section>
 
@@ -424,7 +424,7 @@ export default async function HomePage() {
         {tryoutCards.length ? (
           <TryoutList tryouts={tryoutCards} />
         ) : (
-          <p className="mt-8 text-sm font-medium text-gray-500">Tryout belum tersedia</p>
+          <p className="mt-8 text-sm text-gray-500">Tryout belum tersedia</p>
         )}
       </section>
 
@@ -432,13 +432,13 @@ export default async function HomePage() {
         <div className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
           <div className="grid gap-8 rounded-lg border border-gray-200 bg-white p-7 shadow-[0_16px_48px_rgba(16,24,40,0.06)] md:grid-cols-[1fr_0.9fr] md:items-center lg:p-10">
             <div>
-              <div className="inline-flex items-center gap-2 text-xs font-bold text-brand-600">
+              <div className="inline-flex items-center gap-2 text-xs font-medium text-brand-600">
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-50">
                   <TargetIcon />
                 </span>
                 Tryout Akbar CPNS 2026
               </div>
-              <h2 className="mt-6 max-w-xl text-2xl font-bold leading-tight text-gray-950 sm:text-3xl">
+              <h2 className="mt-6 max-w-xl text-2xl font-semibold leading-tight text-gray-950">
                  {featuredTryout.title}
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">
@@ -446,7 +446,7 @@ export default async function HomePage() {
                 dan analisis hasil mendetail.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-5 text-sm font-semibold text-gray-700">
+              <div className="mt-6 flex flex-wrap gap-5 text-sm text-gray-700">
                 <span className="inline-flex items-center gap-2">
                   <UsersIcon />
                   8.420 peserta terdaftar
@@ -459,14 +459,14 @@ export default async function HomePage() {
 
               <Link
                 href={tryoutHref}
-                className="mt-7 inline-flex h-11 items-center justify-center rounded-md bg-brand-600 px-6 text-sm font-bold text-white shadow-theme-sm transition hover:bg-brand-700"
+                className="mt-7 inline-flex h-11 items-center justify-center rounded-md bg-brand-600 px-6 text-sm font-medium text-white shadow-theme-sm transition hover:bg-brand-700"
               >
                 Daftar Tryout Gratis
               </Link>
             </div>
 
             <div className="rounded-lg bg-linear-to-br from-brand-500 to-[#075be8] p-7 text-white shadow-[0_18px_38px_rgba(70,95,255,0.24)]">
-              <p className="text-center text-sm font-semibold text-white/85">
+              <p className="text-center text-sm text-white/85">
                 Pendaftaran ditutup dalam
               </p>
               <div className="mt-6 grid grid-cols-4 gap-3">
@@ -478,7 +478,7 @@ export default async function HomePage() {
                 ].map(([value, label]) => (
                   <div key={label} className="rounded-lg bg-white/12 px-2 py-4 text-center">
                     <p className="text-2xl font-bold leading-none sm:text-3xl">{value}</p>
-                    <p className="mt-2 text-xs font-semibold text-white/80">{label}</p>
+                    <p className="mt-2 text-xs text-white/80">{label}</p>
                   </div>
                 ))}
               </div>
@@ -513,12 +513,12 @@ export default async function HomePage() {
                 &quot;{testimonial.quote}&quot;
               </p>
               <div className="mt-6 flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-xs font-bold text-brand-600">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-xs font-medium text-brand-600">
                   {testimonial.initials}
                 </span>
                 <span>
-                  <span className="block text-sm font-bold text-gray-900">{testimonial.name}</span>
-                  <span className="block text-xs font-medium text-gray-500">{testimonial.role}</span>
+                  <span className="block text-sm font-semibold text-gray-900">{testimonial.name}</span>
+                  <span className="block text-xs text-gray-500">{testimonial.role}</span>
                 </span>
               </div>
             </article>
@@ -552,7 +552,7 @@ export default async function HomePage() {
                 <a
                   key={item}
                   href="#beranda"
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-xs font-bold text-gray-500 transition hover:border-brand-200 hover:text-brand-600"
+                  className="flex h-8 w-8 items-center justify-center rounded-md border border-gray-200 bg-white text-xs font-medium text-gray-500 transition hover:border-brand-200 hover:text-brand-600"
                 >
                   {item}
                 </a>
@@ -566,7 +566,7 @@ export default async function HomePage() {
         </div>
 
         <div className="border-t border-gray-200">
-          <div className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-6 text-xs font-medium text-gray-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-0">
+          <div className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-6 text-xs text-gray-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-0">
             <p>Copyright 2026 EduPrime. Seluruh hak cipta dilindungi.</p>
             <p>Dibuat untuk masa depan pendidikan Indonesia.</p>
           </div>
@@ -587,7 +587,7 @@ function SectionHeading({
 }) {
   return (
     <div className={centered ? "mx-auto max-w-2xl text-center" : "max-w-2xl"}>
-      <h2 className="text-3xl font-bold leading-tight text-gray-950">{title}</h2>
+      <h2 className="text-2xl font-semibold leading-tight text-gray-950">{title}</h2>
       <p className="mt-4 text-sm leading-6 text-gray-600">{description}</p>
     </div>
   );
@@ -596,7 +596,7 @@ function SectionHeading({
 function FooterColumn({ title, items }: { title: string; items: string[] }) {
   return (
     <div>
-      <h3 className="text-xs font-bold text-gray-950">{title}</h3>
+      <h3 className="text-xs font-semibold text-gray-950">{title}</h3>
       <div className="mt-5 space-y-3">
         {items.map((item) => (
           <a key={item} href="#beranda" className="block text-sm font-medium text-gray-600 hover:text-brand-600">

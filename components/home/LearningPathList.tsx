@@ -17,11 +17,11 @@ export default function LearningPathList({ items }: { items: LearningPathCard[] 
         <Link key={item.id} href={item.href} aria-label={`Buka learning path ${item.title}`} className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2">
           <article className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-300 group-hover:shadow-md">
             <div className="flex h-28 items-center justify-center sm:h-40" style={{ backgroundColor: item.backgroundColor }}>
-              <span className="line-clamp-3 px-3 text-center text-xs font-semibold text-white/95 sm:px-6 sm:text-base">{item.title}</span>
+              <span className="line-clamp-3 px-3 text-center text-sm font-semibold text-white/95 sm:px-6 sm:text-base">{item.title}</span>
             </div>
             <div className="flex flex-1 flex-col p-3 sm:p-5">
-              <h3 className="line-clamp-2 text-xs font-semibold text-slate-900 sm:text-base">{item.title}</h3>
-              <p className="mt-2 text-xs font-medium text-slate-500 sm:text-sm">{item.tryoutCount} tryout</p>
+              <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 sm:text-base">{item.title}</h3>
+              <p className="mt-2 text-xs text-slate-500 sm:text-sm">{item.tryoutCount} tryout</p>
             </div>
           </article>
         </Link>

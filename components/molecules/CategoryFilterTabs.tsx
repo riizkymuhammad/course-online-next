@@ -30,7 +30,7 @@ export default function CategoryFilterTabs({
             variant={isActive ? "primary" : "filter"}
             aria-pressed={isActive}
             onClick={() => onChange(filter.key)}
-            className="h-8 px-4 text-xs"
+            className="h-8 px-4 text-xs font-medium"
           >
             {filter.label}
           </Button>

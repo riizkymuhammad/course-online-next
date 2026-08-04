@@ -32,11 +32,11 @@ export default function PublicNavbar({
           <input
             type="search"
             placeholder="Cari kelas, tryout, atau materi..."
-            className="h-9 w-full rounded-md border border-gray-200 bg-gray-50 pl-10 pr-4 text-xs font-medium text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-brand-300 focus:bg-white focus:shadow-focus-ring"
+            className="h-9 w-full rounded-md border border-gray-200 bg-gray-50 pl-10 pr-4 text-xs font-normal text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-brand-300 focus:bg-white focus:shadow-focus-ring"
           />
         </label>
 
-        <nav className="hidden items-center gap-7 text-xs font-semibold text-gray-700 lg:flex">
+        <nav className="hidden items-center gap-7 text-sm font-medium text-gray-700 lg:flex">
           <Link href="/#beranda" className="transition hover:text-brand-600">
             Beranda
           </Link>
@@ -57,7 +57,7 @@ export default function PublicNavbar({
               <>
                 <Link
                   href="/app"
-                  className="hidden h-9 items-center justify-center rounded-md border border-brand-200 px-4 text-xs font-bold text-brand-600 transition hover:bg-brand-50 sm:inline-flex"
+                  className="hidden h-9 items-center justify-center rounded-md border border-brand-200 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-50 sm:inline-flex"
                 >
                   Dashboard
                 </Link>
@@ -72,7 +72,7 @@ export default function PublicNavbar({
             ) : (
               <Link
                 href="/app"
-                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-500 px-4 text-xs font-bold text-white shadow-theme-sm transition hover:bg-brand-600"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-500 px-4 text-sm font-medium text-white shadow-theme-sm transition hover:bg-brand-600"
               >
                 Dashboard
               </Link>
@@ -81,13 +81,13 @@ export default function PublicNavbar({
             <>
               <Link
                 href={loginHref}
-                className="inline-flex h-9 items-center justify-center rounded-md border border-brand-500 px-4 text-xs font-bold text-brand-600 transition hover:bg-brand-50"
+                className="inline-flex h-9 items-center justify-center rounded-md border border-brand-500 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-50"
               >
                 Masuk
               </Link>
               <Link
                 href="/register"
-                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-500 px-4 text-xs font-bold text-white shadow-theme-sm transition hover:bg-brand-600"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-brand-500 px-4 text-sm font-medium text-white shadow-theme-sm transition hover:bg-brand-600"
               >
                 Daftar
               </Link>

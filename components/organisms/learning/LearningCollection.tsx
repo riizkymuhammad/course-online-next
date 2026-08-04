@@ -48,7 +48,7 @@ export default function LearningCollection({
     <div className="mt-8">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CategoryFilterTabs activeCategory={activeCategory} onChange={setActiveCategory} />
-        <TextLinkButton href={allHref} className="h-8 w-fit px-4 text-xs">
+        <TextLinkButton href={allHref} className="h-8 w-fit px-4 text-xs font-medium">
           {allLabel}
         </TextLinkButton>
       </div>
@@ -61,7 +61,7 @@ export default function LearningCollection({
 
       {hasMoreItems ? (
         <div className="mt-7 flex justify-center">
-          <TextLinkButton href={allHref} className="h-10 px-5 text-sm font-semibold">
+          <TextLinkButton href={allHref} className="h-10 px-5 text-sm font-medium">
             {moreLabel}
           </TextLinkButton>
         </div>
