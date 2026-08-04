@@ -260,7 +260,6 @@ export default async function AppPage() {
             <div className="flex items-end justify-between">
               <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-brand-600">Menu</p>
-                <h2 className="mt-1 text-lg font-semibold text-gray-900">Akses cepat</h2>
               </div>
               <span className="text-xs text-gray-400">{menuItems.length} menu tersedia</span>
             </div>
@@ -431,7 +430,7 @@ function DashboardMenuGrid({
           <Link
             key={item.title}
             href={item.href}
-            className={`group relative flex min-h-40 flex-col items-start rounded-xl border p-5 transition-all hover:border-brand-500 hover:shadow-theme-sm ${
+            className={`group grid min-h-28 grid-cols-[40px_minmax(0,1fr)_16px] grid-rows-[auto_auto] items-start gap-x-4 rounded-xl border p-5 transition-all hover:border-brand-500 hover:shadow-theme-sm ${
               advanced
                 ? "border-dashed border-gray-300 bg-gray-50 hover:bg-white"
                 : "border-gray-200 bg-white"
@@ -439,13 +438,11 @@ function DashboardMenuGrid({
           >
             <IconTile
               icon={Icon}
-              className="transition-colors group-hover:bg-brand-100 group-hover:text-brand-700"
+              className="row-span-2 transition-colors group-hover:bg-brand-100 group-hover:text-brand-700"
             />
-            <div className="mt-4 min-w-0 pr-6">
-              <p className="font-medium text-gray-900">{item.title}</p>
-              <p className="mt-0.5 text-sm leading-5 text-gray-500">{item.description}</p>
-            </div>
-            <ArrowRightIcon className="absolute right-5 top-5 h-4 w-4 text-gray-300 transition-colors group-hover:translate-x-0.5 group-hover:text-brand-600" />
+            <p className="min-w-0 self-center font-medium text-gray-900">{item.title}</p>
+            <p className="col-start-2 mt-1 text-sm leading-5 text-gray-500">{item.description}</p>
+            <ArrowRightIcon className="col-start-3 row-span-2 row-start-1 h-4 w-4 self-center text-gray-300 transition-colors group-hover:translate-x-0.5 group-hover:text-brand-600" />
           </Link>
         );
       })}

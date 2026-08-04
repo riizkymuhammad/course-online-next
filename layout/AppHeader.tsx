@@ -49,7 +49,13 @@ const AppHeader: React.FC<AppHeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-99999 flex w-full border-b border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
-      <div className="flex grow flex-col items-center justify-between lg:flex-row lg:px-6">
+      <div
+        className={`flex grow flex-col items-center justify-between lg:flex-row ${
+          showSidebarToggle
+            ? "lg:px-6"
+            : "mx-auto w-full max-w-[1080px] px-4 sm:px-6 lg:px-0"
+        }`}
+      >
         <div className="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
           {showSidebarToggle ? (
             <button
@@ -100,7 +106,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             </svg>
           </button>
 
-          <div className="hidden lg:block">
+          {showSidebarToggle ? <div className="hidden lg:block">
             <form>
               <div className="relative">
                 <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2">
@@ -126,7 +132,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
                 </button>
               </div>
             </form>
-          </div>
+          </div> : null}
         </div>
 
         <div
