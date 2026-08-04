@@ -32,7 +32,7 @@ const menuItems = [
   {
     title: "Learning Path",
     description: "Pilih jalur belajar yang sesuai target.",
-    href: "/dashboard/learning-path",
+    href: "/learning-paths",
     icon: GridIcon,
     group: "core" as const,
   },

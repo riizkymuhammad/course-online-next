@@ -68,7 +68,7 @@ export default async function PublicLearningPathDetailPage({
       />
 
       <main className="mx-auto max-w-[1080px] px-4 py-8 sm:px-6 sm:py-12 lg:px-0">
-        <Link href="/#learning-path" className="text-sm font-semibold text-brand-600 hover:text-brand-700">
+        <Link href="/learning-paths" className="text-sm font-medium text-brand-600 hover:text-brand-700">
           ← Kembali ke Learning Path
         </Link>
 
