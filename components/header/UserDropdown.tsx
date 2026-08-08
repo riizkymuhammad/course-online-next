@@ -13,6 +13,7 @@ type UserDropdownProps = {
   email?: string;
   activeRole?: AuthRole;
   canSwitchRole?: boolean;
+  compactAvatar?: boolean;
 };
 
 function getRoleLabel(role: AuthRole) {
@@ -30,6 +31,7 @@ export default function UserDropdown({
   email = "",
   activeRole = "user",
   canSwitchRole = false,
+  compactAvatar = false,
 }: UserDropdownProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -101,9 +103,19 @@ export default function UserDropdown({
         onClick={toggleDropdown}
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
-        <span className="mr-3 flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-500 text-sm font-bold text-white">
+        <span
+          className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-500 font-semibold text-white ${
+            compactAvatar ? "mr-2.5 h-9 w-9 text-xs" : "mr-3 h-11 w-11 text-sm"
+          }`}
+        >
           {imageUrl ? (
-            <Image width={44} height={44} src={imageUrl} alt={displayName} className="h-full w-full object-cover" />
+            <Image
+              width={compactAvatar ? 36 : 44}
+              height={compactAvatar ? 36 : 44}
+              src={imageUrl}
+              alt={displayName}
+              className="h-full w-full object-cover"
+            />
           ) : (
             initials
           )}

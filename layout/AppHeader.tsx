@@ -14,6 +14,7 @@ type AppHeaderProps = {
   userProfile?: UserProfile;
   activeRole?: AuthRole;
   canSwitchRole?: boolean;
+  showLearningNav?: boolean;
 };
 
 const AppHeader: React.FC<AppHeaderProps> = ({
@@ -22,6 +23,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
   userProfile,
   activeRole = "user",
   canSwitchRole = false,
+  showLearningNav = false,
 }) => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
@@ -56,7 +58,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
             : "mx-auto w-full max-w-[1080px] px-4 sm:px-6 lg:px-0"
         }`}
       >
-        <div className="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-3 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-4">
+        <div className="flex w-full items-center justify-between gap-2 border-b border-gray-200 px-3 py-2.5 dark:border-gray-800 sm:gap-4 lg:justify-normal lg:border-b-0 lg:px-0 lg:py-3">
           {showSidebarToggle ? (
             <button
               className="z-99999 items-center justify-center rounded-lg border border-gray-200 text-gray-500 dark:border-gray-800 dark:text-gray-400 lg:flex lg:h-11 lg:w-11"
@@ -138,8 +140,19 @@ const AppHeader: React.FC<AppHeaderProps> = ({
         <div
           className={`${
             isApplicationMenuOpen ? "flex" : "hidden"
-          } w-full items-center justify-between gap-4 px-5 py-4 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
+          } w-full items-center justify-between gap-4 px-5 py-3 shadow-theme-md lg:flex lg:justify-end lg:px-0 lg:shadow-none`}
         >
+          {showLearningNav ? (
+            <nav className="hidden items-center gap-7 pr-4 text-sm font-medium text-gray-700 lg:flex">
+              <Link href="/tryouts" className="transition hover:text-brand-600">
+                Tryout
+              </Link>
+              <Link href="/app#progress-belajar" className="transition hover:text-brand-600">
+                Progress Belajar
+              </Link>
+            </nav>
+          ) : null}
+
           <div className="flex items-center gap-2 2xsm:gap-3">
            
             <NotificationDropdown />
@@ -151,6 +164,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
               email={userProfile.email}
               activeRole={activeRole}
               canSwitchRole={canSwitchRole}
+              compactAvatar
             />
           ) : (
             <Link

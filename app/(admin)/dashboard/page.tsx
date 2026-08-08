@@ -2,12 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
 import MetricCard from "@/components/molecules/MetricCard";
-import GeminiLimitChart from "@/components/organisms/dashboard/GeminiLimitChart";
-import LearningCourseDailyChart from "@/components/organisms/dashboard/LearningCourseDailyChart";
+import LearningTryoutDailyChart from "@/components/organisms/dashboard/LearningTryoutDailyChart";
 import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { getUserRole } from "@/lib/auth-roles";
-import { getGeminiLimitSummary } from "@/lib/gemini-limits";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { getRelation } from "@/lib/supabase/relations";
@@ -79,7 +77,7 @@ function getDayKey(value: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function buildDailyLearningCourse(rows: Array<{ last_opened_at: string | null }>) {
+function buildDailyLearningTryout(rows: Array<{ started_at: string | null }>) {
   const today = startOfDay(new Date());
   const days = Array.from({ length: 14 }, (_, index) => {
     const day = new Date(today);
@@ -89,8 +87,8 @@ function buildDailyLearningCourse(rows: Array<{ last_opened_at: string | null }>
   const counts = new Map(days.map((day) => [getDayKey(day), 0]));
 
   rows.forEach((row) => {
-    if (!row.last_opened_at) return;
-    const key = getDayKey(startOfDay(new Date(row.last_opened_at)));
+    if (!row.started_at) return;
+    const key = getDayKey(startOfDay(new Date(row.started_at)));
     if (counts.has(key)) counts.set(key, (counts.get(key) ?? 0) + 1);
   });
 
@@ -121,7 +119,7 @@ export default async function DashboardPage() {
     tryoutCountResult,
     learningCourseCountResult,
     learningTryoutCountResult,
-    weeklyLearningResult,
+    dailyTryoutResult,
     recentLearningCourseResult,
     recentLearningTryoutResult,
   ] = await Promise.all([
@@ -130,9 +128,9 @@ export default async function DashboardPage() {
     database.from("learning_course").select("id", { count: "exact", head: true }),
     database.from("tryout_attempts").select("id", { count: "exact", head: true }),
     database
-      .from("learning_course")
-      .select("last_opened_at")
-      .gte("last_opened_at", fourteenDaysAgo.toISOString()),
+      .from("tryout_attempts")
+      .select("started_at")
+      .gte("started_at", fourteenDaysAgo.toISOString()),
     database
       .from("learning_course")
       .select("id, user_id, status, last_opened_at, courses(id, title), course_modules(id, title)")
@@ -168,14 +166,13 @@ export default async function DashboardPage() {
     tryoutCountResult.error,
     learningCourseCountResult.error,
     learningTryoutCountResult.error,
-    weeklyLearningResult.error,
+    dailyTryoutResult.error,
     recentLearningCourseResult.error,
     recentLearningTryoutResult.error,
   ].filter((error): error is NonNullable<typeof error> => Boolean(error));
-  const dailyData = buildDailyLearningCourse(
-    ((weeklyLearningResult.data as Array<{ last_opened_at: string | null }> | null) ?? [])
+  const dailyData = buildDailyLearningTryout(
+    ((dailyTryoutResult.data as Array<{ started_at: string | null }> | null) ?? [])
   );
-  const geminiLimitSummary = getGeminiLimitSummary();
   const recentLearningCourses =
     ((recentLearningCourseResult.data as LearningCourseRow[] | null) ?? []).map((item) => {
       const course = getRelation(item.courses);
@@ -233,9 +230,8 @@ export default async function DashboardPage() {
         />
       ) : null}
 
-      <LearningCourseDailyChart labels={dailyData.labels} values={dailyData.values} />
+      <LearningTryoutDailyChart labels={dailyData.labels} values={dailyData.values} />
 
-      <GeminiLimitChart {...geminiLimitSummary} />
 
       <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <DataTable
