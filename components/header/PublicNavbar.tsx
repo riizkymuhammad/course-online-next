@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import BrandLogo from "@/components/header/BrandLogo";
+import CatalogSearch from "@/components/header/CatalogSearch";
 import UserDropdown from "@/components/header/UserDropdown";
 import type { AuthRole } from "@/lib/auth-roles";
 import type { UserProfile } from "@/lib/user-profile";
@@ -10,6 +12,7 @@ type PublicNavbarProps = {
   canSwitchRole: boolean;
   loginHref?: string;
   showUserDropdown?: boolean;
+  showCatalogSearch?: boolean;
 };
 
 export default function PublicNavbar({
@@ -18,6 +21,7 @@ export default function PublicNavbar({
   canSwitchRole,
   loginHref = "/login",
   showUserDropdown = true,
+  showCatalogSearch = false,
 }: PublicNavbarProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -26,32 +30,26 @@ export default function PublicNavbar({
           <BrandLogo />
         </Link>
 
-        <label className="relative hidden min-w-0 flex-1 md:block md:max-w-[420px]">
-          <span className="sr-only">Cari kelas</span>
-          <SearchIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="search"
-            placeholder="Cari kelas, tryout, atau materi..."
-            className="h-9 w-full rounded-md border border-gray-200 bg-gray-50 pl-10 pr-4 text-xs font-normal text-gray-700 outline-none transition placeholder:text-gray-400 focus:border-brand-300 focus:bg-white focus:shadow-focus-ring"
-          />
-        </label>
+        {showCatalogSearch ? (
+          <Suspense fallback={<div className="hidden min-w-0 flex-1 md:block md:max-w-[420px]" />}>
+            <CatalogSearch />
+          </Suspense>
+        ) : null}
 
-        <nav className="hidden items-center gap-7 text-sm font-medium text-gray-700 lg:flex">
-          <Link href="/#beranda" className="transition hover:text-brand-600">
-            Beranda
-          </Link>
-          <Link href="/#kelas" className="transition hover:text-brand-600">
-            Kelas
-          </Link>
-          <Link href="/#tryout" className="transition hover:text-brand-600">
-            Tryout
-          </Link>
-          <Link href="/#tentang" className="transition hover:text-brand-600">
-            Tentang
-          </Link>
-        </nav>
+        <div className="flex shrink-0 items-center gap-7">
+          <nav className="hidden items-center gap-7 text-sm font-medium text-gray-700 lg:flex">
+            <Link href="/#kelas" className="transition hover:text-brand-600">
+              Kelas
+            </Link>
+            <Link href="/#tryout" className="transition hover:text-brand-600">
+              Tryout
+            </Link>
+            <Link href="/#tentang" className="transition hover:text-brand-600">
+              Tentang
+            </Link>
+          </nav>
 
-        <div className="flex shrink-0 items-center gap-2">
+          <div className="flex items-center gap-2">
           {userProfile ? (
             showUserDropdown ? (
               <>
@@ -93,21 +91,9 @@ export default function PublicNavbar({
               </Link>
             </>
           )}
+          </div>
         </div>
       </div>
     </header>
-  );
-}
-
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path
-        d="m14.5 14.5 3 3m-1.4-8.1a6.7 6.7 0 1 1-13.4 0 6.7 6.7 0 0 1 13.4 0Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }

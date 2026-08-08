@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import AppHeader from "@/layout/AppHeader";
+import PublicNavbar from "@/components/header/PublicNavbar";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -25,7 +25,12 @@ export const metadata: Metadata = {
   description: "Daftar learning path untuk membantu proses belajar lebih terarah.",
 };
 
-export default async function LearningPathsPage() {
+export default async function LearningPathsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
+  const { q = "" } = await searchParams;
   const supabase = await createClient();
   const [
     { data: { user } },
@@ -53,6 +58,14 @@ export default async function LearningPathsPage() {
     activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
   });
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
+  const normalizedQuery = q.trim().toLocaleLowerCase("id");
+  const filteredLearningPaths = learningPaths.filter((learningPath) => {
+    if (!normalizedQuery) return true;
+
+    return [learningPath.title, learningPath.description ?? ""].some((value) =>
+      value.toLocaleLowerCase("id").includes(normalizedQuery)
+    );
+  });
   const tryoutCounts = new Map<string, number>();
 
   ((tryoutRows as LearningPathTryoutRow[] | null) ?? []).forEach((tryout) => {
@@ -65,12 +78,12 @@ export default async function LearningPathsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
-      <AppHeader
-        logoHref="/app"
-        showSidebarToggle={false}
-        userProfile={user ? getUserProfile(user) : undefined}
+      <PublicNavbar
+        userProfile={user ? getUserProfile(user) : null}
         activeRole={activeRole}
         canSwitchRole={accountRole === "admin"}
+        showUserDropdown={false}
+        showCatalogSearch
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
@@ -86,9 +99,9 @@ export default async function LearningPathsPage() {
           </p>
         </div>
 
-        {learningPaths.length ? (
+        {filteredLearningPaths.length ? (
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {learningPaths.map((learningPath) => {
+            {filteredLearningPaths.map((learningPath) => {
               const tryoutCount = tryoutCounts.get(learningPath.id) ?? 0;
 
               return (

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import PublicNavbar from "@/components/header/PublicNavbar";
 import TryoutListClient from "@/components/tryout/TryoutListClient";
-import AppHeader from "@/layout/AppHeader";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -106,12 +106,12 @@ export default async function TryoutsPage() {
 
   return (
     <main className="min-h-screen bg-linear-to-b from-white via-blue-light-25 to-white text-gray-900">
-      <AppHeader
-        logoHref="/app"
-        showSidebarToggle={false}
-        userProfile={user ? getUserProfile(user) : undefined}
+      <PublicNavbar
+        userProfile={user ? getUserProfile(user) : null}
         activeRole={activeRole}
         canSwitchRole={accountRole === "admin"}
+        showUserDropdown={false}
+        showCatalogSearch
       />
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

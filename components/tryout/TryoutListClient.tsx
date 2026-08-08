@@ -1,6 +1,7 @@
 "use client";
 
-import { startTransition, useDeferredValue, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { startTransition, useMemo, useState } from "react";
 import LearningCard from "@/components/organisms/learning/LearningCard";
 
 type TryoutItem = {
@@ -28,12 +29,12 @@ function getUniqueOptions(values: string[]) {
 function getCardBackground(category: string) {
   const normalizedCategory = category.trim().toLowerCase();
 
-  if (normalizedCategory.includes("cpns")) return "#144272";
+  if (normalizedCategory.includes("cpns")) return "#2563EB";
   if (normalizedCategory.includes("english") || normalizedCategory.includes("inggris")) {
-    return "#205295";
+    return "#1D4ED8";
   }
 
-  return "#2C74B3";
+  return "#1E40AF";
 }
 
 export default function TryoutListClient({
@@ -43,11 +44,10 @@ export default function TryoutListClient({
   tryouts: TryoutItem[];
   catalogLabel?: "Tryout" | "Course";
 }) {
-  const [query, setQuery] = useState("");
+  const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedSubCategory, setSelectedSubCategory] = useState("all");
-  const [selectedSubSubCategory, setSelectedSubSubCategory] = useState("all");
-  const deferredQuery = useDeferredValue(query);
+  const query = searchParams.get("q") ?? "";
   const catalogLabelLower = catalogLabel.toLowerCase();
 
   const categoryOptions = useMemo(
@@ -65,26 +65,11 @@ export default function TryoutListClient({
     );
   }, [selectedCategory, tryouts]);
 
-  const subSubCategoryOptions = useMemo(() => {
-    if (selectedCategory === "all" || selectedSubCategory === "all") return [];
-
-    return getUniqueOptions(
-      tryouts
-        .filter(
-          (item) =>
-            item.category === selectedCategory && item.subCategory === selectedSubCategory
-        )
-        .map((item) => item.subSubCategory)
-    );
-  }, [selectedCategory, selectedSubCategory, tryouts]);
-
   const filteredTryouts = tryouts.filter((item) => {
-    const normalizedQuery = normalizeText(deferredQuery);
+    const normalizedQuery = normalizeText(query);
     const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
     const matchesSubCategory =
       selectedSubCategory === "all" || item.subCategory === selectedSubCategory;
-    const matchesSubSubCategory =
-      selectedSubSubCategory === "all" || item.subSubCategory === selectedSubSubCategory;
     const matchesQuery =
       !normalizedQuery ||
       normalizeText(item.title).includes(normalizedQuery) ||
@@ -92,95 +77,64 @@ export default function TryoutListClient({
       normalizeText(item.learningPathTitle).includes(normalizedQuery) ||
       normalizeText(item.categoryPath).includes(normalizedQuery);
 
-    return matchesCategory && matchesSubCategory && matchesSubSubCategory && matchesQuery;
+    return matchesCategory && matchesSubCategory && matchesQuery;
   });
 
   return (
     <div className="space-y-6">
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-600">
-              Halaman {catalogLabel}
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white/90 sm:text-3xl">
-              Koleksi {catalogLabel}
-            </h1>
-          </div>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white/90 sm:text-3xl">
+            Koleksi {catalogLabel}
+          </h1>
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
             {filteredTryouts.length} {catalogLabelLower}
           </p>
         </div>
 
-        <div className="grid gap-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-theme-sm dark:border-gray-800 dark:bg-white/[0.03] md:grid-cols-2 xl:grid-cols-4">
-          <div>
-            <label
-              htmlFor="tryout-search"
-              className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200"
-            >
-              Pencarian
-            </label>
-            <input
-              id="tryout-search"
-              value={query}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                startTransition(() => {
-                  setQuery(nextValue);
-                });
-              }}
-              placeholder={`Cari judul ${catalogLabelLower}, learning path, atau kategori...`}
-              className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90"
-            />
-          </div>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Kategori</p>
+              <div className="flex flex-wrap gap-2">
+                {[{ value: "all", label: "Semua" }, ...categoryOptions.map((item) => ({ value: item, label: item }))].map((option) => {
+                  const isSelected = selectedCategory === option.value;
 
-          <FilterSelect
-            id="category-filter"
-            label="Kategori"
-            value={selectedCategory}
-            allLabel="Semua Kategori"
-            options={categoryOptions}
-            onChange={(nextValue) => {
-              startTransition(() => {
-                setSelectedCategory(nextValue);
-                setSelectedSubCategory("all");
-                setSelectedSubSubCategory("all");
-              });
-            }}
-          />
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      aria-pressed={isSelected}
+                      onClick={() => {
+                        startTransition(() => {
+                          setSelectedCategory(option.value);
+                          setSelectedSubCategory("all");
+                        });
+                      }}
+                      className={`h-9 rounded-md border px-3.5 text-sm font-medium transition ${
+                        isSelected
+                          ? "border-brand-500 bg-brand-500 text-white"
+                          : "border-gray-200 bg-white text-gray-600 hover:border-brand-300 hover:text-brand-600 dark:border-gray-700 dark:bg-transparent dark:text-gray-300"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-          <FilterSelect
-            id="sub-category-filter"
-            label="Sub Kategori"
-            value={selectedSubCategory}
-            allLabel="Semua Sub Kategori"
-            options={subCategoryOptions}
-            disabled={selectedCategory === "all" || subCategoryOptions.length === 0}
-            onChange={(nextValue) => {
-              startTransition(() => {
-                setSelectedSubCategory(nextValue);
-                setSelectedSubSubCategory("all");
-              });
-            }}
-          />
-
-          <FilterSelect
-            id="sub-sub-category-filter"
-            label="Sub Sub Kategori"
-            value={selectedSubSubCategory}
-            allLabel="Semua Sub Sub Kategori"
-            options={subSubCategoryOptions}
-            disabled={
-              selectedCategory === "all" ||
-              selectedSubCategory === "all" ||
-              subSubCategoryOptions.length === 0
-            }
-            onChange={(nextValue) => {
-              startTransition(() => {
-                setSelectedSubSubCategory(nextValue);
-              });
-            }}
-          />
+            {selectedCategory !== "all" && subCategoryOptions.length > 0 ? (
+              <div className="w-full lg:w-64">
+                <FilterSelect
+                  id="sub-category-filter"
+                  label="Subkategori"
+                  value={selectedSubCategory}
+                  allLabel="Semua subkategori"
+                  options={subCategoryOptions}
+                  onChange={(nextValue) => startTransition(() => setSelectedSubCategory(nextValue))}
+                />
+              </div>
+            ) : null}
         </div>
       </section>
 
@@ -190,6 +144,7 @@ export default function TryoutListClient({
             <LearningCard
               key={item.id}
               label={catalogLabel}
+              rounded={catalogLabel === "Tryout" ? "md" : "xl"}
               item={{
                 ...item,
                 backgroundColor: getCardBackground(item.category),
