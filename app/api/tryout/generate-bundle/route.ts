@@ -43,6 +43,7 @@ export async function POST(request: Request) {
     const categoryId = String(formData.get("category_id") ?? "").trim();
     const subCategoryId = String(formData.get("sub_category_id") ?? "").trim();
     const questionCount = Number(formData.get("question_count") ?? 0);
+    const durationMinutes = Number(formData.get("duration_minutes") ?? 60);
     const startChapter = Number(formData.get("start_chapter") ?? 0);
     const endChapter = Number(formData.get("end_chapter") ?? 0);
     const status = String(formData.get("status") ?? "draft").trim();
@@ -53,6 +54,9 @@ export async function POST(request: Request) {
       !titlePrefix ||
       !Number.isInteger(questionCount) ||
       questionCount < 1 ||
+      !Number.isInteger(durationMinutes) ||
+      durationMinutes < 1 ||
+      durationMinutes > 1440 ||
       !Number.isInteger(startChapter) ||
       !Number.isInteger(endChapter) ||
       startChapter < 1 ||
@@ -141,6 +145,7 @@ export async function POST(request: Request) {
           categoryId: categoryId || null,
           subCategoryId: subCategoryId || null,
           questionCount,
+          durationMinutes,
           startChapter,
           endChapter,
           status: status as "draft" | "published" | "archived",

@@ -52,7 +52,7 @@ export default async function TryoutExamPage(props: PageProps<"/tryout/exam/[uui
 
   const { data: tryoutRow } = await supabase
     .from("tryouts")
-    .select("id, title, status, total_questions")
+    .select("id, title, status, total_questions, duration_minutes")
     .eq("id", params.uuid)
     .single();
 
@@ -116,6 +116,7 @@ export default async function TryoutExamPage(props: PageProps<"/tryout/exam/[uui
       tryoutTitle={tryoutRow.title}
       previewHref={`/tryout/${tryoutRow.id}/${expectedSlug}`}
       initialAnswers={initialAnswers}
+      deadlineAt={new Date(attempt.started_at).getTime() + (tryoutRow.duration_minutes ?? 60) * 60_000}
       questions={questions.map((question, index) => ({
         id: question.id,
         order: question.question_order ?? index + 1,

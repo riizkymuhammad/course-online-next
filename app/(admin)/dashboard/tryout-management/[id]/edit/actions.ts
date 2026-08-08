@@ -11,6 +11,7 @@ export async function updateTryout(formData: FormData) {
   const categoryId = String(formData.get("category_id") ?? "").trim();
   const subCategoryId = String(formData.get("sub_category_id") ?? "").trim();
   const questionCount = Number(formData.get("question_count") ?? 0);
+  const durationMinutes = Number(formData.get("duration_minutes") ?? 0);
   const status = String(formData.get("status") ?? "draft").trim() || "draft";
   const questionNotes = String(formData.get("question_notes") ?? "").trim();
 
@@ -18,7 +19,7 @@ export async function updateTryout(formData: FormData) {
     redirect("/dashboard/tryout-management?error=tryout-not-found");
   }
 
-  if (!title || !questionCount || !status) {
+  if (!title || !questionCount || !status || !Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > 1440) {
     redirect(`/dashboard/tryout-management/${tryoutId}/edit?error=required-fields`);
   }
 
@@ -61,6 +62,7 @@ export async function updateTryout(formData: FormData) {
       category_id: categoryId || null,
       sub_category_id: subCategoryId || null,
       total_questions: questionCount,
+      duration_minutes: durationMinutes,
       question_notes: questionNotes || null,
       status,
     })

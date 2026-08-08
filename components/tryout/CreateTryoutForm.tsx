@@ -218,6 +218,16 @@ export default function CreateTryoutForm({
               type="number"
               min={1}
             />
+
+            <FormField
+              label="Durasi Pengerjaan (menit)"
+              name="duration_minutes"
+              type="number"
+              min={1}
+              max={1440}
+              defaultValue="60"
+              required
+            />
           </div>
 
           <div className="space-y-6">

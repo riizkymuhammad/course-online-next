@@ -46,11 +46,12 @@ export async function POST(request: Request) {
     const categoryId = String(formData.get("category_id") ?? "").trim();
     const subCategoryId = String(formData.get("sub_category_id") ?? "").trim();
     const questionCount = Number(formData.get("question_count") ?? 0);
+    const durationMinutes = Number(formData.get("duration_minutes") ?? 60);
     const status = String(formData.get("status") ?? "draft").trim();
     const questionNotes = String(formData.get("question_notes") ?? "").trim();
     const materialFile = formData.get("material_file");
 
-    if (!title || !status || !questionCount || !(materialFile instanceof File)) {
+    if (!title || !status || !questionCount || !Number.isInteger(durationMinutes) || durationMinutes < 1 || durationMinutes > 1440 || !(materialFile instanceof File)) {
       return Response.json(
         {
           error:
@@ -141,6 +142,7 @@ export async function POST(request: Request) {
         sub_category_id: subCategoryId || null,
         title,
         total_questions: questionCount,
+        duration_minutes: durationMinutes,
         question_notes: questionNotes || null,
         thumbnail_url: thumbnail.publicUrl,
         thumbnail_path: thumbnail.path,

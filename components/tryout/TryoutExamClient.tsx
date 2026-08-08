@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ActionLink from "@/components/atoms/ActionLink";
 import Button from "@/components/atoms/Button";
 import SectionLabel from "@/components/atoms/SectionLabel";
@@ -27,6 +27,7 @@ type TryoutExamClientProps = {
   questions: TryoutExamQuestion[];
   previewHref: string;
   initialAnswers: Record<string, string>;
+  deadlineAt: number;
 };
 
 export default function TryoutExamClient({
@@ -35,6 +36,7 @@ export default function TryoutExamClient({
   questions,
   previewHref,
   initialAnswers,
+  deadlineAt,
 }: TryoutExamClientProps) {
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -42,6 +44,8 @@ export default function TryoutExamClient({
   const [isSaving, setIsSaving] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState(() => Math.max(Math.ceil((deadlineAt - Date.now()) / 1000), 0));
+  const autoSubmitStartedRef = useRef(false);
 
   const reportActivity = useCallback(() => {
     const question = questions[activeIndex];
@@ -72,6 +76,23 @@ export default function TryoutExamClient({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [reportActivity]);
+
+  useEffect(() => {
+    const updateTimer = () => {
+      const remaining = Math.max(Math.ceil((deadlineAt - Date.now()) / 1000), 0);
+      setRemainingSeconds(remaining);
+      if (remaining === 0 && !autoSubmitStartedRef.current) {
+        autoSubmitStartedRef.current = true;
+        void handleSubmitTryout(true);
+      }
+    };
+    const initialTimerId = window.setTimeout(updateTimer, 0);
+    const intervalId = window.setInterval(updateTimer, 1000);
+    return () => {
+      window.clearTimeout(initialTimerId);
+      window.clearInterval(intervalId);
+    };
+  });
 
   if (!questions.length) {
     return (
@@ -125,8 +146,8 @@ export default function TryoutExamClient({
     setIsSaving(null);
   }
 
-  async function handleSubmitTryout() {
-    if (!allAnswered || isSubmitting) return;
+  async function handleSubmitTryout(timedOut = false) {
+    if ((!allAnswered && !timedOut) || isSubmitting) return;
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -138,6 +159,7 @@ export default function TryoutExamClient({
       },
       body: JSON.stringify({
         attemptId,
+        timedOut,
       }),
     });
 
@@ -148,6 +170,7 @@ export default function TryoutExamClient({
     if (!response.ok || !payload?.redirectTo) {
       setErrorMessage(payload?.error ?? "Gagal mengumpulkan tryout.");
       setIsSubmitting(false);
+      if (timedOut) autoSubmitStartedRef.current = false;
       return;
     }
 
@@ -166,9 +189,12 @@ export default function TryoutExamClient({
                   {tryoutTitle}
                 </h1>
               </div>
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400 sm:pt-1">
-                Soal {activeQuestion.order} dari {questions.length}
-              </p>
+              <div className="text-sm font-medium sm:text-right">
+                <p className={remainingSeconds <= 300 ? "text-error-600 dark:text-error-400" : "text-brand-600 dark:text-brand-400"}>
+                   {String(Math.floor(remainingSeconds / 3600)).padStart(2, "0")}:{String(Math.floor((remainingSeconds % 3600) / 60)).padStart(2, "0")}:{String(remainingSeconds % 60).padStart(2, "0")}
+                </p>
+                <p className="text-gray-500 dark:text-gray-400">Soal {activeQuestion.order} dari {questions.length}</p>
+              </div>
             </div>
 
             {errorMessage ? (

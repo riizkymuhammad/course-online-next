@@ -5,6 +5,7 @@ type AttemptRow = {
   tryout_id: string;
   user_id: string;
   status: string | null;
+  started_at: string;
 };
 
 export async function getAuthenticatedUser() {
@@ -31,7 +32,7 @@ export async function findOrCreateInProgressAttempt({
 
   const { data: existingAttempt } = await supabase
     .from("tryout_attempts")
-    .select("id, tryout_id, user_id, status")
+    .select("id, tryout_id, user_id, status, started_at")
     .eq("tryout_id", tryoutId)
     .eq("user_id", user.id)
     .eq("status", "in_progress")
@@ -56,7 +57,7 @@ export async function findOrCreateInProgressAttempt({
       total_questions: totalQuestions,
       unanswered_answers: totalQuestions,
     })
-    .select("id, tryout_id, user_id, status")
+    .select("id, tryout_id, user_id, status, started_at")
     .single();
 
   if (error || !createdAttempt) {

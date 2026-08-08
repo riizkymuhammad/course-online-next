@@ -19,6 +19,7 @@ type EditTryoutValues = {
   categoryId: string;
   subCategoryId: string;
   questionCount: number;
+  durationMinutes: number;
   questionNotes: string;
   status: string;
   materialFileName: string | null;
@@ -128,6 +129,16 @@ export default function EditTryoutForm({
               type="number"
               min={1}
               defaultValue={String(values.questionCount)}
+            />
+
+            <FormField
+              label="Durasi Pengerjaan (menit)"
+              name="duration_minutes"
+              type="number"
+              min={1}
+              max={1440}
+              required
+              defaultValue={String(values.durationMinutes)}
             />
 
             <TextAreaField

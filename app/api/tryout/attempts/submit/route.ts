@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/tryout-attempts";
 
 type SubmitAttemptPayload = {
   attemptId: string;
+  timedOut: boolean;
 };
 
 type QuestionRow = {
@@ -25,6 +26,7 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as Partial<SubmitAttemptPayload>;
   const attemptId = String(body.attemptId ?? "").trim();
+  const requestedTimedOut = body.timedOut === true;
 
   if (!attemptId) {
     return Response.json({ error: "Attempt tidak ditemukan." }, { status: 400 });
@@ -46,7 +48,7 @@ export async function POST(request: Request) {
   }
 
   const [{ data: tryoutRow }, { data: questionRows }, { data: answerRows }] = await Promise.all([
-    supabase.from("tryouts").select("id, title").eq("id", attemptRow.tryout_id).single(),
+    supabase.from("tryouts").select("id, title, duration_minutes").eq("id", attemptRow.tryout_id).single(),
     supabase
       .from("tryout_questions")
       .select("id, correct_option_id")
@@ -66,8 +68,18 @@ export async function POST(request: Request) {
   const answers = (answerRows as AnswerRow[] | null) ?? [];
   const answerMap = new Map(answers.map((answer) => [answer.tryout_question_id, answer]));
 
+  const durationLimitSeconds = (tryoutRow.duration_minutes ?? 60) * 60;
+  const elapsedSeconds = attemptRow.started_at
+    ? Math.max(Math.floor((Date.now() - new Date(attemptRow.started_at).getTime()) / 1000), 0)
+    : 0;
+  const hasExpired = elapsedSeconds >= durationLimitSeconds;
+
+  if (requestedTimedOut && !hasExpired) {
+    return Response.json({ error: "Durasi tryout belum habis." }, { status: 400 });
+  }
+
   const unansweredQuestions = questions.filter((question) => !answerMap.has(question.id));
-  if (unansweredQuestions.length > 0) {
+  if (unansweredQuestions.length > 0 && !hasExpired) {
     return Response.json(
       { error: "Masih ada soal yang belum dijawab. Selesaikan semua soal terlebih dahulu." },
       { status: 400 }
@@ -88,11 +100,13 @@ export async function POST(request: Request) {
       wrongAnswers += 1;
     }
 
-    await supabase
-      .from("tryout_attempt_answers")
-      .update({ is_correct: isCorrect })
-      .eq("id", answer!.id)
-      .eq("attempt_id", attemptId);
+    if (answer) {
+      await supabase
+        .from("tryout_attempt_answers")
+        .update({ is_correct: isCorrect })
+        .eq("id", answer.id)
+        .eq("attempt_id", attemptId);
+    }
   }
 
   const totalQuestions = questions.length;
@@ -112,10 +126,10 @@ export async function POST(request: Request) {
       submitted_at: submittedAt.toISOString(),
       graded_at: submittedAt.toISOString(),
       total_questions: totalQuestions,
-      answered_questions: totalQuestions,
+      answered_questions: answers.length,
       correct_answers: correctAnswers,
       wrong_answers: wrongAnswers,
-      unanswered_answers: 0,
+      unanswered_answers: unansweredQuestions.length,
       score,
       max_score: 100,
       duration_seconds: durationSeconds,

@@ -189,6 +189,16 @@ export default function CreateBundleTryoutForm({
             placeholder="Contoh: 20"
             required
           />
+
+          <FormField
+            label="Durasi per Tryout (menit)"
+            name="duration_minutes"
+            type="number"
+            min={1}
+            max={1440}
+            defaultValue="60"
+            required
+          />
         </div>
 
         <div className="space-y-6">

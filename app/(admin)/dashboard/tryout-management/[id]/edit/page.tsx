@@ -57,7 +57,7 @@ export default async function EditTryoutPage({
     supabase
       .from("tryouts")
       .select(
-        "id, title, learning_path_id, category_id, sub_category_id, total_questions, question_notes, status, material_file_name"
+        "id, title, learning_path_id, category_id, sub_category_id, total_questions, duration_minutes, question_notes, status, material_file_name"
       )
       .eq("id", id)
       .single(),
@@ -126,6 +126,7 @@ export default async function EditTryoutPage({
             categoryId: tryoutRow.category_id ?? "",
             subCategoryId: tryoutRow.sub_category_id ?? "",
             questionCount: tryoutRow.total_questions ?? 0,
+            durationMinutes: tryoutRow.duration_minutes ?? 60,
             questionNotes: tryoutRow.question_notes ?? "",
             status: tryoutRow.status ?? "draft",
             materialFileName: tryoutRow.material_file_name ?? null,

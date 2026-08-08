@@ -19,6 +19,7 @@ export type GenerateTryoutBundlePayload = {
   categoryId: string | null;
   subCategoryId: string | null;
   questionCount: number;
+  durationMinutes: number;
   startChapter: number;
   endChapter: number;
   status: "draft" | "published" | "archived";
@@ -294,6 +295,7 @@ export const generateTryoutBundleTask = task({
         sub_category_id: payload.subCategoryId,
         title,
         total_questions: payload.questionCount,
+        duration_minutes: payload.durationMinutes,
         question_notes: payload.questionNotes || null,
         thumbnail_url: thumbnail.publicUrl,
         thumbnail_path: thumbnail.path,
