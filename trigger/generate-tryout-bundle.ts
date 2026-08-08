@@ -5,7 +5,7 @@ import { z } from "zod";
 import { GEMINI_GENERATION_MODEL } from "@/lib/gemini-limits";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buildCategoryPath } from "@/lib/text";
+import { buildCategoryPath, normalizeTitleCase } from "@/lib/text";
 import { TRYOUT_MATERIAL_BUCKET } from "@/lib/tryout-material";
 import { HARD_TRYOUT_QUESTION_INSTRUCTIONS } from "@/lib/tryout-question-quality";
 import {
@@ -60,7 +60,7 @@ const generatedChapterQuestionsSchema = z.object({
 
 function buildTryoutTitle(prefix: string, chapterTitle: string) {
   const normalizedPrefix = prefix.trim();
-  const normalizedChapterTitle = chapterTitle.trim();
+  const normalizedChapterTitle = normalizeTitleCase(chapterTitle);
   return normalizedPrefix
     ? `${normalizedPrefix}${normalizedPrefix.endsWith(" ") ? "" : " "}${normalizedChapterTitle}`
     : normalizedChapterTitle;

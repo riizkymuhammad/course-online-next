@@ -21,6 +21,7 @@ export default function CourseList({
       allHref="/courses"
       allLabel="Lihat semua materi"
       moreLabel="Lihat course lebih banyak"
+      cardRounded="md"
     />
   );
 }

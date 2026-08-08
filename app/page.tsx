@@ -126,12 +126,12 @@ function resolveCourseCategory(title: string, index: number) {
 function getCourseCardBackground(category: string) {
   const normalizedCategory = category.trim().toLowerCase();
 
-  if (normalizedCategory.includes("cpns")) return "#144272";
+  if (normalizedCategory.includes("cpns")) return "#2563EB";
   if (normalizedCategory.includes("english") || normalizedCategory.includes("inggris")) {
-    return "#205295";
+    return "#1D4ED8";
   }
 
-  return "#2C74B3";
+  return "#1E40AF";
 }
 
 function getHomepageCategoryTitle(category: string | null | undefined) {

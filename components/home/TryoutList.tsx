@@ -13,6 +13,7 @@ export default function TryoutList({ tryouts }: { tryouts: TryoutCard[] }) {
       allHref="/tryouts"
       allLabel="Lihat semua tryout"
       moreLabel="Lihat tryout lebih banyak"
+      cardRounded="md"
     />
   );
 }

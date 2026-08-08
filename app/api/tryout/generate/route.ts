@@ -8,6 +8,7 @@ import {
   TRYOUT_THUMBNAIL_BUCKET,
   uploadTryoutThumbnail,
 } from "@/lib/tryout-thumbnail";
+import { normalizeTitleCase } from "@/lib/text";
 
 export const runtime = "nodejs";
 
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const title = String(formData.get("title") ?? "").trim();
+    const title = normalizeTitleCase(String(formData.get("title") ?? ""));
     const learningPathId = String(formData.get("learning_path") ?? "").trim();
     const categoryId = String(formData.get("category_id") ?? "").trim();
     const subCategoryId = String(formData.get("sub_category_id") ?? "").trim();

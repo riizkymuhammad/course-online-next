@@ -4,6 +4,7 @@ import { getUserRole } from "@/lib/auth-roles";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { TRYOUT_MATERIAL_BUCKET, uploadTryoutMaterial } from "@/lib/tryout-material";
+import { normalizeTitleCase } from "@/lib/text";
 
 export const runtime = "nodejs";
 
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     const formData = await request.formData();
-    const titlePrefix = String(formData.get("title") ?? "").trim();
+    const titlePrefix = normalizeTitleCase(String(formData.get("title") ?? ""));
     const learningPathId = String(formData.get("learning_path") ?? "").trim();
     const categoryId = String(formData.get("category_id") ?? "").trim();
     const subCategoryId = String(formData.get("sub_category_id") ?? "").trim();

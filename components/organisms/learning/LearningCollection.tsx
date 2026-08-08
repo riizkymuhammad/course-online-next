@@ -25,6 +25,7 @@ export default function LearningCollection({
   allLabel,
   moreLabel,
   maxVisibleItems = 12,
+  cardRounded = "xl",
 }: {
   items: LearningCardItem[];
   label: string;
@@ -32,6 +33,7 @@ export default function LearningCollection({
   allLabel: string;
   moreLabel: string;
   maxVisibleItems?: number;
+  cardRounded?: "md" | "xl";
 }) {
   const [activeCategory, setActiveCategory] = useState<LearningCategoryKey>("all");
   const filteredItems = useMemo(
@@ -55,7 +57,7 @@ export default function LearningCollection({
 
       <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
         {visibleItems.map((item) => (
-          <LearningCard key={item.id} item={item} label={label} />
+          <LearningCard key={item.id} item={item} label={label} rounded={cardRounded} />
         ))}
       </div>
 

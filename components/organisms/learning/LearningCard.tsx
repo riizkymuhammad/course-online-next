@@ -10,14 +10,16 @@ export type LearningCardItem = {
   href: string;
 };
 
-export default function LearningCard({ item, label }: { item: LearningCardItem; label: string }) {
+export default function LearningCard({ item, label, rounded = "xl" }: { item: LearningCardItem; label: string; rounded?: "md" | "xl" }) {
+  const roundedClassName = rounded === "md" ? "rounded-md" : "rounded-xl";
+
   return (
     <Link
       href={item.href}
       aria-label={`Buka ${label.toLowerCase()} ${item.title}`}
-      className="group block rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+      className={`group block ${roundedClassName} outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2`}
     >
-      <article className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition duration-300 group-hover:shadow-md">
+      <article className={`flex flex-col overflow-hidden ${roundedClassName} border border-slate-200 bg-white shadow-sm transition duration-300 group-hover:shadow-md`}>
         <div
           className="relative flex h-28 items-center justify-center sm:h-40"
           style={{ backgroundColor: item.backgroundColor }}

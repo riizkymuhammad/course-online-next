@@ -3,7 +3,7 @@ import test from "node:test";
 import { filterTableRows, normalizeTableValue, paginateTableRows, sortTableRows } from "../components/ui/table/data-table.utils.ts";
 import { formatDateTime } from "../lib/date.ts";
 import { getRelation } from "../lib/supabase/relations.ts";
-import { buildCategoryPath, slugify } from "../lib/text.ts";
+import { buildCategoryPath, normalizeTitleCase, slugify } from "../lib/text.ts";
 import { isRouteActive } from "../lib/navigation.ts";
 
 test("slugify normalizes titles for routes", () => {
@@ -13,6 +13,14 @@ test("slugify normalizes titles for routes", () => {
 test("buildCategoryPath ignores empty segments", () => {
   assert.equal(buildCategoryPath("IT", "Enterprise"), "IT > Enterprise");
   assert.equal(buildCategoryPath("IT", null), "IT");
+});
+
+test("normalizeTitleCase fixes uppercase titles while preserving acronyms", () => {
+  assert.equal(
+    normalizeTitleCase("PENYUSUNAN KEBIJAKAN DAN TATA KELOLA TI"),
+    "Penyusunan Kebijakan dan Tata Kelola TI"
+  );
+  assert.equal(normalizeTitleCase("Tryout iPhone untuk Pemula"), "Tryout iPhone untuk Pemula");
 });
 
 test("getRelation normalizes Supabase singular relations", () => {
