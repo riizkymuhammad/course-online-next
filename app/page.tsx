@@ -1,7 +1,7 @@
-import Image from "next/image";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import PublicNavbar from "@/components/header/PublicNavbar";
+import BrandLogo from "@/components/header/BrandLogo";
 import CourseList, { type CourseCard } from "@/components/home/CourseList";
 import HeroSlider from "@/components/home/HeroSlider";
 import LearningPathList, { type LearningPathCard } from "@/components/home/LearningPathList";
@@ -106,30 +106,6 @@ const categories = [
     count: "45 kelas",
     tone: "bg-[#e9fbf8] text-[#0891b2]",
     icon: <CodeIcon />,
-  },
-];
-
-const testimonials = [
-  {
-    quote:
-      "Materi TWK dan TIU-nya sangat terstruktur. Tryout-nya benar-benar mirip dengan ujian asli.",
-    name: "Dimas Aryo",
-    role: "Lulus CPNS Kemenkeu 2025",
-    initials: "DA",
-  },
-  {
-    quote:
-      "Mentornya sabar dan metodenya mudah dipahami. Skor TOEFL saya naik drastis hanya dalam sebulan belajar.",
-    name: "Nabila Putri",
-    role: "Score TOEFL 587",
-    initials: "NP",
-  },
-  {
-    quote:
-      "Dari nol sampai bisa bikin aplikasi fullstack. Kelas TI-nya praktis dan langsung bisa dipakai kerja.",
-    name: "Rizky Hidayat",
-    role: "Junior Web Developer",
-    initials: "RH",
   },
 ];
 
@@ -343,9 +319,10 @@ export default async function HomePage() {
   const courseCards = buildCourseCards(courses, categoryMap, subCategoryMap);
   const learningPathCards = buildLearningPathCards(learningPaths, learningPathTryoutCounts);
   const tryoutCards = buildTryoutCards(tryouts, categoryMap, subCategoryMap);
-  const featuredTryout = tryouts[0];
-  const tryoutHref = buildTryoutHref(featuredTryout);
   const actionHref = isLoggedIn ? "/app" : "/register";
+  const createTryoutHref = accountRole === "admin"
+    ? "/dashboard/tryout-management/create"
+    : actionHref;
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
@@ -428,7 +405,7 @@ export default async function HomePage() {
         )}
       </section>
 
-      {featuredTryout ? <section id="promo-tryout" className="bg-gray-50">
+      <section id="promo-tryout" className="bg-gray-50">
         <div className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
           <div className="grid gap-8 rounded-lg border border-gray-200 bg-white p-7 shadow-[0_16px_48px_rgba(16,24,40,0.06)] md:grid-cols-[1fr_0.9fr] md:items-center lg:p-10">
             <div>
@@ -436,93 +413,44 @@ export default async function HomePage() {
                 <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand-50">
                   <TargetIcon />
                 </span>
-                Tryout Akbar CPNS 2026
+                Tryout dari materimu sendiri
               </div>
               <h2 className="mt-6 max-w-xl text-2xl font-semibold leading-tight text-gray-950">
-                 {featuredTryout.title}
+                Punya materi yang ingin benar-benar kamu kuasai?
               </h2>
               <p className="mt-4 max-w-2xl text-sm leading-6 text-gray-600">
-                Uji kemampuanmu dengan soal sesuai standar BKN, dapatkan ranking nasional,
-                dan analisis hasil mendetail.
+                Unggah PDF yang sedang kamu pelajari, lalu ubah materinya menjadi latihan yang
+                bisa langsung kamu kerjakan. Cocok untuk persiapan ujian, mengulang materi kelas,
+                atau mengecek bagian mana yang masih perlu kamu pahami lagi.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-5 text-sm text-gray-700">
-                <span className="inline-flex items-center gap-2">
-                  <UsersIcon />
-                  8.420 peserta terdaftar
-                </span>
-                <span className="inline-flex items-center gap-2">
-                  <GiftIcon />
-                  Hadiah voucher kelas premium
-                </span>
-              </div>
-
               <Link
-                href={tryoutHref}
+                href={createTryoutHref}
                 className="mt-7 inline-flex h-11 items-center justify-center rounded-md bg-brand-600 px-6 text-sm font-medium text-white shadow-theme-sm transition hover:bg-brand-700"
               >
-                Daftar Tryout Gratis
+                Buat tryout dari materiku
               </Link>
             </div>
 
             <div className="rounded-lg bg-linear-to-br from-brand-500 to-[#075be8] p-7 text-white shadow-[0_18px_38px_rgba(70,95,255,0.24)]">
-              <p className="text-center text-sm text-white/85">
-                Pendaftaran ditutup dalam
-              </p>
-              <div className="mt-6 grid grid-cols-4 gap-3">
+              <p className="text-sm font-semibold text-white">Caranya sederhana</p>
+              <div className="mt-5 space-y-3">
                 {[
-                  ["07", "Hari"],
-                  ["04", "Jam"],
-                  ["59", "Menit"],
-                  ["50", "Detik"],
-                ].map(([value, label]) => (
-                  <div key={label} className="rounded-lg bg-white/12 px-2 py-4 text-center">
-                    <p className="text-2xl font-bold leading-none sm:text-3xl">{value}</p>
-                    <p className="mt-2 text-xs text-white/80">{label}</p>
+                  ["1", "Pilih dan unggah PDF materimu."],
+                  ["2", "Tentukan jumlah soal dan durasi pengerjaan."],
+                  ["3", "Kerjakan tryout, lalu lihat bagian yang masih perlu dipelajari."],
+                ].map(([number, text]) => (
+                  <div key={number} className="flex items-start gap-3 rounded-lg bg-white/10 p-3.5">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-xs font-bold text-brand-600">{number}</span>
+                    <p className="pt-0.5 text-sm leading-6 text-white/90">{text}</p>
                   </div>
                 ))}
               </div>
-              <p className="mt-6 text-center text-xs leading-5 text-white/75">
-                Pelaksanaan serentak online. Sertifikat peserta tersedia.
+              <p className="mt-5 text-xs leading-5 text-white/75">
+                Materimu tetap menjadi sumber utama, jadi soal yang dibuat tetap dekat dengan apa yang sedang kamu pelajari.
               </p>
             </div>
           </div>
-        </div>
-      </section> : null}
-
-      <section id="tentang" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
-        <SectionHeading
-          title="Apa Kata Mereka"
-          description="Ribuan siswa telah mencapai targetnya bersama EduPrime."
-          centered
-        />
-
-        <div className="mt-10 grid gap-5 md:grid-cols-3">
-          {testimonials.map((testimonial) => (
-            <article
-              key={testimonial.name}
-              className="rounded-lg border border-gray-200 bg-white p-7 shadow-[0_12px_32px_rgba(16,24,40,0.04)]"
-            >
-              <QuoteIcon />
-              <div className="mt-5 flex gap-1 text-[#f59e0b]" aria-label="Rating 5 dari 5">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <StarIcon key={index} />
-                ))}
-              </div>
-              <p className="mt-5 min-h-[96px] text-sm leading-6 text-gray-700">
-                &quot;{testimonial.quote}&quot;
-              </p>
-              <div className="mt-6 flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-xs font-medium text-brand-600">
-                  {testimonial.initials}
-                </span>
-                <span>
-                  <span className="block text-sm font-semibold text-gray-900">{testimonial.name}</span>
-                  <span className="block text-xs text-gray-500">{testimonial.role}</span>
-                </span>
-              </div>
-            </article>
-          ))}
         </div>
       </section>
 
@@ -530,18 +458,7 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-[1080px] gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_0.7fr_0.7fr_0.7fr] lg:px-0">
           <div>
             <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600">
-                <Image
-                  src="/images/logo/logo-icon.svg"
-                  alt=""
-                  width={17}
-                  height={17}
-                  className="brightness-0 invert"
-                />
-              </span>
-              <span className="text-sm font-bold text-gray-900">
-                Course<span className="text-brand-600">Online</span>
-              </span>
+              <BrandLogo />
             </Link>
             <p className="mt-6 max-w-sm text-sm leading-6 text-gray-600">
               Platform belajar online untuk persiapan CPNS, Bahasa Inggris, dan Teknologi
@@ -663,22 +580,6 @@ function ArrowRightIcon({ className }: { className?: string }) {
   );
 }
 
-function StarIcon({ className = "h-3.5 w-3.5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-      <path d="m10 1.7 2.4 5 5.4.8-3.9 3.8.9 5.4-4.8-2.6-4.8 2.6.9-5.4-3.9-3.8 5.4-.8L10 1.7Z" />
-    </svg>
-  );
-}
-
-function QuoteIcon() {
-  return (
-    <svg className="h-8 w-8 text-brand-100" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
-      <path d="M12.5 8c-4 2.5-6 5.7-6 9.7 0 3.6 2 6.3 5.3 6.3 2.8 0 4.7-1.9 4.7-4.5 0-2.4-1.7-4.1-4-4.1-.6 0-1.1.1-1.6.3.4-1.7 1.8-3.4 4.1-5.1L12.5 8Zm13 0c-4 2.5-6 5.7-6 9.7 0 3.6 2 6.3 5.3 6.3 2.8 0 4.7-1.9 4.7-4.5 0-2.4-1.7-4.1-4-4.1-.6 0-1.1.1-1.6.3.4-1.7 1.8-3.4 4.1-5.1L25.5 8Z" />
-    </svg>
-  );
-}
-
 function TargetIcon() {
   return (
     <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -686,33 +587,6 @@ function TargetIcon() {
         d="M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14Zm0-3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm0-2a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"
         stroke="currentColor"
         strokeWidth="1.5"
-      />
-    </svg>
-  );
-}
-
-function UsersIcon() {
-  return (
-    <svg className="h-4 w-4 text-brand-500" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path
-        d="M7.5 9.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5 7c0-3-2-5-5-5s-5 2-5 5m12-7.2a2.5 2.5 0 0 0 0-4.6m3 11.8c0-2.4-1.4-4.1-3.6-4.7"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function GiftIcon() {
-  return (
-    <svg className="h-4 w-4 text-brand-500" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path
-        d="M3 8h14v9H3V8Zm7 0v9M2.5 5.5h15V8h-15V5.5ZM7.4 5.5C5 5.5 4.2 3 5.8 2.4c1.4-.5 2.9 1.1 4.2 3.1m2.6 0c2.4 0 3.2-2.5 1.6-3.1-1.4-.5-2.9 1.1-4.2 3.1"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </svg>
   );
