@@ -46,7 +46,6 @@ export default function TryoutListClient({
 }) {
   const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedSubCategory, setSelectedSubCategory] = useState("all");
   const query = searchParams.get("q") ?? "";
   const catalogLabelLower = catalogLabel.toLowerCase();
 
@@ -55,21 +54,9 @@ export default function TryoutListClient({
     [tryouts]
   );
 
-  const subCategoryOptions = useMemo(() => {
-    if (selectedCategory === "all") return [];
-
-    return getUniqueOptions(
-      tryouts
-        .filter((item) => item.category === selectedCategory)
-        .map((item) => item.subCategory)
-    );
-  }, [selectedCategory, tryouts]);
-
   const filteredTryouts = tryouts.filter((item) => {
     const normalizedQuery = normalizeText(query);
     const matchesCategory = selectedCategory === "all" || item.category === selectedCategory;
-    const matchesSubCategory =
-      selectedSubCategory === "all" || item.subCategory === selectedSubCategory;
     const matchesQuery =
       !normalizedQuery ||
       normalizeText(item.title).includes(normalizedQuery) ||
@@ -77,7 +64,7 @@ export default function TryoutListClient({
       normalizeText(item.learningPathTitle).includes(normalizedQuery) ||
       normalizeText(item.categoryPath).includes(normalizedQuery);
 
-    return matchesCategory && matchesSubCategory && matchesQuery;
+    return matchesCategory && matchesQuery;
   });
 
   return (
@@ -92,11 +79,14 @@ export default function TryoutListClient({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Kategori</p>
-              <div className="flex flex-wrap gap-2">
-                {[{ value: "all", label: "Semua" }, ...categoryOptions.map((item) => ({ value: item, label: item }))].map((option) => {
+        <div className="space-y-4">
+          <div>
+            <p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">Kategori</p>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { value: "all", label: "Semua" },
+                ...categoryOptions.map((item) => ({ value: item, label: item })),
+              ].map((option) => {
                   const isSelected = selectedCategory === option.value;
 
                   return (
@@ -107,7 +97,6 @@ export default function TryoutListClient({
                       onClick={() => {
                         startTransition(() => {
                           setSelectedCategory(option.value);
-                          setSelectedSubCategory("all");
                         });
                       }}
                       className={`h-9 rounded-md border px-3.5 text-sm font-medium transition ${
@@ -119,22 +108,10 @@ export default function TryoutListClient({
                       {option.label}
                     </button>
                   );
-                })}
-              </div>
+              })}
             </div>
+          </div>
 
-            {selectedCategory !== "all" && subCategoryOptions.length > 0 ? (
-              <div className="w-full lg:w-64">
-                <FilterSelect
-                  id="sub-category-filter"
-                  label="Subkategori"
-                  value={selectedSubCategory}
-                  allLabel="Semua subkategori"
-                  options={subCategoryOptions}
-                  onChange={(nextValue) => startTransition(() => setSelectedSubCategory(nextValue))}
-                />
-              </div>
-            ) : null}
         </div>
       </section>
 
@@ -162,49 +139,6 @@ export default function TryoutListClient({
           </p>
         </section>
       )}
-    </div>
-  );
-}
-
-function FilterSelect({
-  id,
-  label,
-  value,
-  allLabel,
-  options,
-  disabled = false,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  allLabel: string;
-  options: string[];
-  disabled?: boolean;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div>
-      <label
-        htmlFor={id}
-        className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200"
-      >
-        {label}
-      </label>
-      <select
-        id={id}
-        value={value}
-        disabled={disabled}
-        onChange={(event) => onChange(event.target.value)}
-        className="h-12 w-full rounded-xl border border-gray-200 bg-white px-4 text-sm text-gray-800 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400 dark:border-gray-800 dark:bg-white/[0.03] dark:text-white/90 dark:disabled:bg-white/[0.02] dark:disabled:text-gray-500"
-      >
-        <option value="all">{allLabel}</option>
-        {options.map((item) => (
-          <option key={item} value={item}>
-            {item}
-          </option>
-        ))}
-      </select>
     </div>
   );
 }
