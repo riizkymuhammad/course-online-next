@@ -7,6 +7,7 @@ import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildCategoryPath } from "@/lib/text";
 import { TRYOUT_MATERIAL_BUCKET } from "@/lib/tryout-material";
+import { HARD_TRYOUT_QUESTION_INSTRUCTIONS } from "@/lib/tryout-question-quality";
 import {
   TRYOUT_THUMBNAIL_BUCKET,
   uploadTryoutThumbnail,
@@ -331,8 +332,8 @@ export const generateTryoutBundleTask = task({
           .set("progress", 20 + Math.round((completedCount / createdTryouts.length) * 75));
 
         const instructionText = payload.questionNotes
-          ? `Catatan tambahan: ${payload.questionNotes}`
-          : "Buat soal dengan tingkat kesulitan yang bervariasi.";
+          ? `Gunakan catatan tambahan berikut untuk menentukan fokus isi soal tanpa menurunkan tingkat kesulitan: ${payload.questionNotes}`
+          : "Gunakan cakupan materi bab secara proporsional dan utamakan konsep-konsep penting.";
         const questionsResult = await generateText({
           model: google(GEMINI_GENERATION_MODEL),
           prompt: [
@@ -341,6 +342,7 @@ export const generateTryoutBundleTask = task({
             tryout.content,
             `Learning path/kategori: ${learningPathLabel}.`,
             instructionText,
+            ...HARD_TRYOUT_QUESTION_INSTRUCTIONS,
             "Semua soal wajib multiple-choice dengan tepat 5 opsi berbeda (A-E) dan hanya satu jawaban benar.",
             "Isi correctOption hanya dengan satu huruf A, B, C, D, atau E yang menunjuk posisi opsi benar.",
             "Sertakan penjelasan singkat untuk setiap jawaban benar.",

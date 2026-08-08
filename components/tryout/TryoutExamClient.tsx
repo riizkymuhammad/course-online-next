@@ -29,10 +29,6 @@ type TryoutExamClientProps = {
   initialAnswers: Record<string, string>;
 };
 
-function getOptionLabel(index: number) {
-  return String.fromCharCode(65 + index);
-}
-
 export default function TryoutExamClient({
   attemptId,
   tryoutTitle,
@@ -156,7 +152,7 @@ export default function TryoutExamClient({
             </div>
 
             <div className="mt-4 space-y-2.5">
-              {activeQuestion.options.map((option, optionIndex) => {
+              {activeQuestion.options.map((option) => {
                 const isSelected = selectedOptionId === option.id;
 
                 return (
@@ -164,21 +160,12 @@ export default function TryoutExamClient({
                     key={option.id}
                     type="button"
                     onClick={() => handleSelectOption(activeQuestion.id, option.id)}
-                    className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-2 text-left transition sm:px-5 ${
+                    className={`flex w-full items-start rounded-2xl border px-4 py-2 text-left transition sm:px-5 ${
                       isSelected
                         ? "border-brand-300 bg-brand-50 dark:border-brand-500/40 dark:bg-brand-500/10"
                         : "border-gray-200 bg-white hover:border-brand-300 hover:bg-gray-50 dark:border-gray-800 dark:bg-transparent dark:hover:bg-white/[0.03]"
                     }`}
                   >
-                    <span
-                      className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${
-                        isSelected
-                          ? "border-brand-500 bg-brand-500 text-white"
-                          : "border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300"
-                      }`}
-                    >
-                      {getOptionLabel(optionIndex)}
-                    </span>
                     <span className="pt-0.5 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:text-base">
                       {option.text}
                     </span>

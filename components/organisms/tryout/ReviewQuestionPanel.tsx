@@ -15,10 +15,6 @@ type ReviewQuestionPanelProps = {
   onNext: () => void;
 };
 
-function getOptionLabel(index: number) {
-  return String.fromCharCode(65 + index);
-}
-
 export default function ReviewQuestionPanel({
   tryoutTitle,
   question,
@@ -52,10 +48,9 @@ export default function ReviewQuestionPanel({
       </div>
 
       <div className="mt-4 space-y-2.5">
-        {question.options.map((option, optionIndex) => (
+        {question.options.map((option) => (
           <ReviewAnswerOption
             key={option.id}
-            label={getOptionLabel(optionIndex)}
             text={option.text}
             isSelected={question.selectedOptionId === option.id}
             isCorrectOption={question.correctOptionId === option.id}

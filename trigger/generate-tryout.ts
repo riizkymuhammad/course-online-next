@@ -7,6 +7,7 @@ import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildCategoryPath } from "@/lib/text";
 import { TRYOUT_MATERIAL_BUCKET } from "@/lib/tryout-material";
+import { HARD_TRYOUT_QUESTION_INSTRUCTIONS } from "@/lib/tryout-question-quality";
 
 export type GenerateTryoutPayload = {
   tryoutId: string;
@@ -118,8 +119,8 @@ export const generateTryoutTask = task({
       const materialBuffer = Buffer.from(await material.arrayBuffer());
       const fileDataUrl = `data:${tryout.material_file_type || "application/pdf"};base64,${materialBuffer.toString("base64")}`;
       const instructionText = tryout.question_notes
-        ? `Gunakan catatan tambahan berikut untuk menentukan isi dan tingkat kesulitan soal: ${tryout.question_notes}`
-        : "Buat seluruh soal sebagai pilihan ganda standar.";
+        ? `Gunakan catatan tambahan berikut untuk menentukan fokus isi soal tanpa menurunkan tingkat kesulitan: ${tryout.question_notes}`
+        : "Gunakan cakupan materi secara proporsional dan utamakan konsep-konsep penting.";
 
       const result = await generateText({
         model: google(GEMINI_GENERATION_MODEL),
@@ -136,6 +137,7 @@ export const generateTryoutTask = task({
                   `Status: ${tryout.status}.`,
                   `Jumlah soal yang wajib dibuat: ${tryout.total_questions}.`,
                   instructionText,
+                  ...HARD_TRYOUT_QUESTION_INSTRUCTIONS,
                   "Kembalikan soal dalam format terstruktur.",
                   "Seluruh soal wajib bertipe multiple-choice dengan tepat 5 opsi jawaban (A, B, C, D, dan E).",
                   "Setiap opsi harus berbeda dan hanya satu opsi yang benar.",
