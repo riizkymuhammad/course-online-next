@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ActionLink from "@/components/atoms/ActionLink";
 import Button from "@/components/atoms/Button";
 import SectionLabel from "@/components/atoms/SectionLabel";
@@ -42,6 +42,36 @@ export default function TryoutExamClient({
   const [isSaving, setIsSaving] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const reportActivity = useCallback(() => {
+    const question = questions[activeIndex];
+    if (!question) return;
+
+    void fetch("/api/tryout/attempts/activity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        attemptId,
+        questionId: question.id,
+        questionOrder: question.order,
+      }),
+      keepalive: true,
+    });
+  }, [activeIndex, attemptId, questions]);
+
+  useEffect(() => {
+    reportActivity();
+    const intervalId = window.setInterval(reportActivity, 15_000);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") reportActivity();
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [reportActivity]);
 
   if (!questions.length) {
     return (

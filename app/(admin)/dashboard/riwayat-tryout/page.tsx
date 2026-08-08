@@ -10,6 +10,7 @@ import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
 import { formatDateTime } from "@/lib/date";
+import LiveTryoutActivity from "@/components/tryout/LiveTryoutActivity";
 
 type TryoutAttemptRow = {
   attempt_id: string;
@@ -283,6 +284,8 @@ export default async function RiwayatTryoutPage() {
           message="Halaman memakai query langsung ke tryout_attempts karena fungsi get_tryout_attempt_history() belum tersedia atau belum aktif. Jika SUPABASE_SERVICE_ROLE_KEY belum diatur, kolom nama masih bisa tampil sebagai UUID user."
         />
       ) : null}
+
+      <LiveTryoutActivity />
 
       <section>
         <DataTable

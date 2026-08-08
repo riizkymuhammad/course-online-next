@@ -40,7 +40,7 @@ export async function POST(request: Request) {
   const [{ data: questionRow }, { data: optionRow }] = await Promise.all([
     supabase
       .from("tryout_questions")
-      .select("id, tryout_id")
+      .select("id, tryout_id, question_order")
       .eq("id", questionId)
       .eq("tryout_id", attemptRow.tryout_id)
       .maybeSingle(),
@@ -85,6 +85,9 @@ export async function POST(request: Request) {
     .update({
       answered_questions: safeAnsweredCount,
       unanswered_answers: unansweredCount,
+      current_question_id: questionId,
+      current_question_order: questionRow.question_order,
+      last_activity_at: new Date().toISOString(),
     })
     .eq("id", attemptId)
     .eq("user_id", user.id);
