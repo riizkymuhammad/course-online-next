@@ -41,9 +41,11 @@ export default function TryoutExamClient({
   const router = useRouter();
   const [activeIndex, setActiveIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>(initialAnswers);
+  const [doubtfulQuestionIds, setDoubtfulQuestionIds] = useState<Set<string>>(() => new Set());
   const [isSaving, setIsSaving] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [confirmationType, setConfirmationType] = useState<"complete" | "incomplete" | null>(null);
   const [remainingSeconds, setRemainingSeconds] = useState(() => Math.max(Math.ceil((deadlineAt - Date.now()) / 1000), 0));
   const autoSubmitStartedRef = useRef(false);
 
@@ -117,6 +119,31 @@ export default function TryoutExamClient({
   const selectedOptionId = answers[activeQuestion.id] ?? null;
   const answeredCount = Object.keys(answers).length;
   const allAnswered = answeredCount === questions.length && questions.length > 0;
+  const doubtfulCount = doubtfulQuestionIds.size;
+  const isActiveQuestionDoubtful = doubtfulQuestionIds.has(activeQuestion.id);
+
+  function toggleDoubtfulQuestion() {
+    setDoubtfulQuestionIds((current) => {
+      const next = new Set(current);
+      if (next.has(activeQuestion.id)) {
+        next.delete(activeQuestion.id);
+      } else {
+        next.add(activeQuestion.id);
+      }
+      return next;
+    });
+  }
+
+  function requestCompleteConfirmation() {
+    if (doubtfulCount > 0) {
+      const firstDoubtfulIndex = questions.findIndex((question) => doubtfulQuestionIds.has(question.id));
+      if (firstDoubtfulIndex >= 0) setActiveIndex(firstDoubtfulIndex);
+      setErrorMessage(`Masih ada ${doubtfulCount} jawaban yang ditandai ragu-ragu. Tinjau dan hapus semua tanda ragu sebelum mengumpulkan tryout.`);
+      return;
+    }
+
+    setConfirmationType("complete");
+  }
 
   async function handleSelectOption(questionId: string, optionId: string) {
     setAnswers((current) => ({
@@ -146,8 +173,8 @@ export default function TryoutExamClient({
     setIsSaving(null);
   }
 
-  async function handleSubmitTryout(timedOut = false) {
-    if ((!allAnswered && !timedOut) || isSubmitting) return;
+  async function handleSubmitTryout(timedOut = false, allowIncomplete = false) {
+    if ((!allAnswered && !timedOut && !allowIncomplete) || isSubmitting) return;
 
     setIsSubmitting(true);
     setErrorMessage(null);
@@ -160,6 +187,7 @@ export default function TryoutExamClient({
       body: JSON.stringify({
         attemptId,
         timedOut,
+        allowIncomplete,
       }),
     });
 
@@ -236,19 +264,33 @@ export default function TryoutExamClient({
             </div>
 
             <div className="mt-5 flex flex-col gap-3 border-t border-gray-100 pt-5 dark:border-gray-800 sm:flex-row sm:justify-between">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveIndex((current) => Math.max(current - 1, 0))}
-                disabled={activeIndex === 0}
-              >
-                Soal Sebelumnya
-              </Button>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setActiveIndex((current) => Math.max(current - 1, 0))}
+                  disabled={activeIndex === 0}
+                >
+                  Soal Sebelumnya
+                </Button>
+                <button
+                  type="button"
+                  aria-pressed={isActiveQuestionDoubtful}
+                  onClick={toggleDoubtfulQuestion}
+                  className={`inline-flex h-11 items-center justify-center rounded-lg border px-4 text-sm font-semibold transition ${
+                    isActiveQuestionDoubtful
+                      ? "border-warning-400 bg-warning-50 text-warning-700 dark:border-warning-500/40 dark:bg-warning-500/10 dark:text-warning-400"
+                      : "border-gray-200 bg-white text-gray-500 hover:border-warning-300 hover:text-warning-600 dark:border-gray-700 dark:bg-transparent dark:text-gray-400"
+                  }`}
+                >
+                  {isActiveQuestionDoubtful ? "Hapus Ragu-ragu" : "Tandai Ragu-ragu"}
+                </button>
+              </div>
               <Button
                 type="button"
                 onClick={() => {
                   if (activeIndex === questions.length - 1) {
-                    void handleSubmitTryout();
+                    requestCompleteConfirmation();
                     return;
                   }
 
@@ -280,6 +322,7 @@ export default function TryoutExamClient({
                 {questions.map((question, index) => {
                   const isActive = index === activeIndex;
                   const isAnswered = Boolean(answers[question.id]);
+                  const isDoubtful = doubtfulQuestionIds.has(question.id);
 
                   return (
                     <button
@@ -287,7 +330,9 @@ export default function TryoutExamClient({
                       type="button"
                       onClick={() => setActiveIndex(index)}
                       className={`inline-flex h-9 items-center justify-center rounded-lg border text-sm font-semibold transition ${
-                        isActive
+                        isDoubtful
+                          ? `border-warning-400 bg-warning-100 text-warning-800 dark:border-warning-500/50 dark:bg-warning-500/20 dark:text-warning-300 ${isActive ? "ring-2 ring-brand-300 dark:ring-brand-500/50" : ""}`
+                          : isActive
                           ? "border-brand-500 bg-brand-500 text-white"
                           : isAnswered
                             ? "border-success-200 bg-success-50 text-success-700 dark:border-success-500/30 dark:bg-success-500/10 dark:text-success-400"
@@ -299,10 +344,74 @@ export default function TryoutExamClient({
                   );
                 })}
               </div>
+
+              {doubtfulCount > 0 ? (
+                <p className="mt-3 rounded-lg bg-warning-50 px-3 py-2 text-xs leading-5 text-warning-700 dark:bg-warning-500/10 dark:text-warning-400">
+                  {doubtfulCount} soal masih ditandai ragu-ragu dan harus ditinjau sebelum dikumpulkan.
+                </p>
+              ) : null}
+
+              {!allAnswered ? (
+                <button
+                  type="button"
+                  disabled={isSubmitting}
+                  onClick={() => setConfirmationType("incomplete")}
+                  className="mx-auto mt-4 flex text-xs font-medium text-gray-400 underline-offset-4 transition hover:text-error-500 hover:underline disabled:cursor-not-allowed disabled:opacity-50 dark:text-gray-500 dark:hover:text-error-400"
+                >
+                  Akhiri tryout
+                </button>
+              ) : null}
             </Surface>
           </aside>
         </div>
       </div>
+
+      {confirmationType ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-950/50 px-4 backdrop-blur-sm"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !isSubmitting) setConfirmationType(null);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="submit-confirmation-title"
+            className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-800 dark:bg-gray-900"
+          >
+            <div className={`inline-flex h-11 w-11 items-center justify-center rounded-full ${confirmationType === "incomplete" ? "bg-warning-50 text-warning-600 dark:bg-warning-500/10 dark:text-warning-400" : "bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400"}`}>
+              <span className="text-xl font-bold">!</span>
+            </div>
+            <h2 id="submit-confirmation-title" className="mt-4 text-lg font-semibold text-gray-800 dark:text-white/90">
+              {confirmationType === "incomplete" ? "Akhiri tryout sekarang?" : "Kumpulkan jawaban?"}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-gray-500 dark:text-gray-400">
+              {confirmationType === "incomplete"
+                ? `Masih ada ${questions.length - answeredCount} soal yang belum dijawab. Soal kosong akan dicatat sebagai tidak terjawab dan jawaban tidak dapat diubah lagi.`
+                : "Pastikan seluruh jawaban sudah diperiksa. Setelah dikumpulkan, jawaban tidak dapat diubah kembali."}
+            </p>
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="outline" size="md" disabled={isSubmitting} onClick={() => setConfirmationType(null)}>
+                Periksa Lagi
+              </Button>
+              <Button
+                type="button"
+                variant={confirmationType === "incomplete" ? "danger" : "primary"}
+                size="md"
+                disabled={isSubmitting}
+                onClick={() => {
+                  const allowIncomplete = confirmationType === "incomplete";
+                  setConfirmationType(null);
+                  void handleSubmitTryout(false, allowIncomplete);
+                }}
+              >
+                {isSubmitting ? "Memproses..." : confirmationType === "incomplete" ? "Ya, Akhiri" : "Ya, Kumpulkan"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

@@ -4,6 +4,7 @@ import { getAuthenticatedUser } from "@/lib/tryout-attempts";
 type SubmitAttemptPayload = {
   attemptId: string;
   timedOut: boolean;
+  allowIncomplete: boolean;
 };
 
 type QuestionRow = {
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
   const body = (await request.json()) as Partial<SubmitAttemptPayload>;
   const attemptId = String(body.attemptId ?? "").trim();
   const requestedTimedOut = body.timedOut === true;
+  const allowIncomplete = body.allowIncomplete === true;
 
   if (!attemptId) {
     return Response.json({ error: "Attempt tidak ditemukan." }, { status: 400 });
@@ -79,7 +81,7 @@ export async function POST(request: Request) {
   }
 
   const unansweredQuestions = questions.filter((question) => !answerMap.has(question.id));
-  if (unansweredQuestions.length > 0 && !hasExpired) {
+  if (unansweredQuestions.length > 0 && !hasExpired && !allowIncomplete) {
     return Response.json(
       { error: "Masih ada soal yang belum dijawab. Selesaikan semua soal terlebih dahulu." },
       { status: 400 }
