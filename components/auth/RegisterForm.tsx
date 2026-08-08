@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Button from "@/components/atoms/Button";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+import PasswordField from "@/components/auth/PasswordField";
 import FormField from "@/components/molecules/FormField";
 import InlineAlert from "@/components/molecules/InlineAlert";
 import { createClient } from "@/lib/supabase/client";
@@ -85,15 +86,16 @@ export default function RegisterForm() {
       <div className="grid gap-4">
         <FormField label="Nama" name="name" placeholder="John Doe" required inputClassName="rounded-xl" />
         <FormField label="Email" name="email" type="email" placeholder="admin@courseonline.com" required inputClassName="rounded-xl" />
-        <FormField label="Password" name="password" type="password" placeholder="Buat password" required inputClassName="rounded-xl" />
-        <FormField
-          label="Confirm Password"
-          name="confirm_password"
-          type="password"
-          placeholder="Ulangi password"
-          required
-          inputClassName="rounded-xl"
-        />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <PasswordField label="Password" name="password" placeholder="Buat password" required inputClassName="rounded-xl" />
+          <PasswordField
+            label="Confirm Password"
+            name="confirm_password"
+            placeholder="Ulangi password"
+            required
+            inputClassName="rounded-xl"
+          />
+        </div>
       </div>
 
       {errorMessage ? (

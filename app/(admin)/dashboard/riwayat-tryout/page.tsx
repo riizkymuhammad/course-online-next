@@ -2,15 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import PageBreadcrumb from "@/components/common/PageBreadcrumb";
-import SummaryCard from "@/components/molecules/SummaryCard";
-import StatusAlert from "@/components/ui/alert/StatusAlert";
 import DataTable from "@/components/ui/table/DataTable";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
 import { formatDateTime } from "@/lib/date";
-import LiveTryoutActivity from "@/components/tryout/LiveTryoutActivity";
 
 type TryoutAttemptRow = {
   attempt_id: string;
@@ -23,8 +20,12 @@ type TryoutAttemptRow = {
   score: number | null;
   status: string | null;
   total_questions: number | null;
+  answered_questions: number | null;
+  unanswered_answers: number | null;
   correct_answers: number | null;
   wrong_answers: number | null;
+  current_question_order: number | null;
+  last_activity_at: string | null;
   started_at: string | null;
   submitted_at: string | null;
   duration_seconds: number | null;
@@ -36,8 +37,12 @@ type DirectTryoutAttemptRow = {
   score: number | null;
   status: string | null;
   total_questions: number | null;
+  answered_questions: number | null;
+  unanswered_answers: number | null;
   correct_answers: number | null;
   wrong_answers: number | null;
+  current_question_order: number | null;
+  last_activity_at: string | null;
   started_at: string | null;
   submitted_at: string | null;
   duration_seconds: number | null;
@@ -62,9 +67,12 @@ type HistoryTableRow = {
   learning_path_name: string;
   score: string;
   total_questions: string;
+  progress: string;
+  current_question: string;
   correct_answers: string;
   wrong_answers: string;
   started_at: string;
+  last_activity: string;
   duration: string;
   status: string;
   result_url: string;
@@ -158,9 +166,12 @@ export default async function RiwayatTryoutPage() {
               learning_path_name: attempt.learning_path_title ?? "Tanpa Learning Path",
               score: Number(attempt.score ?? 0).toFixed(2),
               total_questions: String(attempt.total_questions ?? 0),
+              progress: `${attempt.answered_questions ?? 0}/${attempt.total_questions ?? 0}`,
+              current_question: attempt.current_question_order ? `Soal ${attempt.current_question_order}` : "-",
               correct_answers: String(attempt.correct_answers ?? 0),
               wrong_answers: String(attempt.wrong_answers ?? 0),
               started_at: formatDateTime(attempt.started_at),
+              last_activity: formatDateTime(attempt.last_activity_at),
               duration: formatDuration(attempt.duration_seconds),
               status: getStatusLabel(attempt.status),
               result_url:
@@ -189,10 +200,11 @@ export default async function RiwayatTryoutPage() {
               });
             }
 
-            const { data: directAttemptRows } = await supabase
+            const historyClient = adminClient ?? supabase;
+            const { data: directAttemptRows } = await historyClient
               .from("tryout_attempts")
               .select(
-                "id, user_id, score, status, total_questions, correct_answers, wrong_answers, started_at, submitted_at, duration_seconds, tryouts(id, title, learning_path_id)"
+                "id, user_id, score, status, total_questions, answered_questions, unanswered_answers, correct_answers, wrong_answers, current_question_order, last_activity_at, started_at, submitted_at, duration_seconds, tryouts(id, title, learning_path_id)"
               )
               .order("started_at", { ascending: false });
 
@@ -216,9 +228,12 @@ export default async function RiwayatTryoutPage() {
                   learning_path_name: learningPathTitle,
                   score: Number(attempt.score ?? 0).toFixed(2),
                   total_questions: String(attempt.total_questions ?? 0),
+                  progress: `${attempt.answered_questions ?? 0}/${attempt.total_questions ?? 0}`,
+                  current_question: attempt.current_question_order ? `Soal ${attempt.current_question_order}` : "-",
                   correct_answers: String(attempt.correct_answers ?? 0),
                   wrong_answers: String(attempt.wrong_answers ?? 0),
                   started_at: formatDateTime(attempt.started_at),
+                  last_activity: formatDateTime(attempt.last_activity_at),
                   duration: formatDuration(attempt.duration_seconds),
                   status: getStatusLabel(attempt.status),
                   result_url:
@@ -231,17 +246,7 @@ export default async function RiwayatTryoutPage() {
           })(),
         };
 
-  const { attempts, isFallbackMode } = historyResult;
-
-  const finishedAttempts = attempts.filter((item) => item.status === "Selesai").length;
-  const averageScore =
-    attempts.length > 0
-      ? (
-          attempts.reduce((total, item) => total + Number(item.score), 0) / attempts.length
-        ).toFixed(2)
-      : "0.00";
-  const totalQuestions = attempts.reduce((total, item) => total + Number(item.total_questions), 0);
-  const submittedCount = attempts.filter((item) => item.status === "Selesai").length;
+  const { attempts } = historyResult;
 
   return (
     <div className="space-y-6">
@@ -254,43 +259,10 @@ export default async function RiwayatTryoutPage() {
         description="Lihat seluruh riwayat pengerjaan tryout semua user berdasarkan data terbaru, lengkap dengan status, learning path, jumlah soal, dan hasil jawaban."
       />
 
-      <section className="grid grid-cols-1 gap-4 md:grid-cols-4 md:gap-6">
-        <SummaryCard
-          label="Total Attempt"
-          value={String(attempts.length)}
-          note="Semua riwayat pengerjaan tryout user"
-        />
-        <SummaryCard
-          label="Rata-rata Score"
-          value={averageScore}
-          note={`${finishedAttempts} attempt memiliki waktu selesai`}
-        />
-        <SummaryCard
-          label="Attempt Selesai"
-          value={String(submittedCount)}
-          note="Status graded yang sudah selesai"
-        />
-        <SummaryCard
-          label="Total Soal"
-          value={String(totalQuestions)}
-          note="Akumulasi jumlah soal dari semua attempt"
-        />
-      </section>
-
-      {isFallbackMode ? (
-        <StatusAlert
-          variant="warning"
-          title="Mode Fallback Aktif"
-          message="Halaman memakai query langsung ke tryout_attempts karena fungsi get_tryout_attempt_history() belum tersedia atau belum aktif. Jika SUPABASE_SERVICE_ROLE_KEY belum diatur, kolom nama masih bisa tampil sebagai UUID user."
-        />
-      ) : null}
-
-      <LiveTryoutActivity />
-
       <section>
         <DataTable
           title="Data Riwayat Tryout"
-          description="Riwayat pengerjaan tryout user dengan pencarian, sorting, dan pagination."
+          description="Semua attempt user, baik yang masih dikerjakan maupun yang sudah selesai."
           searchPlaceholder="Cari riwayat tryout..."
           action={
             <Link
@@ -317,10 +289,13 @@ export default async function RiwayatTryoutPage() {
               badgeToneMap: statusStyles,
             },
             { key: "total_questions", label: "Jumlah Soal", sortable: true },
+            { key: "progress", label: "Terjawab", sortable: true },
+            { key: "current_question", label: "Soal Aktif", sortable: true },
             { key: "correct_answers", label: "Benar", sortable: true },
             { key: "wrong_answers", label: "Salah", sortable: true },
             { key: "score", label: "Score", sortable: true },
             { key: "started_at", label: "Waktu Pengerjaan", sortable: true },
+            { key: "last_activity", label: "Aktivitas Terakhir", sortable: true },
             { key: "duration", label: "Durasi", sortable: true },
             {
               key: "actions",

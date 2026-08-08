@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ChevronLeftIcon } from "@/icons";
 import BrandLogo from "@/components/header/BrandLogo";
 
 export default function AuthShell({
@@ -10,6 +9,7 @@ export default function AuthShell({
   footerText,
   footerLink,
   footerLinkLabel,
+  singleColumn = false,
 }: {
   eyebrow?: string;
   title: string;
@@ -18,18 +18,19 @@ export default function AuthShell({
   footerText: string;
   footerLink: string;
   footerLinkLabel: string;
+  singleColumn?: boolean;
 }) {
   return (
     <main className="h-dvh overflow-hidden bg-white dark:bg-gray-950">
-      <div className="grid h-full w-full lg:grid-cols-[0.92fr_1.08fr]">
-        <section className="flex h-full min-h-0 flex-col px-5 py-4 sm:px-8 lg:px-10">
+      <div className={singleColumn ? "h-full w-full" : "grid h-full w-full lg:grid-cols-[0.92fr_1.08fr]"}>
+        <section className={`flex h-full min-h-0 flex-col px-5 py-4 sm:px-8 lg:px-10 ${singleColumn ? "mx-auto w-full max-w-5xl" : ""}`}>
           <div className="flex items-center justify-between">
             <Link
               href="/"
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-gray-200 bg-white px-4 text-sm font-semibold text-gray-600 shadow-theme-xs transition hover:border-brand-200 hover:bg-brand-50 hover:text-brand-600 dark:border-gray-800 dark:bg-white/[0.03] dark:text-gray-300 dark:hover:border-brand-500/30 dark:hover:bg-brand-500/10 dark:hover:text-brand-400"
+              aria-label="Kembali ke halaman beranda"
+              className="inline-flex rounded-lg px-1 py-1 transition-opacity hover:opacity-75 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-500"
             >
-              <ChevronLeftIcon className="size-4" />
-              Kembali ke halaman beranda
+              <BrandLogo />
             </Link>
           </div>
 
@@ -41,14 +42,20 @@ export default function AuthShell({
                     {eyebrow}
                   </span>
                 ) : null}
-                <div className="space-y-1.5">
-                  <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {title}
-                  </h1>
-                  <p className="text-sm leading-5 text-gray-500 dark:text-gray-400">
-                    {description}
-                  </p>
-                </div>
+                {title || description ? (
+                  <div className="space-y-1.5">
+                    {title ? (
+                      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                        {title}
+                      </h1>
+                    ) : null}
+                    {description ? (
+                      <p className="text-sm leading-5 text-gray-500 dark:text-gray-400">
+                        {description}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               {children}
@@ -63,18 +70,20 @@ export default function AuthShell({
           </div>
         </section>
 
-        <section className="relative hidden h-full overflow-hidden bg-brand-600 text-white lg:flex lg:items-center lg:justify-center">
-          <div className="absolute inset-0 bg-linear-to-br from-brand-500 via-brand-600 to-brand-800" />
-          <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:56px_56px]" />
-          <div className="relative z-10 flex max-w-md flex-col items-center px-8 text-center">
-            <Link href="/" aria-label="Kembali ke beranda">
-              <BrandLogo textClassName="text-white" />
-            </Link>
-            <p className="mt-6 text-sm leading-6 text-gray-300">
-              Platform belajar untuk materi, learning path, quiz, dan tryout.
-            </p>
-          </div>
-        </section>
+        {!singleColumn ? (
+          <section className="relative hidden h-full overflow-hidden bg-brand-600 text-white lg:flex lg:items-center lg:justify-center">
+            <div className="absolute inset-0 bg-linear-to-br from-brand-500 via-brand-600 to-brand-800" />
+            <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(to_right,rgba(255,255,255,0.2)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.2)_1px,transparent_1px)] [background-size:56px_56px]" />
+            <div className="relative z-10 flex max-w-md flex-col items-center px-8 text-center">
+              <Link href="/" aria-label="Kembali ke beranda">
+                <BrandLogo textClassName="text-white" />
+              </Link>
+              <p className="mt-6 text-sm leading-6 text-gray-300">
+                Platform belajar untuk materi, learning path, quiz, dan tryout.
+              </p>
+            </div>
+          </section>
+        ) : null}
       </div>
     </main>
   );

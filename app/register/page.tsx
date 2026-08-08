@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 export default function RegisterPage() {
   return (
     <AuthShell
+      singleColumn
       eyebrow="Register"
-      title="Buat Akun"
-      description="Daftarkan akun baru untuk mengakses materi, tryout, dan progres belajar."
+      title=""
+      description=""
       footerText="Sudah punya akun?"
       footerLink="/login"
       footerLinkLabel="Login"

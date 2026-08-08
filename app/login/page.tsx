@@ -10,8 +10,10 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return (
     <AuthShell
-      title="Sign In"
-      description="Enter your email and password to sign in!"
+      singleColumn
+      eyebrow="Login"
+      title=""
+      description=""
       footerText="Don't have an account?"
       footerLink="/register"
       footerLinkLabel="Sign Up"

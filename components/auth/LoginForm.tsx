@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import Button from "@/components/atoms/Button";
 import GoogleAuthButton, { getAuthRedirectPath } from "@/components/auth/GoogleAuthButton";
+import PasswordField from "@/components/auth/PasswordField";
 import FormField from "@/components/molecules/FormField";
 import InlineAlert from "@/components/molecules/InlineAlert";
 import { createClient } from "@/lib/supabase/client";
@@ -66,7 +67,7 @@ export default function LoginForm() {
 
       <div className="grid gap-4">
         <FormField label="Email" name="email" type="email" placeholder="admin@courseonline.com" required />
-        <FormField label="Password" name="password" type="password" placeholder="Enter your password" required />
+        <PasswordField label="Password" name="password" placeholder="Enter your password" required />
       </div>
 
       <div className="flex items-center justify-between gap-3 text-sm">

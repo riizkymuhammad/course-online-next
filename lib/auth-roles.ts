@@ -87,9 +87,7 @@ export function isAuthPath(path: string) {
   const pathname = getRedirectPathname(path);
   return (
     pathname === "/login" ||
-    pathname === "/register" ||
-    pathname === "/signin" ||
-    pathname === "/signup"
+    pathname === "/register"
   );
 }
 

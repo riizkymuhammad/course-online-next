@@ -45,9 +45,7 @@ export async function proxy(request: NextRequest) {
   const requestedPath = `${pathname}${request.nextUrl.search}`;
   const isAuthPage =
     pathname === "/login" ||
-    pathname === "/register" ||
-    pathname === "/signin" ||
-    pathname === "/signup";
+    pathname === "/register";
   const isDashboardPage = isDashboardPath(pathname);
   const isAppPage = isAppPath(pathname);
 
@@ -88,5 +86,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/app/:path*", "/dashboard/:path*", "/login", "/register", "/signin", "/signup"],
+  matcher: ["/app/:path*", "/dashboard/:path*", "/login", "/register"],
 };
