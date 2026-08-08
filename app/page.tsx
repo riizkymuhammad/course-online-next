@@ -484,7 +484,7 @@ export default async function HomePage() {
 
         <div className="border-t border-gray-200">
           <div className="mx-auto flex max-w-[1080px] flex-col gap-3 px-4 py-6 text-xs text-gray-500 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-0">
-            <p>Copyright 2026 EduPrime. Seluruh hak cipta dilindungi.</p>
+            <p>Copyright 2026 Learning With Rizky. Seluruh hak cipta dilindungi.</p>
             <p>Dibuat untuk masa depan pendidikan Indonesia.</p>
           </div>
         </div>
