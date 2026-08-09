@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import PublicNavbar from "@/components/header/PublicNavbar";
+import PublicNavbar from "@/components/header/PublicNavbarWithSearch";
 import TryoutListClient from "@/components/tryout/TryoutListClient";
 import {
   ACTIVE_ROLE_COOKIE,
@@ -21,6 +21,7 @@ type TryoutRow = {
   learning_path_id: string | null;
   category_id: string | null;
   sub_category_id: string | null;
+  thumbnail_url: string | null;
   status: "draft" | "published" | "archived" | null;
 };
 
@@ -57,7 +58,7 @@ export default async function TryoutsPage() {
   ] = await Promise.all([
     supabase.auth.getUser(),
     cookies(),
-    supabase.from("tryouts").select("id, title, learning_path_id, category_id, sub_category_id, status").eq("status", "published").order("updated_at", { ascending: false }),
+    supabase.from("tryouts").select("id, title, learning_path_id, category_id, sub_category_id, thumbnail_url, status").eq("status", "published").order("updated_at", { ascending: false }),
     supabase.from("learning_paths").select("id, title").eq("status", "published"),
     supabase.from("categories").select("id, name"),
     supabase.from("sub_categories").select("id, category_id, name"),
@@ -67,6 +68,10 @@ export default async function TryoutsPage() {
     accountRole,
     activeRolePreference: cookieStore.get(ACTIVE_ROLE_COOKIE)?.value,
   });
+  const userProfile = user ? getUserProfile(user) : null;
+  const PublicNavbarWithSearchAndUserDropdown = user
+    ? (await import("@/components/header/PublicNavbarWithSearchAndUserDropdown")).default
+    : null;
 
   const learningPaths = (learningPathRows as LearningPathRow[] | null) ?? [];
   const learningPathMap = new Map(learningPaths.map((item) => [item.id, item]));
@@ -100,19 +105,26 @@ export default async function TryoutsPage() {
       subCategory,
       subSubCategory,
       categoryPath,
+      imageUrl: item.thumbnail_url,
       href: `/tryout/${item.id}/${slugify(item.title)}`,
     };
   });
 
   return (
     <main className="min-h-screen bg-linear-to-b from-white via-blue-light-25 to-white text-gray-900">
-      <PublicNavbar
-        userProfile={user ? getUserProfile(user) : null}
-        activeRole={activeRole}
-        canSwitchRole={accountRole === "admin"}
-        showUserDropdown={false}
-        showCatalogSearch
-      />
+      {PublicNavbarWithSearchAndUserDropdown ? (
+        <PublicNavbarWithSearchAndUserDropdown
+          userProfile={userProfile}
+          activeRole={activeRole}
+          canSwitchRole={accountRole === "admin"}
+        />
+      ) : (
+        <PublicNavbar
+          userProfile={null}
+          activeRole={activeRole}
+          canSwitchRole={false}
+        />
+      )}
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <TryoutListClient tryouts={tryouts} />

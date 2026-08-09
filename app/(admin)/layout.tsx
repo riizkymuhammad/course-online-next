@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import AdminLayoutShell from "@/layout/AdminLayoutShell";
+import { SidebarProvider } from "@/context/SidebarContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -26,12 +28,16 @@ export default async function AdminLayout({
   });
 
   return (
-    <AdminLayoutShell
-      userProfile={user ? getUserProfile(user) : undefined}
-      activeRole={activeRole}
-      canSwitchRole={accountRole === "admin"}
-    >
-      {children}
-    </AdminLayoutShell>
+    <ThemeProvider>
+      <SidebarProvider>
+        <AdminLayoutShell
+          userProfile={user ? getUserProfile(user) : undefined}
+          activeRole={activeRole}
+          canSwitchRole={accountRole === "admin"}
+        >
+          {children}
+        </AdminLayoutShell>
+      </SidebarProvider>
+    </ThemeProvider>
   );
 }

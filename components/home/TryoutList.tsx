@@ -1,5 +1,3 @@
-"use client";
-
 import LearningCollection from "@/components/organisms/learning/LearningCollection";
 import type { LearningCardItem } from "@/components/organisms/learning/LearningCard";
 

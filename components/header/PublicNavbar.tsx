@@ -1,27 +1,23 @@
 import Link from "next/link";
-import { Suspense } from "react";
+import type { ReactNode } from "react";
 import BrandLogo from "@/components/header/BrandLogo";
-import CatalogSearch from "@/components/header/CatalogSearch";
-import UserDropdown from "@/components/header/UserDropdown";
 import type { AuthRole } from "@/lib/auth-roles";
 import type { UserProfile } from "@/lib/user-profile";
 
-type PublicNavbarProps = {
+export type PublicNavbarProps = {
   userProfile: UserProfile | null;
   activeRole: AuthRole;
   canSwitchRole: boolean;
   loginHref?: string;
-  showUserDropdown?: boolean;
-  showCatalogSearch?: boolean;
+  searchSlot?: ReactNode;
+  userActions?: ReactNode;
 };
 
 export default function PublicNavbar({
   userProfile,
-  activeRole,
-  canSwitchRole,
   loginHref = "/login",
-  showUserDropdown = true,
-  showCatalogSearch = false,
+  searchSlot,
+  userActions,
 }: PublicNavbarProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
@@ -30,11 +26,7 @@ export default function PublicNavbar({
           <BrandLogo />
         </Link>
 
-        {showCatalogSearch ? (
-          <Suspense fallback={<div className="hidden min-w-0 flex-1 md:block md:max-w-[420px]" />}>
-            <CatalogSearch />
-          </Suspense>
-        ) : null}
+        {searchSlot}
 
         <div className="flex shrink-0 items-center gap-7">
           <nav className="hidden items-center gap-7 text-sm font-medium text-gray-700 lg:flex">
@@ -51,23 +43,7 @@ export default function PublicNavbar({
 
           <div className="flex items-center gap-2">
           {userProfile ? (
-            showUserDropdown ? (
-              <>
-                <Link
-                  href="/app"
-                  className="hidden h-9 items-center justify-center rounded-md border border-brand-200 px-4 text-sm font-medium text-brand-600 transition hover:bg-brand-50 sm:inline-flex"
-                >
-                  Dashboard
-                </Link>
-                <UserDropdown
-                  avatarUrl={userProfile.avatarUrl}
-                  displayName={userProfile.displayName}
-                  email={userProfile.email}
-                  activeRole={activeRole}
-                  canSwitchRole={canSwitchRole}
-                />
-              </>
-            ) : (
+            userActions ?? (
               <Link
                 href="/app"
                 className="inline-flex h-9 items-center justify-center rounded-md bg-brand-500 px-4 text-sm font-medium text-white shadow-theme-sm transition hover:bg-brand-600"

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
-import PublicNavbar from "@/components/header/PublicNavbar";
+import PublicNavbar from "@/components/header/PublicNavbarWithSearch";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,
@@ -82,8 +82,6 @@ export default async function LearningPathsPage({
         userProfile={user ? getUserProfile(user) : null}
         activeRole={activeRole}
         canSwitchRole={accountRole === "admin"}
-        showUserDropdown={false}
-        showCatalogSearch
       />
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">

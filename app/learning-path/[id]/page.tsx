@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import PublicNavbar from "@/components/header/PublicNavbar";
+import PublicNavbar from "@/components/header/PublicNavbarWithUserDropdown";
 import {
   ACTIVE_ROLE_COOKIE,
   getEffectiveRole,

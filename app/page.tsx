@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import PublicNavbar from "@/components/header/PublicNavbar";
@@ -57,33 +58,6 @@ type SubCategoryRow = {
   category_id: string;
   name: string;
 };
-
-const heroSlides = [
-  {
-    id: 1,
-    badge: "CPNS",
-    title: "Jelajahi Kursus & Tryout CPNS Terbaik",
-    image: "/images/hero/hero-cpns-01.webp",
-    description: "",
-    meta: "Materi SKD, SKB, dan tryout CAT dalam satu jalur belajar",
-  },
-  {
-    id: 2,
-    badge: "Bahasa Inggris",
-    title: "Tingkatkan Skill Bahasa Inggris Anda",
-    image: "/images/hero/hero-english-01.webp",
-    description: "",
-    meta: "Kuasai grammar, TOEFL, IELTS, serta speaking dengan percaya diri",
-  },
-  {
-    id: 3,
-    badge: "TI & Perangkat Lunak",
-    title: "Bangun Skill Teknologi untuk Masa Depan",
-    image: "/images/hero/hero-it-01.webp",
-    description: "",
-    meta: "Belajar web development, data science, dan tools profesional",
-  },
-];
 
 const categories = [
   {
@@ -177,6 +151,7 @@ function buildCourseCards(
       subCategory:
         (course.sub_category_id ? subCategoryMap.get(course.sub_category_id)?.trim() : undefined) ||
         "Umum",
+      imageUrl: course.thumbnail,
       backgroundColor: getCourseCardBackground(category),
       href: buildCourseHref(course),
     };
@@ -207,10 +182,24 @@ function buildTryoutCards(
       subCategory:
         (tryout.sub_category_id ? subCategoryMap.get(tryout.sub_category_id)?.trim() : undefined) ||
         "Umum",
+      imageUrl: tryout.thumbnail_url,
       backgroundColor: getCourseCardBackground(category),
       href: buildTryoutHref(tryout),
     };
   });
+}
+
+export function generateMetadata(): Metadata {
+  const title = "Kursus Online & Tryout CPNS, Bahasa Inggris, dan TI";
+  const description =
+    "Belajar CPNS, Bahasa Inggris, dan teknologi informasi melalui kursus online, learning path, serta tryout terstruktur.";
+
+  return {
+    title,
+    description,
+    alternates: { canonical: "/" },
+    openGraph: { title, description, url: "/" },
+  };
 }
 
 function buildLearningPathCards(
@@ -323,19 +312,41 @@ export default async function HomePage() {
   const createTryoutHref = accountRole === "admin"
     ? "/dashboard/tryout-management/create"
     : actionHref;
+  const PublicNavbarWithUserDropdown = isLoggedIn
+    ? (await import("@/components/header/PublicNavbarWithUserDropdown")).default
+    : null;
 
   return (
     <main className="min-h-screen bg-white text-gray-900">
-      <PublicNavbar
-        userProfile={isLoggedIn ? userProfile : null}
-        activeRole={activeRole}
-        canSwitchRole={accountRole === "admin"}
-        showUserDropdown={false}
-      />
+      {PublicNavbarWithUserDropdown ? (
+        <PublicNavbarWithUserDropdown
+          userProfile={userProfile}
+          activeRole={activeRole}
+          canSwitchRole={accountRole === "admin"}
+          primaryActionLabel={activeRole === "user" ? "Pembelajaran Saya" : "Dashboard"}
+          compactAvatar
+        />
+      ) : (
+        <PublicNavbar
+          userProfile={null}
+          activeRole={activeRole}
+          canSwitchRole={false}
+        />
+      )}
 
       <section id="beranda" className="mx-auto max-w-[1080px] px-4 pb-10 pt-8 sm:pb-12 sm:px-6 lg:px-0">
-        <HeroSlider slides={heroSlides} />
+        <HeroSlider />
       </section>
+
+      {tryoutCards.length ? (
+        <section id="tryout" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+          <SectionHeading
+            title="Tryout Populer Pilihan"
+            description="Latihan dan simulasi tryout untuk mengukur progres belajarmu."
+          />
+          <TryoutList tryouts={tryoutCards} />
+        </section>
+      ) : null}
 
       <section className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
         <SectionHeading
@@ -381,29 +392,15 @@ export default async function HomePage() {
         )}
       </section>
 
-      <section id="kelas" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
-        <SectionHeading
-          title="Kelas Populer Pilihan"
-          description="Materi terkurasi yang paling banyak diikuti oleh siswa kami."
-        />
-        {courseCards.length ? (
+      {courseCards.length ? (
+        <section id="kelas" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
+          <SectionHeading
+            title="Kelas Populer Pilihan"
+            description="Materi terkurasi yang paling banyak diikuti oleh siswa kami."
+          />
           <CourseList courses={courseCards} actionHref={actionHref} />
-        ) : (
-          <p className="mt-8 text-sm text-gray-500">Course belum tersedia</p>
-        )}
-      </section>
-
-      <section id="tryout" className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">
-        <SectionHeading
-          title="Tryout Populer Pilihan"
-          description="Latihan dan simulasi tryout untuk mengukur progres belajarmu."
-        />
-        {tryoutCards.length ? (
-          <TryoutList tryouts={tryoutCards} />
-        ) : (
-          <p className="mt-8 text-sm text-gray-500">Tryout belum tersedia</p>
-        )}
-      </section>
+        </section>
+      ) : null}
 
       <section id="promo-tryout" className="bg-gray-50">
         <div className="mx-auto max-w-[1080px] px-4 py-10 sm:px-6 sm:py-12 lg:px-0">

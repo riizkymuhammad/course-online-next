@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import PublicNavbar from "@/components/header/PublicNavbar";
+import PublicNavbar from "@/components/header/PublicNavbarWithSearch";
 import TryoutListClient from "@/components/tryout/TryoutListClient";
 import {
   ACTIVE_ROLE_COOKIE,
@@ -21,6 +21,7 @@ type CourseRow = {
   learning_path_id: string | null;
   category_id: string | null;
   sub_category_id: string | null;
+  thumbnail: string | null;
   status: "draft" | "published" | "archived" | null;
 };
 
@@ -57,7 +58,7 @@ export default async function CoursesPage() {
   ] = await Promise.all([
     supabase.auth.getUser(),
     cookies(),
-    supabase.from("courses").select("id, title, learning_path_id, category_id, sub_category_id, status").eq("status", "published").order("updated_at", { ascending: false }),
+    supabase.from("courses").select("id, title, learning_path_id, category_id, sub_category_id, thumbnail, status").eq("status", "published").order("updated_at", { ascending: false }),
     supabase.from("learning_paths").select("id, title").eq("status", "published"),
     supabase.from("categories").select("id, name"),
     supabase.from("sub_categories").select("id, category_id, name"),
@@ -96,6 +97,7 @@ export default async function CoursesPage() {
       subCategory,
       subSubCategory,
       categoryPath,
+      imageUrl: item.thumbnail,
       href: `/course/${item.id}/${slugify(item.title)}`,
     };
   });
@@ -106,8 +108,6 @@ export default async function CoursesPage() {
         userProfile={user ? getUserProfile(user) : null}
         activeRole={activeRole}
         canSwitchRole={accountRole === "admin"}
-        showUserDropdown={false}
-        showCatalogSearch
       />
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">

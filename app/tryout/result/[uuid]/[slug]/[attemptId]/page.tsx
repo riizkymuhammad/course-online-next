@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import PublicNavbar from "@/components/header/PublicNavbar";
+import PublicNavbar from "@/components/header/PublicNavbarWithUserDropdown";
 import TryoutResultReviewClient from "@/components/tryout/TryoutResultReviewClient";
 import { ACTIVE_ROLE_COOKIE, getEffectiveRole, getUserRole } from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";

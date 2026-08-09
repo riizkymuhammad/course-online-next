@@ -13,6 +13,7 @@ type TryoutItem = {
   subCategory: string;
   subSubCategory: string;
   categoryPath: string;
+  imageUrl?: string | null;
   href: string;
 };
 

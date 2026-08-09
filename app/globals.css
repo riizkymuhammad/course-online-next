@@ -783,3 +783,21 @@ span.flatpickr-weekday,
   opacity: 0.8;
   cursor: grabbing; /* Changes the cursor to indicate dragging */
 }
+
+.hero-slide {
+  display: none;
+}
+
+.hero-carousel[data-active-index="0"] .hero-slide[data-hero-slide="0"],
+.hero-carousel[data-active-index="1"] .hero-slide[data-hero-slide="1"],
+.hero-carousel[data-active-index="2"] .hero-slide[data-hero-slide="2"] {
+  display: block;
+}
+
+@media (min-width: 1024px) {
+  .hero-carousel[data-active-index="0"] .hero-slide[data-hero-slide="1"],
+  .hero-carousel[data-active-index="1"] .hero-slide[data-hero-slide="2"],
+  .hero-carousel[data-active-index="2"] .hero-slide[data-hero-slide="0"] {
+    display: block;
+  }
+}
