@@ -7,6 +7,7 @@ import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildCategoryPath } from "@/lib/text";
 import { TRYOUT_MATERIAL_BUCKET } from "@/lib/tryout-material";
+import { stripTryoutOptionLabel } from "@/lib/tryout-options";
 import { HARD_TRYOUT_QUESTION_INSTRUCTIONS } from "@/lib/tryout-question-quality";
 
 export type GenerateTryoutPayload = {
@@ -141,6 +142,7 @@ export const generateTryoutTask = task({
                   "Kembalikan soal dalam format terstruktur.",
                   "Seluruh soal wajib bertipe multiple-choice dengan tepat 5 opsi jawaban (A, B, C, D, dan E).",
                   "Setiap opsi harus berbeda dan hanya satu opsi yang benar.",
+                  "Tulis isi setiap opsi tanpa awalan label A, B, C, D, atau E karena label ditambahkan oleh antarmuka.",
                   "Isi correctOption hanya dengan satu huruf A, B, C, D, atau E yang menunjuk posisi opsi benar.",
                 ].join(" "),
               },
@@ -214,7 +216,7 @@ export const generateTryoutTask = task({
             question.options.map((option, optionIndex) => ({
               tryout_question_id: questionInsert.id,
               option_order: optionIndex + 1,
-              option_text: option,
+              option_text: stripTryoutOptionLabel(option, optionIndex + 1),
             }))
           )
           .select("id, option_order");

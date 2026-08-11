@@ -7,6 +7,7 @@ import { buildLearningPathLabel } from "@/lib/learning-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildCategoryPath, normalizeTitleCase } from "@/lib/text";
 import { TRYOUT_MATERIAL_BUCKET } from "@/lib/tryout-material";
+import { stripTryoutOptionLabel } from "@/lib/tryout-options";
 import { HARD_TRYOUT_QUESTION_INSTRUCTIONS } from "@/lib/tryout-question-quality";
 import {
   TRYOUT_THUMBNAIL_BUCKET,
@@ -151,7 +152,7 @@ async function saveQuestions(
         question.options.map((option, optionIndex) => ({
           tryout_question_id: questionInsert.id,
           option_order: optionIndex + 1,
-          option_text: option,
+          option_text: stripTryoutOptionLabel(option, optionIndex + 1),
         }))
       )
       .select("id, option_order");
@@ -346,6 +347,7 @@ export const generateTryoutBundleTask = task({
             instructionText,
             ...HARD_TRYOUT_QUESTION_INSTRUCTIONS,
             "Semua soal wajib multiple-choice dengan tepat 5 opsi berbeda (A-E) dan hanya satu jawaban benar.",
+            "Tulis isi setiap opsi tanpa awalan label A, B, C, D, atau E karena label ditambahkan oleh antarmuka.",
             "Isi correctOption hanya dengan satu huruf A, B, C, D, atau E yang menunjuk posisi opsi benar.",
             "Sertakan penjelasan singkat untuk setiap jawaban benar.",
           ].join("\n\n"),

@@ -4,6 +4,7 @@ import TryoutExamClient from "@/components/tryout/TryoutExamClient";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
 import { findOrCreateInProgressAttempt } from "@/lib/tryout-attempts";
+import { stripTryoutOptionLabel } from "@/lib/tryout-options";
 
 type TryoutExamPageParams = {
   uuid: string;
@@ -124,7 +125,10 @@ export default async function TryoutExamPage(props: PageProps<"/tryout/exam/[uui
         options: (optionMap.get(question.id) ?? []).map((option, optionIndex) => ({
           id: option.id,
           order: option.option_order ?? optionIndex + 1,
-          text: option.option_text ?? "-",
+          text: stripTryoutOptionLabel(
+            option.option_text ?? "-",
+            option.option_order ?? optionIndex + 1
+          ),
         })),
       }))}
     />

@@ -6,6 +6,7 @@ import TryoutResultReviewClient from "@/components/tryout/TryoutResultReviewClie
 import { ACTIVE_ROLE_COOKIE, getEffectiveRole, getUserRole } from "@/lib/auth-roles";
 import { createClient } from "@/lib/supabase/server";
 import { slugify } from "@/lib/tryout";
+import { stripTryoutOptionLabel } from "@/lib/tryout-options";
 import { getUserProfile } from "@/lib/user-profile";
 
 type ResultPageParams = { uuid: string; slug: string; attemptId: string };
@@ -94,7 +95,13 @@ export default async function TryoutResultPage(props: PageProps<"/tryout/result/
             selectedOptionId: answer?.selected_option_id ?? null,
             correctOptionId: question.correct_option_id,
             isCorrect: answer?.is_correct ?? (Boolean(question.correct_option_id) && answer?.selected_option_id === question.correct_option_id),
-            options: (optionMap.get(question.id) ?? []).map((option) => ({ id: option.id, text: option.option_text ?? "-" })),
+            options: (optionMap.get(question.id) ?? []).map((option, optionIndex) => ({
+              id: option.id,
+              text: stripTryoutOptionLabel(
+                option.option_text ?? "-",
+                option.option_order ?? optionIndex + 1
+              ),
+            })),
           };
         })}
       />

@@ -4,6 +4,7 @@ import Surface from "@/components/atoms/Surface";
 import QuestionResultAlert from "@/components/molecules/tryout/QuestionResultAlert";
 import ReviewAnswerOption from "@/components/molecules/tryout/ReviewAnswerOption";
 import type { TryoutReviewQuestion } from "@/components/tryout/tryout-result-review.types";
+import { getTryoutOptionLabel } from "@/lib/tryout-options";
 
 type ReviewQuestionPanelProps = {
   tryoutTitle: string;
@@ -48,9 +49,10 @@ export default function ReviewQuestionPanel({
       </div>
 
       <div className="mt-4 space-y-2.5">
-        {question.options.map((option) => (
+        {question.options.map((option, optionIndex) => (
           <ReviewAnswerOption
             key={option.id}
+            label={getTryoutOptionLabel(optionIndex + 1)}
             text={option.text}
             isSelected={question.selectedOptionId === option.id}
             isCorrectOption={question.correctOptionId === option.id}
