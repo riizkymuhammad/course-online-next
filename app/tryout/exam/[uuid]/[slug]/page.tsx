@@ -124,7 +124,6 @@ export default async function TryoutExamPage(props: PageProps<"/tryout/exam/[uui
         question: question.question ?? "Soal belum memiliki teks.",
         options: (optionMap.get(question.id) ?? []).map((option, optionIndex) => ({
           id: option.id,
-          order: option.option_order ?? optionIndex + 1,
           text: stripTryoutOptionLabel(
             option.option_text ?? "-",
             option.option_order ?? optionIndex + 1

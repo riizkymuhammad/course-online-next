@@ -11,7 +11,6 @@ import { getTryoutOptionLabel } from "@/lib/tryout-options";
 
 type TryoutExamOption = {
   id: string;
-  order: number;
   text: string;
 };
 
@@ -237,13 +236,15 @@ export default function TryoutExamClient({
             </div>
 
             <div className="mt-4 space-y-2.5">
-              {activeQuestion.options.map((option) => {
+              {activeQuestion.options.map((option, optionIndex) => {
                 const isSelected = selectedOptionId === option.id;
+                const optionLabel = getTryoutOptionLabel(optionIndex + 1);
 
                 return (
                   <button
                     key={option.id}
                     type="button"
+                    aria-label={`Pilihan ${optionLabel}: ${option.text}`}
                     onClick={() => handleSelectOption(activeQuestion.id, option.id)}
                     className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-2 text-left transition sm:px-5 ${
                       isSelected
@@ -258,7 +259,7 @@ export default function TryoutExamClient({
                           : "border-gray-200 text-gray-700 dark:border-gray-700 dark:text-gray-300"
                       }`}
                     >
-                      {getTryoutOptionLabel(option.order)}
+                      {optionLabel}
                     </span>
                     <span className="pt-0.5 text-sm leading-6 text-gray-700 dark:text-gray-300 sm:text-base">
                       {option.text}
